@@ -1667,7 +1667,7 @@
 
         // ---------- Auto-load admin-published data (data/*.csv next to this page) ----------
         async function tryLoadSharedCsv(url) {
-          const res = await fetch(url + "?t=" + Date.now());
+          const res = await fetch(url);
           if (!res.ok) throw new Error("not found");
           const text = await res.text();
           const parsed = Papa.parse(text, {
