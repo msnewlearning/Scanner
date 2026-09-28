@@ -1,1237 +1,745 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <title>NSE Relative Strength Scanner</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <style>
-      :root {
-        --bg: #0a0e13;
-        --surface: #12181f;
-        --surface-raised: #1a222b;
-        --border: #232d38;
-        --border-soft: #1b2430;
-        --text: #e7ecf1;
-        --text-dim: #8b98a8;
-        --text-faint: #566274;
-        --accent: #2fa88e;
-        --accent-dim: #1e6e5c;
-        --accent-soft: rgba(47, 168, 142, 0.12);
-        --weak: #c1594f;
-        --weak-soft: rgba(193, 89, 79, 0.12);
-        --gold: #d2a24c;
-        --neutral-badge: #5a6577;
-        --font-display: "Fraunces", serif;
-        --font-ui: "IBM Plex Sans", -apple-system, sans-serif;
-        --font-mono: "IBM Plex Mono", monospace;
-        padding-top: env(safe-area-inset-top, 0px);
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-      }
-      * {
-        box-sizing: border-box;
-      }
-      html {
-        scroll-padding-top: env(safe-area-inset-top, 0px);
-      }
-      html,
-      body {
-        background: var(--bg);
-      }
-      body {
-        margin: 0;
-        font-family: var(--font-ui);
-        color: var(--text);
-        line-height: 1.5;
-        -webkit-font-smoothing: antialiased;
-      }
-      .wrap {
-        max-width: 1180px;
-        margin: 0 auto;
-        padding: 48px 28px 80px;
-      }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NSE Relative Strength Scanner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root {
+    --bg: #0A0E13;
+    --surface: #12181F;
+    --surface-raised: #1A222B;
+    --border: #232D38;
+    --border-soft: #1B2430;
+    --text: #E7ECF1;
+    --text-dim: #8B98A8;
+    --text-faint: #566274;
+    --accent: #2FA88E;
+    --accent-dim: #1E6E5C;
+    --accent-soft: rgba(47, 168, 142, 0.12);
+    --weak: #C1594F;
+    --weak-soft: rgba(193, 89, 79, 0.12);
+    --gold: #D2A24C;
+    --neutral-badge: #5A6577;
+    --font-display: 'Fraunces', serif;
+    --font-ui: 'IBM Plex Sans', -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  html, body { background: var(--bg); }
+  body {
+    margin: 0;
+    font-family: var(--font-ui);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 48px 28px 80px;
+  }
 
-      /* ---------- Header ---------- */
-      header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        gap: 24px;
-        margin-bottom: 40px;
-        padding-bottom: 28px;
-        border-bottom: 1px solid var(--border-soft);
-        flex-wrap: wrap;
-      }
-      .brand-mark {
-        font-family: var(--font-mono);
-        font-size: 12px;
-        letter-spacing: 0.08em;
-        color: var(--accent);
-        margin-bottom: 10px;
-      }
-      h1 {
-        font-family: var(--font-display);
-        font-weight: 600;
-        font-size: 40px;
-        line-height: 1.08;
-        margin: 0 0 10px;
-        color: var(--text);
-        max-width: 620px;
-      }
-      header p {
-        color: var(--text-dim);
-        font-size: 15px;
-        max-width: 480px;
-        margin: 0;
-      }
-      .formula-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 16px 20px;
-        font-family: var(--font-mono);
-        font-size: 12.5px;
-        color: var(--text-dim);
-        min-width: 250px;
-      }
-      .formula-card .row {
-        display: flex;
-        justify-content: space-between;
-        padding: 3px 0;
-      }
-      .formula-card .row b {
-        color: var(--text);
-        font-weight: 500;
-      }
-      .formula-card .total {
-        border-top: 1px solid var(--border);
-        margin-top: 8px;
-        padding-top: 8px;
-        color: var(--accent);
-      }
+  /* ---------- Header ---------- */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    margin-bottom: 40px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border-soft);
+    flex-wrap: wrap;
+  }
+  .brand-mark {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 40px;
+    line-height: 1.08;
+    margin: 0 0 10px;
+    color: var(--text);
+    max-width: 620px;
+  }
+  header p {
+    color: var(--text-dim);
+    font-size: 15px;
+    max-width: 480px;
+    margin: 0;
+  }
+  .formula-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--text-dim);
+    min-width: 250px;
+  }
+  .formula-card .row { display: flex; justify-content: space-between; padding: 3px 0; }
+  .formula-card .row b { color: var(--text); font-weight: 500; }
+  .formula-card .total { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 8px; color: var(--accent); }
 
-      /* ---------- Tabs ---------- */
-      .tabs {
-        display: flex;
-        gap: 4px;
-        margin-bottom: 24px;
-        border-bottom: 1px solid var(--border-soft);
-      }
-      .tab-btn {
-        background: transparent;
-        border: none;
-        color: var(--text-faint);
-        font-family: var(--font-ui);
-        font-weight: 600;
-        font-size: 13.5px;
-        padding: 10px 16px;
-        cursor: pointer;
-        border-bottom: 2px solid transparent;
-        margin-bottom: -1px;
-      }
-      .tab-btn:hover {
-        color: var(--text-dim);
-      }
-      .tab-btn.active {
-        color: var(--accent);
-        border-bottom-color: var(--accent);
-      }
+  /* ---------- Tabs ---------- */
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border-soft); }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-faint);
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--text-dim); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-      /* ---------- Upload zone ---------- */
-      #upload-zone,
-      #breadth-upload-zone {
-        border: 1.5px dashed var(--border);
-        border-radius: 14px;
-        background: var(--surface);
-        padding: 56px 32px;
-        text-align: center;
-        cursor: pointer;
-        transition:
-          border-color 0.15s ease,
-          background 0.15s ease;
-      }
-      #upload-zone:hover,
-      #upload-zone.drag,
-      #breadth-upload-zone:hover,
-      #breadth-upload-zone.drag {
-        border-color: var(--accent);
-        background: var(--accent-soft);
-      }
-      #upload-zone .icon,
-      #breadth-upload-zone .icon {
-        width: 44px;
-        height: 44px;
-        margin: 0 auto 18px;
-        color: var(--text-faint);
-      }
-      #upload-zone.drag .icon,
-      #breadth-upload-zone.drag .icon {
-        color: var(--accent);
-      }
-      #upload-zone h2,
-      #breadth-upload-zone h2 {
-        font-family: var(--font-ui);
-        font-weight: 600;
-        font-size: 17px;
-        margin: 0 0 6px;
-        color: var(--text);
-      }
-      #upload-zone p,
-      #breadth-upload-zone p {
-        color: var(--text-dim);
-        font-size: 14px;
-        margin: 0;
-      }
-      #upload-zone .hint,
-      #breadth-upload-zone .hint {
-        margin-top: 18px;
-        font-size: 12.5px;
-        color: var(--text-faint);
-        font-family: var(--font-mono);
-      }
-      #file-input,
-      #breadth-file-input {
-        display: none;
-      }
-      #upload-error {
-        display: none;
-        margin-top: 14px;
-        background: var(--weak-soft);
-        border: 1px solid rgba(193, 89, 79, 0.3);
-        color: #e8a8a2;
-        padding: 12px 16px;
-        border-radius: 8px;
-        font-size: 13.5px;
-      }
+  /* ---------- Upload zone ---------- */
+  #upload-zone, #breadth-upload-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    padding: 56px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  #upload-zone:hover, #upload-zone.drag, #breadth-upload-zone:hover, #breadth-upload-zone.drag {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  #upload-zone .icon, #breadth-upload-zone .icon {
+    width: 44px; height: 44px; margin: 0 auto 18px;
+    color: var(--text-faint);
+  }
+  #upload-zone.drag .icon, #breadth-upload-zone.drag .icon { color: var(--accent); }
+  #upload-zone h2, #breadth-upload-zone h2 {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 17px;
+    margin: 0 0 6px;
+    color: var(--text);
+  }
+  #upload-zone p, #breadth-upload-zone p { color: var(--text-dim); font-size: 14px; margin: 0; }
+  #upload-zone .hint, #breadth-upload-zone .hint {
+    margin-top: 18px;
+    font-size: 12.5px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+  }
+  #file-input, #breadth-file-input { display: none; }
+  #upload-error {
+    display: none;
+    margin-top: 14px;
+    background: var(--weak-soft);
+    border: 1px solid rgba(193,89,79,0.3);
+    color: #E8A8A2;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13.5px;
+  }
 
-      /* ---------- Stats bar ---------- */
-      #results {
-        display: none;
-      }
-      .stats-bar {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 1px;
-        background: var(--border-soft);
-        border: 1px solid var(--border-soft);
-        border-radius: 10px;
-        overflow: hidden;
-        margin-bottom: 28px;
-      }
-      .stat {
-        background: var(--surface);
-        padding: 18px 20px;
-      }
-      .stat .label {
-        font-family: var(--font-mono);
-        font-size: 11px;
-        color: var(--text-faint);
-        letter-spacing: 0.04em;
-        margin-bottom: 6px;
-      }
-      .stat .value {
-        font-family: var(--font-display);
-        font-size: 26px;
-        font-weight: 500;
-        color: var(--text);
-      }
-      .stat .value.pos {
-        color: var(--accent);
-      }
-      .stat .value.neg {
-        color: var(--weak);
-      }
+  /* ---------- Stats bar ---------- */
+  #results { display: none; }
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1px;
+    background: var(--border-soft);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .stat {
+    background: var(--surface);
+    padding: 18px 20px;
+  }
+  .stat .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .stat .value {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .stat .value.pos { color: var(--accent); }
+  .stat .value.neg { color: var(--weak); }
 
-      /* ---------- Distribution ---------- */
-      .distribution {
-        background: var(--surface);
-        border: 1px solid var(--border-soft);
-        border-radius: 10px;
-        padding: 18px 22px 14px;
-        margin-bottom: 28px;
-      }
-      .distribution .dtitle {
-        font-family: var(--font-mono);
-        font-size: 11px;
-        color: var(--text-faint);
-        letter-spacing: 0.04em;
-        margin-bottom: 10px;
-      }
+  /* ---------- Controls ---------- */
+  .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .controls input[type="text"], .controls select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 13.5px;
+    padding: 9px 13px;
+    border-radius: 7px;
+    outline: none;
+  }
+  .controls input[type="text"] { flex: 1; min-width: 180px; }
+  .controls input[type="text"]:focus, .controls select:focus { border-color: var(--accent); }
+  .controls label { font-size: 12.5px; color: var(--text-dim); display: flex; align-items: center; gap: 7px; }
+  .controls input[type="range"] { accent-color: var(--accent); width: 100px; }
+  .btn {
+    background: var(--accent);
+    color: #06110D;
+    border: none;
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 9px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  .btn:hover { opacity: 0.88; }
+  .btn.secondary {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+  .btn.secondary:hover { color: var(--text); border-color: var(--text-faint); opacity: 1; }
 
-      /* ---------- Controls ---------- */
-      .controls {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        flex-wrap: wrap;
-        margin-bottom: 16px;
-      }
-      .controls input[type="text"],
-      .controls select {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        color: var(--text);
-        font-family: var(--font-ui);
-        font-size: 13.5px;
-        padding: 9px 13px;
-        border-radius: 7px;
-        outline: none;
-      }
-      .controls input[type="text"] {
-        flex: 1;
-        min-width: 180px;
-      }
-      .controls input[type="text"]:focus,
-      .controls select:focus {
-        border-color: var(--accent);
-      }
-      .controls label {
-        font-size: 12.5px;
-        color: var(--text-dim);
-        display: flex;
-        align-items: center;
-        gap: 7px;
-      }
-      .controls input[type="range"] {
-        accent-color: var(--accent);
-        width: 100px;
-      }
-      .btn {
-        background: var(--accent);
-        color: #06110d;
-        border: none;
-        font-family: var(--font-ui);
-        font-weight: 600;
-        font-size: 13.5px;
-        padding: 9px 16px;
-        border-radius: 7px;
-        cursor: pointer;
-        transition: opacity 0.15s ease;
-      }
-      .btn:hover {
-        opacity: 0.88;
-      }
-      .btn.secondary {
-        background: transparent;
-        color: var(--text-dim);
-        border: 1px solid var(--border);
-      }
-      .btn.secondary:hover {
-        color: var(--text);
-        border-color: var(--text-faint);
-        opacity: 1;
-      }
+  /* ---------- Table ---------- */
+  .table-wrap {
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    overflow: auto;
+    background: var(--surface);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 1900px; }
+  thead th {
+    position: sticky; top: 0;
+    background: var(--surface-raised);
+    text-align: left;
+    padding: 11px 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.03em;
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+  }
+  thead th:hover { color: var(--text-dim); }
+  thead th.active { color: var(--accent); }
+  thead th .arrow { font-size: 9px; margin-left: 3px; }
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  tbody tr:hover td { background: rgba(255,255,255,0.015); }
+  tbody tr:last-child td { border-bottom: none; }
+  .sym { font-weight: 600; color: var(--text); }
+  .name { color: var(--text-faint); font-size: 12.5px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+  .num { font-family: var(--font-mono); text-align: right; }
+  .num.pos { color: var(--accent); }
+  .num.neg { color: var(--weak); }
+  .rs-cell { display: flex; align-items: center; gap: 10px; }
+  .rs-bar-track { width: 54px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .rs-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+  .rs-num { font-family: var(--font-mono); font-weight: 600; color: var(--text); width: 22px; text-align: right; }
+  .rs-num.top { color: var(--gold); }
+  .na { color: var(--text-faint); font-style: italic; font-size: 12px; }
+  .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 3px 8px;
+    border-radius: 5px;
+  }
+  .badge.up { color: var(--accent); background: var(--accent-soft); }
+  .badge.down { color: var(--weak); background: var(--weak-soft); }
+  .badge.mixed { color: var(--text-dim); background: rgba(255,255,255,0.05); }
+  .badge.liquid { color: var(--accent); background: var(--accent-soft); }
+  .badge.illiquid { color: var(--text-faint); background: rgba(255,255,255,0.04); }
+  .badge.inside { color: var(--gold); background: rgba(210, 162, 76, 0.12); }
+  .badge.outside { color: #8E7CC3; background: rgba(142, 124, 195, 0.14); }
+  .badge.normal { color: var(--text-faint); background: rgba(255,255,255,0.04); }
+  .badge.special { color: var(--gold); background: rgba(210, 162, 76, 0.14); }
+  .turnover-cell { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+  .ema-flag { font-size: 10px; margin-left: 4px; }
+  .ema-flag.above { color: var(--accent); }
+  .ema-flag.below { color: var(--weak); }
+  tfoot td { padding: 10px 14px; color: var(--text-faint); font-size: 12.5px; }
 
-      /* ---------- Table ---------- */
-      .table-wrap {
-        border: 1px solid var(--border-soft);
-        border-radius: 10px;
-        overflow: auto;
-        background: var(--surface);
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13.5px;
-        min-width: 1900px;
-      }
-      thead th {
-        position: sticky;
-        top: 0;
-        background: var(--surface-raised);
-        text-align: left;
-        padding: 11px 14px;
-        font-family: var(--font-mono);
-        font-size: 11px;
-        color: var(--text-faint);
-        letter-spacing: 0.03em;
-        font-weight: 500;
-        border-bottom: 1px solid var(--border);
-        cursor: pointer;
-        white-space: nowrap;
-        user-select: none;
-      }
-      thead th:hover {
-        color: var(--text-dim);
-      }
-      thead th.active {
-        color: var(--accent);
-      }
-      thead th .arrow {
-        font-size: 9px;
-        margin-left: 3px;
-      }
-      tbody td {
-        padding: 10px 14px;
-        border-bottom: 1px solid var(--border-soft);
-        color: var(--text-dim);
-        white-space: nowrap;
-      }
-      tbody tr:hover td {
-        background: rgba(255, 255, 255, 0.015);
-      }
-      tbody tr:last-child td {
-        border-bottom: none;
-      }
-      .sym {
-        font-weight: 600;
-        color: var(--text);
-      }
-      .name {
-        color: var(--text-faint);
-        font-size: 12.5px;
-        max-width: 220px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .num {
-        font-family: var(--font-mono);
-        text-align: right;
-      }
-      .num.pos {
-        color: var(--accent);
-      }
-      .num.neg {
-        color: var(--weak);
-      }
-      .rs-cell {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .rs-bar-track {
-        width: 54px;
-        height: 5px;
-        background: var(--border);
-        border-radius: 3px;
-        overflow: hidden;
-      }
-      .rs-bar-fill {
-        height: 100%;
-        background: var(--accent);
-        border-radius: 3px;
-      }
-      .rs-num {
-        font-family: var(--font-mono);
-        font-weight: 600;
-        color: var(--text);
-        width: 22px;
-        text-align: right;
-      }
-      .rs-num.top {
-        color: var(--gold);
-      }
-      .na {
-        color: var(--text-faint);
-        font-style: italic;
-        font-size: 12px;
-      }
-      .badge {
-        display: inline-block;
-        font-family: var(--font-mono);
-        font-size: 10.5px;
-        font-weight: 600;
-        letter-spacing: 0.03em;
-        padding: 3px 8px;
-        border-radius: 5px;
-      }
-      .badge.up {
-        color: var(--accent);
-        background: var(--accent-soft);
-      }
-      .badge.down {
-        color: var(--weak);
-        background: var(--weak-soft);
-      }
-      .badge.mixed {
-        color: var(--text-dim);
-        background: rgba(255, 255, 255, 0.05);
-      }
-      .badge.liquid {
-        color: var(--accent);
-        background: var(--accent-soft);
-      }
-      .badge.illiquid {
-        color: var(--text-faint);
-        background: rgba(255, 255, 255, 0.04);
-      }
-      .badge.inside {
-        color: var(--gold);
-        background: rgba(210, 162, 76, 0.12);
-      }
-      .badge.outside {
-        color: #8e7cc3;
-        background: rgba(142, 124, 195, 0.14);
-      }
-      .badge.normal {
-        color: var(--text-faint);
-        background: rgba(255, 255, 255, 0.04);
-      }
-      .badge.special {
-        color: var(--gold);
-        background: rgba(210, 162, 76, 0.14);
-      }
-      .turnover-cell {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        justify-content: flex-end;
-      }
-      .ema-flag {
-        font-size: 10px;
-        margin-left: 4px;
-      }
-      .ema-flag.above {
-        color: var(--accent);
-      }
-      .ema-flag.below {
-        color: var(--weak);
-      }
-      tfoot td {
-        padding: 10px 14px;
-        color: var(--text-faint);
-        font-size: 12.5px;
-      }
+  .empty-state { text-align: center; padding: 40px; color: var(--text-faint); font-size: 13.5px; }
 
-      .empty-state {
-        text-align: center;
-        padding: 40px;
-        color: var(--text-faint);
-        font-size: 13.5px;
-      }
+  footer {
+    margin-top: 30px;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 12px;
+    font-family: var(--font-mono);
+  }
 
-      footer {
-        margin-top: 30px;
-        text-align: center;
-        color: var(--text-faint);
-        font-size: 12px;
-        font-family: var(--font-mono);
-      }
+  @media (max-width: 720px) {
+    .wrap { padding: 28px 16px 60px; }
+    h1 { font-size: 30px; }
+    header { flex-direction: column; align-items: stretch; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .formula-card { min-width: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
 
-      @media (max-width: 720px) {
-        .wrap {
-          padding: 28px 16px 60px;
-        }
-        h1 {
-          font-size: 30px;
-        }
-        header {
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .stats-bar {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        .formula-card {
-          min-width: 0;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <header>
-        <div>
-          <div class="brand-mark">NSE · RELATIVE STRENGTH</div>
-          <h1>RS Rating Scanner</h1>
-          <p>
-            Ranks NSE stocks by weighted price momentum across 3, 6, 9 and 12
-            months, then scores each on a 1&ndash;99 percentile scale &mdash;
-            same convention as IBD's RS Rating. Data updates automatically when
-            published &mdash; nothing to upload unless you want to test a
-            different file.
-          </p>
-        </div>
-        <div class="formula-card">
-          <div class="row"><span>3 month move</span><b>40%</b></div>
-          <div class="row"><span>6 month move</span><b>20%</b></div>
-          <div class="row"><span>9 month move</span><b>20%</b></div>
-          <div class="row"><span>12 month move</span><b>20%</b></div>
-          <div class="row total">
-            <span>Weighted score → percentile rank</span><b>1&ndash;99</b>
-          </div>
-        </div>
-      </header>
+  <header>
+    <div>
+      <div class="brand-mark">NSE · RELATIVE STRENGTH</div>
+      <h1>RS Rating Scanner</h1>
+      <p>Ranks NSE stocks by weighted price momentum across 3, 6, 9 and 12 months, then scores each on a 1&ndash;99 percentile scale &mdash; same convention as IBD's RS Rating. Data updates automatically when published &mdash; nothing to upload unless you want to test a different file.</p>
+    </div>
+    <div class="formula-card">
+      <div class="row"><span>3 month move</span><b>40%</b></div>
+      <div class="row"><span>6 month move</span><b>20%</b></div>
+      <div class="row"><span>9 month move</span><b>20%</b></div>
+      <div class="row"><span>12 month move</span><b>20%</b></div>
+      <div class="row total"><span>Weighted score → percentile rank</span><b>1&ndash;99</b></div>
+    </div>
+  </header>
 
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="scanner-view">Scanner</button>
-        <button class="tab-btn" data-tab="breadth-view">Market Breadth</button>
-      </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="scanner-view">Scanner</button>
+    <button class="tab-btn" data-tab="breadth-view">Market Breadth</button>
+  </div>
 
-      <div id="scanner-view" class="tab-panel">
-        <div
-          id="checking-shared"
-          style="
-            text-align: center;
-            padding: 20px;
-            color: var(--text-faint);
-            font-family: var(--font-mono);
-            font-size: 13px;
-          "
-        >
-          Checking for today's published data&hellip;
-        </div>
-        <div id="upload-zone" style="display: none">
-          <svg
-            class="icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.4"
-          >
-            <path
-              d="M12 15V3m0 0L7 8m5-5l5 5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-          <h2>Drop your price data CSV here</h2>
-          <p>Or click to browse &mdash; generated by fetch_nse_data.py</p>
-          <div class="hint">
-            expects: Symbol, Name, Date, Close_Today / Pct_3M-12M / EMA_10-50 /
-            Avg_Volume_30D / Today_&amp;Prev_Open-High-Low-Close
-          </div>
-          <input type="file" id="file-input" accept=".csv" />
-        </div>
-        <div id="upload-error"></div>
+  <div id="scanner-view" class="tab-panel">
+  <div id="checking-shared" style="text-align:center; padding:20px; color:var(--text-faint); font-family:var(--font-mono); font-size:13px;">Checking for today's published data&hellip;</div>
+  <div id="upload-zone" style="display:none;">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+      <path d="M12 15V3m0 0L7 8m5-5l5 5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h2>Drop your price data CSV here</h2>
+    <p>Or click to browse &mdash; generated by fetch_nse_data.py</p>
+    <div class="hint">expects: Symbol, Name, Date, Close_Today / Pct_3M-12M / EMA_10-50 / Avg_Volume_30D / Today_&amp;Prev_Open-High-Low-Close</div>
+    <input type="file" id="file-input" accept=".csv">
+  </div>
+  <div id="upload-error"></div>
 
-        <div id="results">
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 10px;
-            "
-          >
-            <div
-              id="data-date"
-              style="
-                font-family: var(--font-mono);
-                font-size: 12px;
-                color: var(--text-faint);
-              "
-            ></div>
-            <button
-              class="btn secondary"
-              id="show-upload-link"
-              style="font-size: 12px; padding: 6px 12px"
-            >
-              Load a different file
-            </button>
-          </div>
-          <div class="stats-bar" id="stats-bar"></div>
+  <div id="results">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+      <div id="data-date" style="font-family: var(--font-mono); font-size: 12px; color: var(--text-faint);"></div>
+      <button class="btn secondary" id="show-upload-link" style="font-size:12px; padding:6px 12px;">Load a different file</button>
+    </div>
+    <div class="stats-bar" id="stats-bar"></div>
 
-          <div class="distribution">
-            <div class="dtitle">RS RATING DISTRIBUTION</div>
-            <svg
-              id="dist-chart"
-              width="100%"
-              height="70"
-              viewBox="0 0 1120 70"
-              preserveAspectRatio="none"
-            ></svg>
-          </div>
-
-          <div class="controls">
-            <input
-              type="text"
-              id="search"
-              placeholder="Search symbol or company name…"
-            />
-            <label
-              >Min RS
-              <input type="range" id="min-rs" min="1" max="99" value="1" /><span
-                id="min-rs-val"
-                >1</span
-              ></label
-            >
-            <select id="trend-select">
-              <option value="all">Any trend</option>
-              <option value="up">Uptrend only</option>
-              <option value="down">Downtrend only</option>
-              <option value="mixed">Mixed only</option>
-            </select>
-            <label
-              ><input type="checkbox" id="liquid-only" /> Turnover ≥ ₹7 Cr
-              only</label
-            >
-            <select id="day-move-select">
-              <option value="all">Any day move</option>
-              <option value="up4">Up 4%+ today</option>
-              <option value="down4">Down 4%+ today</option>
-            </select>
-            <select
-              id="bar-type-select"
-              title="Inside: today's high/low fully within yesterday's range. Outside: today's high/low fully engulfs yesterday's range."
-            >
-              <option value="all">Any bar type</option>
-              <option value="Inside">Inside bar only</option>
-              <option value="Outside">Outside bar only</option>
-            </select>
-            <label
-              title="Today's open AND close both fall between yesterday's high and whichever of yesterday's open/close is lower."
-            >
-              <input type="checkbox" id="special-only" /> Special candle only
-            </label>
-            <select id="sort-select">
-              <option value="rs-desc">RS Rating: high → low</option>
-              <option value="rs-asc">RS Rating: low → high</option>
-              <option value="p3-desc">3M % : high → low</option>
-              <option value="p12-desc">12M % : high → low</option>
-              <option value="sym-asc">Symbol: A → Z</option>
-            </select>
-            <button class="btn secondary" id="export-btn">
-              Export ranked CSV
-            </button>
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th data-key="rank">#</th>
-                  <th data-key="symbol">Symbol</th>
-                  <th data-key="price" class="num">Price</th>
-                  <th data-key="daychange" class="num">Day %</th>
-                  <th data-key="date">Date</th>
-                  <th data-key="rs">RS Rating</th>
-                  <th data-key="p3" class="num">3M %</th>
-                  <th data-key="p6" class="num">6M %</th>
-                  <th data-key="p9" class="num">9M %</th>
-                  <th data-key="p12" class="num">12M %</th>
-                  <th data-key="score" class="num">Weighted Score</th>
-                  <th data-key="trend">Trend</th>
-                  <th data-key="ema10" class="num">EMA 10</th>
-                  <th data-key="ema20" class="num">EMA 20</th>
-                  <th data-key="ema50" class="num">EMA 50</th>
-                  <th data-key="turnover" class="num">30D Turnover</th>
-                  <th data-key="bartype">Bar Type</th>
-                  <th data-key="special">Special</th>
-                </tr>
-              </thead>
-              <tbody id="table-body"></tbody>
-            </table>
-          </div>
-          <div id="empty-state" class="empty-state" style="display: none">
-            No stocks match your filters.
-          </div>
-        </div>
-      </div>
-      <!-- /scanner-view -->
-
-      <div id="breadth-view" class="tab-panel" style="display: none">
-        <div
-          id="breadth-checking-shared"
-          style="
-            text-align: center;
-            padding: 20px;
-            color: var(--text-faint);
-            font-family: var(--font-mono);
-            font-size: 13px;
-          "
-        >
-          Checking for today's published data&hellip;
-        </div>
-        <div id="breadth-upload-zone" style="display: none">
-          <svg
-            class="icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.4"
-          >
-            <path
-              d="M12 15V3m0 0L7 8m5-5l5 5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-          <h2>Drop your price history CSV here</h2>
-          <p>
-            Or click to browse &mdash; generated by fetch_nse_data.py (history
-            file)
-          </p>
-          <div class="hint">
-            expects long format: Symbol, Date, Close &mdash; one row per stock
-            per day
-          </div>
-          <input type="file" id="breadth-file-input" accept=".csv" />
-        </div>
-        <div
-          id="breadth-upload-error"
-          class="empty-state"
-          style="display: none"
-        ></div>
-
-        <div id="breadth-results" style="display: none">
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              gap: 16px;
-            "
-          >
-            <p
-              style="
-                color: var(--text-dim);
-                font-size: 14px;
-                max-width: 560px;
-                margin: 0 0 20px;
-              "
-            >
-              Day-wise count of NSE stocks that moved &plusmn;4% or more, over
-              the uploaded history window &mdash; a simple read on market
-              breadth and strength.
-            </p>
-            <button
-              class="btn secondary"
-              id="breadth-show-upload-link"
-              style="font-size: 12px; padding: 6px 12px; white-space: nowrap"
-            >
-              Load a different file
-            </button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th class="num">Up 4%+</th>
-                  <th class="num">Down 4%+</th>
-                  <th class="num">Net (Up&minus;Down)</th>
-                  <th class="num">Stocks Scanned</th>
-                </tr>
-              </thead>
-              <tbody id="breadth-table-body"></tbody>
-            </table>
-          </div>
-          <button
-            class="btn secondary"
-            id="breadth-export-btn"
-            style="margin-top: 16px"
-          >
-            Export breadth CSV
-          </button>
-        </div>
-      </div>
-      <!-- /breadth-view -->
-
-      <footer>
-        Data as uploaded &middot; not investment advice &middot; verify against
-        your broker before trading
-      </footer>
+    <div class="controls">
+      <input type="text" id="search" placeholder="Search symbol or company name…">
+      <label>Min RS <input type="range" id="min-rs" min="1" max="99" value="1"><span id="min-rs-val">1</span></label>
+      <label>Max RS <input type="range" id="max-rs" min="1" max="99" value="99"><span id="max-rs-val">99</span></label>
+      <select id="trend-select">
+        <option value="all">Any trend</option>
+        <option value="up">Uptrend only</option>
+        <option value="down">Downtrend only</option>
+        <option value="mixed">Mixed only</option>
+      </select>
+      <select id="ema-10-20" title="Compare EMA 10 with EMA 20">
+        <option value="all">EMA 10 vs 20</option>
+        <option value="gt">EMA 10 &gt; EMA 20</option>
+        <option value="lt">EMA 10 &lt; EMA 20</option>
+      </select>
+      <select id="ema-20-50" title="Compare EMA 20 with EMA 50">
+        <option value="all">EMA 20 vs 50</option>
+        <option value="gt">EMA 20 &gt; EMA 50</option>
+        <option value="lt">EMA 20 &lt; EMA 50</option>
+      </select>
+      <select id="ema-10-50" title="Compare EMA 10 with EMA 50">
+        <option value="all">EMA 10 vs 50</option>
+        <option value="gt">EMA 10 &gt; EMA 50</option>
+        <option value="lt">EMA 10 &lt; EMA 50</option>
+      </select>
+      <label><input type="checkbox" id="liquid-only"> Turnover ≥ ₹7 Cr only</label>
+      <select id="day-move-select">
+        <option value="all">Any day move</option>
+        <option value="up4">Up 4%+ today</option>
+        <option value="down4">Down 4%+ today</option>
+      </select>
+      <select id="bar-type-select" title="Inside: today's high/low fully within yesterday's range. Outside: today's high/low fully engulfs yesterday's range.">
+        <option value="all">Any bar type</option>
+        <option value="Inside">Inside bar only</option>
+        <option value="Outside">Outside bar only</option>
+      </select>
+      <label title="Today's open AND close both fall between yesterday's high and whichever of yesterday's open/close is lower.">
+        <input type="checkbox" id="special-only"> Special candle only
+      </label>
+      <select id="sort-select">
+        <option value="rs-desc">RS Rating: high → low</option>
+        <option value="rs-asc">RS Rating: low → high</option>
+        <option value="p3-desc">3M % : high → low</option>
+        <option value="p12-desc">12M % : high → low</option>
+        <option value="sym-asc">Symbol: A → Z</option>
+      </select>
+      <button class="btn secondary" id="export-btn">Export ranked CSV</button>
     </div>
 
-    <script>
-      (function () {
-        const WEIGHTS = { p3: 0.4, p6: 0.2, p9: 0.2, p12: 0.2 };
-        const LIQUIDITY_THRESHOLD = 70000000; // ₹7 crore
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-key="rank">#</th>
+            <th data-key="symbol">Symbol</th>
+            <th data-key="price" class="num">Price</th>
+            <th data-key="daychange" class="num">Day %</th>
+            <th data-key="date">Date</th>
+            <th data-key="rs">RS Rating</th>
+            <th data-key="p3" class="num">3M %</th>
+            <th data-key="p6" class="num">6M %</th>
+            <th data-key="p9" class="num">9M %</th>
+            <th data-key="p12" class="num">12M %</th>
+            <th data-key="score" class="num">Weighted Score</th>
+            <th data-key="trend">Trend</th>
+            <th data-key="ema10" class="num">EMA 10</th>
+            <th data-key="ema20" class="num">EMA 20</th>
+            <th data-key="ema50" class="num">EMA 50</th>
+            <th data-key="turnover" class="num">30D Turnover</th>
+            <th data-key="bartype">Bar Type</th>
+            <th data-key="special">Special</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+    <div id="empty-state" class="empty-state" style="display:none;">No stocks match your filters.</div>
+  </div>
+  </div>
+  <!-- /scanner-view -->
 
-        // Where the daily data files live. If you're serving them from S3 instead
-        // of GitHub's own data/ folder, replace these with your bucket's object
-        // URLs, e.g. 'https://YOUR-BUCKET-NAME.s3.YOUR-REGION.amazonaws.com/nse_rs_data.csv'
-        const RS_DATA_URL =
-          "https://d2k3wq1952nc58.cloudfront.net/nse_rs_data.csv";
-        const HISTORY_DATA_URL =
-          "https://d2k3wq1952nc58.cloudfront.net/nse_price_history.csv";
+  <div id="breadth-view" class="tab-panel" style="display:none;">
+    <div id="breadth-checking-shared" style="text-align:center; padding:20px; color:var(--text-faint); font-family:var(--font-mono); font-size:13px;">Checking for today's published data&hellip;</div>
+    <div id="breadth-upload-zone" style="display:none;">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+        <path d="M12 15V3m0 0L7 8m5-5l5 5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h2>Drop your price history CSV here</h2>
+      <p>Or click to browse &mdash; generated by fetch_nse_data.py (history file)</p>
+      <div class="hint">expects long format: Symbol, Date, Close &mdash; one row per stock per day</div>
+      <input type="file" id="breadth-file-input" accept=".csv">
+    </div>
+    <div id="breadth-upload-error" class="empty-state" style="display:none;"></div>
 
-        let allStocks = []; // full parsed + scored dataset
-        let sortKey = "rs",
-          sortDir = "desc";
+    <div id="breadth-results" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+        <p style="color:var(--text-dim); font-size:14px; max-width:560px; margin:0 0 20px;">Day-wise count of NSE stocks that moved &plusmn;4% or more, over the uploaded history window &mdash; a simple read on market breadth and strength.</p>
+        <button class="btn secondary" id="breadth-show-upload-link" style="font-size:12px; padding:6px 12px; white-space:nowrap;">Load a different file</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th class="num">Up 4%+</th>
+              <th class="num">Down 4%+</th>
+              <th class="num">Net (Up&minus;Down)</th>
+              <th class="num">Stocks Scanned</th>
+            </tr>
+          </thead>
+          <tbody id="breadth-table-body"></tbody>
+        </table>
+      </div>
+      <button class="btn secondary" id="breadth-export-btn" style="margin-top:16px;">Export breadth CSV</button>
+    </div>
+  </div>
+  <!-- /breadth-view -->
 
-        const uploadZone = document.getElementById("upload-zone");
-        const fileInput = document.getElementById("file-input");
-        const uploadError = document.getElementById("upload-error");
-        const resultsEl = document.getElementById("results");
-        const tbody = document.getElementById("table-body");
-        const emptyState = document.getElementById("empty-state");
-        const searchInput = document.getElementById("search");
-        const minRsInput = document.getElementById("min-rs");
-        const minRsVal = document.getElementById("min-rs-val");
-        const trendSelect = document.getElementById("trend-select");
-        const liquidOnly = document.getElementById("liquid-only");
-        const dayMoveSelect = document.getElementById("day-move-select");
-        const barTypeSelect = document.getElementById("bar-type-select");
-        const specialOnly = document.getElementById("special-only");
-        const sortSelect = document.getElementById("sort-select");
-        const exportBtn = document.getElementById("export-btn");
+  <footer>Data as uploaded &middot; not investment advice &middot; verify against your broker before trading</footer>
+</div>
 
-        // ---------- Upload interactions ----------
-        uploadZone.addEventListener("click", () => fileInput.click());
-        uploadZone.addEventListener("dragover", (e) => {
-          e.preventDefault();
-          uploadZone.classList.add("drag");
-        });
-        uploadZone.addEventListener("dragleave", () =>
-          uploadZone.classList.remove("drag"),
-        );
-        uploadZone.addEventListener("drop", (e) => {
-          e.preventDefault();
-          uploadZone.classList.remove("drag");
-          if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-        });
-        fileInput.addEventListener("change", (e) => {
-          if (e.target.files.length) handleFile(e.target.files[0]);
-        });
+<script>
+(function() {
+  const WEIGHTS = { p3: 0.4, p6: 0.2, p9: 0.2, p12: 0.2 };
+  const LIQUIDITY_THRESHOLD = 70000000; // ₹7 crore
 
-        function showError(msg) {
-          uploadError.textContent = msg;
-          uploadError.style.display = "block";
+  // Where the daily data files live. If you're serving them from S3 instead
+  // of GitHub's own data/ folder, replace these with your bucket's object
+  // URLs, e.g. 'https://YOUR-BUCKET-NAME.s3.YOUR-REGION.amazonaws.com/nse_rs_data.csv'
+  const RS_DATA_URL = 'https://d2k3wq1952nc58.cloudfront.net/nse_rs_data.csv';
+  const HISTORY_DATA_URL = 'https://d2k3wq1952nc58.cloudfront.net/nse_price_history.csv';
+
+  let allStocks = [];   // full parsed + scored dataset
+  let sortKey = 'rs', sortDir = 'desc';
+
+  const uploadZone = document.getElementById('upload-zone');
+  const fileInput = document.getElementById('file-input');
+  const uploadError = document.getElementById('upload-error');
+  const resultsEl = document.getElementById('results');
+  const tbody = document.getElementById('table-body');
+  const emptyState = document.getElementById('empty-state');
+  const searchInput = document.getElementById('search');
+  const minRsInput = document.getElementById('min-rs');
+  const minRsVal = document.getElementById('min-rs-val');
+  const trendSelect = document.getElementById('trend-select');
+  const maxRsInput = document.getElementById('max-rs');
+  const maxRsVal = document.getElementById('max-rs-val');
+  const ema1020 = document.getElementById('ema-10-20');
+  const ema2050 = document.getElementById('ema-20-50');
+  const ema1050 = document.getElementById('ema-10-50');
+  const liquidOnly = document.getElementById('liquid-only');
+  const dayMoveSelect = document.getElementById('day-move-select');
+  const barTypeSelect = document.getElementById('bar-type-select');
+  const specialOnly = document.getElementById('special-only');
+  const sortSelect = document.getElementById('sort-select');
+  const exportBtn = document.getElementById('export-btn');
+
+  // ---------- Upload interactions ----------
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
+  uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag');
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', e => {
+    if (e.target.files.length) handleFile(e.target.files[0]);
+  });
+
+  function showError(msg) {
+    uploadError.textContent = msg;
+    uploadError.style.display = 'block';
+  }
+
+  function handleFile(file) {
+    uploadError.style.display = 'none';
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      dynamicTyping: true,
+      complete: res => {
+        try {
+          processData(res.data);
+          try { localStorage.setItem('rs_scanner_last_csv', JSON.stringify(res.data).slice(0, 4500000)); } catch (e) {}
+        } catch (err) {
+          showError('Could not process this file: ' + err.message);
         }
+      },
+      error: err => showError('Could not read this CSV: ' + err.message)
+    });
+  }
 
-        function handleFile(file) {
-          uploadError.style.display = "none";
-          Papa.parse(file, {
-            header: true,
-            skipEmptyLines: true,
-            dynamicTyping: true,
-            complete: (res) => {
-              try {
-                processData(res.data);
-                try {
-                  localStorage.setItem(
-                    "rs_scanner_last_csv",
-                    JSON.stringify(res.data).slice(0, 4500000),
-                  );
-                } catch (e) {}
-              } catch (err) {
-                showError("Could not process this file: " + err.message);
-              }
-            },
-            error: (err) =>
-              showError("Could not read this CSV: " + err.message),
-          });
-        }
+  // ---------- Core scoring ----------
+  function processData(rows) {
+    if (!rows.length) throw new Error('File appears empty.');
+    const cols = Object.keys(rows[0]);
+    const hasSymbol = cols.includes('Symbol');
+    if (!hasSymbol) throw new Error('CSV must include a "Symbol" column.');
 
-        // ---------- Core scoring ----------
-        function processData(rows) {
-          if (!rows.length) throw new Error("File appears empty.");
-          const cols = Object.keys(rows[0]);
-          const hasSymbol = cols.includes("Symbol");
-          if (!hasSymbol)
-            throw new Error('CSV must include a "Symbol" column.');
+    const hasPct = ['Pct_3M','Pct_6M','Pct_9M','Pct_12M'].every(c => cols.includes(c));
+    const hasClose = ['Close_Today','Close_3M','Close_6M','Close_9M','Close_12M'].every(c => cols.includes(c));
+    if (!hasPct && !hasClose) {
+      throw new Error('CSV must include either Pct_3M/6M/9M/12M columns or Close_Today + Close_3M/6M/9M/12M columns.');
+    }
 
-          const hasPct = ["Pct_3M", "Pct_6M", "Pct_9M", "Pct_12M"].every((c) =>
-            cols.includes(c),
-          );
-          const hasClose = [
-            "Close_Today",
-            "Close_3M",
-            "Close_6M",
-            "Close_9M",
-            "Close_12M",
-          ].every((c) => cols.includes(c));
-          if (!hasPct && !hasClose) {
-            throw new Error(
-              "CSV must include either Pct_3M/6M/9M/12M columns or Close_Today + Close_3M/6M/9M/12M columns.",
-            );
-          }
+    const stocks = [];
+    for (const r of rows) {
+      if (!r.Symbol) continue;
+      let p3, p6, p9, p12;
+      if (hasPct) {
+        p3 = numOrNull(r.Pct_3M); p6 = numOrNull(r.Pct_6M);
+        p9 = numOrNull(r.Pct_9M); p12 = numOrNull(r.Pct_12M);
+      } else {
+        p3 = pctFrom(r.Close_Today, r.Close_3M);
+        p6 = pctFrom(r.Close_Today, r.Close_6M);
+        p9 = pctFrom(r.Close_Today, r.Close_9M);
+        p12 = pctFrom(r.Close_Today, r.Close_12M);
+      }
 
-          const stocks = [];
-          for (const r of rows) {
-            if (!r.Symbol) continue;
-            let p3, p6, p9, p12;
-            if (hasPct) {
-              p3 = numOrNull(r.Pct_3M);
-              p6 = numOrNull(r.Pct_6M);
-              p9 = numOrNull(r.Pct_9M);
-              p12 = numOrNull(r.Pct_12M);
-            } else {
-              p3 = pctFrom(r.Close_Today, r.Close_3M);
-              p6 = pctFrom(r.Close_Today, r.Close_6M);
-              p9 = pctFrom(r.Close_Today, r.Close_9M);
-              p12 = pctFrom(r.Close_Today, r.Close_12M);
-            }
+      const complete = [p3, p6, p9, p12].every(v => v !== null && !isNaN(v));
+      const score = complete
+        ? p3 * WEIGHTS.p3 + p6 * WEIGHTS.p6 + p9 * WEIGHTS.p9 + p12 * WEIGHTS.p12
+        : null;
 
-            const complete = [p3, p6, p9, p12].every(
-              (v) => v !== null && !isNaN(v),
-            );
-            const score = complete
-              ? p3 * WEIGHTS.p3 +
-                p6 * WEIGHTS.p6 +
-                p9 * WEIGHTS.p9 +
-                p12 * WEIGHTS.p12
-              : null;
+      const closeToday = numOrNull(r.Close_Today);
+      const ema10 = numOrNull(r.EMA_10);
+      const ema20 = numOrNull(r.EMA_20);
+      const ema50 = numOrNull(r.EMA_50);
+      const trend = computeTrend(closeToday, ema10, ema20, ema50);
 
-            const closeToday = numOrNull(r.Close_Today);
-            const ema10 = numOrNull(r.EMA_10);
-            const ema20 = numOrNull(r.EMA_20);
-            const ema50 = numOrNull(r.EMA_50);
-            const trend = computeTrend(closeToday, ema10, ema20, ema50);
+      const avgVolume30D = numOrNull(r.Avg_Volume_30D);
+      let turnover = numOrNull(r.Turnover_30D_INR);
+      if (turnover === null && closeToday !== null && avgVolume30D !== null) {
+        turnover = closeToday * avgVolume30D;
+      }
+      const liquid = turnover === null ? null : turnover >= LIQUIDITY_THRESHOLD;
+      const date = r.Date ? String(r.Date).trim() : '';
 
-            const avgVolume30D = numOrNull(r.Avg_Volume_30D);
-            let turnover = numOrNull(r.Turnover_30D_INR);
-            if (
-              turnover === null &&
-              closeToday !== null &&
-              avgVolume30D !== null
-            ) {
-              turnover = closeToday * avgVolume30D;
-            }
-            const liquid =
-              turnover === null ? null : turnover >= LIQUIDITY_THRESHOLD;
-            const date = r.Date ? String(r.Date).trim() : "";
+      const todayOpen = numOrNull(r.Today_Open);
+      const todayHigh = numOrNull(r.Today_High);
+      const todayLow = numOrNull(r.Today_Low);
+      const prevOpen = numOrNull(r.Prev_Open);
+      const prevHigh = numOrNull(r.Prev_High);
+      const prevLow = numOrNull(r.Prev_Low);
+      const prevClose = numOrNull(r.Prev_Close);
+      const barType = computeBarType(todayHigh, todayLow, prevHigh, prevLow);
+      const specialCandle = computeSpecialCandle(todayOpen, closeToday, prevOpen, prevClose, prevHigh);
+      const dayChangePct = (closeToday !== null && prevClose !== null && prevClose !== 0)
+        ? ((closeToday - prevClose) / prevClose) * 100
+        : null;
 
-            const todayOpen = numOrNull(r.Today_Open);
-            const todayHigh = numOrNull(r.Today_High);
-            const todayLow = numOrNull(r.Today_Low);
-            const prevOpen = numOrNull(r.Prev_Open);
-            const prevHigh = numOrNull(r.Prev_High);
-            const prevLow = numOrNull(r.Prev_Low);
-            const prevClose = numOrNull(r.Prev_Close);
-            const barType = computeBarType(
-              todayHigh,
-              todayLow,
-              prevHigh,
-              prevLow,
-            );
-            const specialCandle = computeSpecialCandle(
-              todayOpen,
-              closeToday,
-              prevOpen,
-              prevClose,
-              prevHigh,
-            );
-            const dayChangePct =
-              closeToday !== null && prevClose !== null && prevClose !== 0
-                ? ((closeToday - prevClose) / prevClose) * 100
-                : null;
+      stocks.push({
+        symbol: String(r.Symbol).trim(),
+        name: r.Name ? String(r.Name).trim() : '',
+        p3, p6, p9, p12, score, complete,
+        closeToday, ema10, ema20, ema50, trend,
+        avgVolume30D, turnover, liquid, date,
+        todayOpen, todayHigh, todayLow, prevOpen, prevHigh, prevLow, prevClose,
+        barType, specialCandle, dayChangePct,
+        rs: null
+      });
+    }
 
-            stocks.push({
-              symbol: String(r.Symbol).trim(),
-              name: r.Name ? String(r.Name).trim() : "",
-              p3,
-              p6,
-              p9,
-              p12,
-              score,
-              complete,
-              closeToday,
-              ema10,
-              ema20,
-              ema50,
-              trend,
-              avgVolume30D,
-              turnover,
-              liquid,
-              date,
-              todayOpen,
-              todayHigh,
-              todayLow,
-              prevOpen,
-              prevHigh,
-              prevLow,
-              prevClose,
-              barType,
-              specialCandle,
-              dayChangePct,
-              rs: null,
-            });
-          }
+    if (!stocks.length) throw new Error('No valid rows found.');
 
-          if (!stocks.length) throw new Error("No valid rows found.");
+    // Percentile rank (1-99) among stocks with complete data, IBD convention: 99 = strongest
+    const ranked = stocks.filter(s => s.complete).sort((a, b) => a.score - b.score);
+    const n = ranked.length;
+    ranked.forEach((s, i) => {
+      s.rs = Math.max(1, Math.min(99, Math.round(((i + 1) / n) * 99)));
+    });
 
-          // Percentile rank (1-99) among stocks with complete data, IBD convention: 99 = strongest
-          const ranked = stocks
-            .filter((s) => s.complete)
-            .sort((a, b) => a.score - b.score);
-          const n = ranked.length;
-          ranked.forEach((s, i) => {
-            s.rs = Math.max(1, Math.min(99, Math.round(((i + 1) / n) * 99)));
-          });
+    allStocks = stocks;
+    resultsEl.style.display = 'block';
+    render();
+  }
 
-          allStocks = stocks;
-          resultsEl.style.display = "block";
-          render();
-        }
+  function numOrNull(v) {
+    if (v === null || v === undefined || v === '') return null;
+    const n = Number(v);
+    return isNaN(n) ? null : n;
+  }
+  function pctFrom(today, then) {
+    const t = numOrNull(today), p = numOrNull(then);
+    if (t === null || p === null || p === 0) return null;
+    return ((t - p) / p) * 100;
+  }
+  function computeTrend(close, e10, e20, e50) {
+    if ([close, e10, e20, e50].some(v => v === null || v === undefined || isNaN(v))) return null;
+    if (close > e10 && e10 > e20 && e20 > e50) return 'up';
+    if (close < e10 && e10 < e20 && e20 < e50) return 'down';
+    return 'mixed';
+  }
+  function emaCompare(a, b, mode) {
+    if (mode === 'all') return true;
+    if (a === null || b === null || a === undefined || b === undefined || isNaN(a) || isNaN(b)) return false;
+    return mode === 'gt' ? a > b : a < b;
+  }
+  function computeBarType(todayHigh, todayLow, prevHigh, prevLow) {
+    if ([todayHigh, todayLow, prevHigh, prevLow].some(v => v === null || v === undefined || isNaN(v))) return null;
+    if (todayHigh < prevHigh && todayLow > prevLow) return 'Inside';
+    if (todayHigh > prevHigh && todayLow < prevLow) return 'Outside';
+    return 'Normal';
+  }
+  function computeSpecialCandle(todayOpen, todayClose, prevOpen, prevClose, prevHigh) {
+    if ([todayOpen, todayClose, prevOpen, prevClose, prevHigh].some(v => v === null || v === undefined || isNaN(v))) return null;
+    const lower = Math.min(prevOpen, prevClose);
+    const upper = prevHigh;
+    return todayOpen >= lower && todayOpen <= upper && todayClose >= lower && todayClose <= upper;
+  }
 
-        function numOrNull(v) {
-          if (v === null || v === undefined || v === "") return null;
-          const n = Number(v);
-          return isNaN(n) ? null : n;
-        }
-        function pctFrom(today, then) {
-          const t = numOrNull(today),
-            p = numOrNull(then);
-          if (t === null || p === null || p === 0) return null;
-          return ((t - p) / p) * 100;
-        }
-        function computeTrend(close, e10, e20, e50) {
-          if (
-            [close, e10, e20, e50].some(
-              (v) => v === null || v === undefined || isNaN(v),
-            )
-          )
-            return null;
-          if (close > e10 && e10 > e20 && e20 > e50) return "up";
-          if (close < e10 && e10 < e20 && e20 < e50) return "down";
-          return "mixed";
-        }
-        function computeBarType(todayHigh, todayLow, prevHigh, prevLow) {
-          if (
-            [todayHigh, todayLow, prevHigh, prevLow].some(
-              (v) => v === null || v === undefined || isNaN(v),
-            )
-          )
-            return null;
-          if (todayHigh < prevHigh && todayLow > prevLow) return "Inside";
-          if (todayHigh > prevHigh && todayLow < prevLow) return "Outside";
-          return "Normal";
-        }
-        function computeSpecialCandle(
-          todayOpen,
-          todayClose,
-          prevOpen,
-          prevClose,
-          prevHigh,
-        ) {
-          if (
-            [todayOpen, todayClose, prevOpen, prevClose, prevHigh].some(
-              (v) => v === null || v === undefined || isNaN(v),
-            )
-          )
-            return null;
-          const lower = Math.min(prevOpen, prevClose);
-          const upper = prevHigh;
-          return (
-            todayOpen >= lower &&
-            todayOpen <= upper &&
-            todayClose >= lower &&
-            todayClose <= upper
-          );
-        }
+  // ---------- Rendering ----------
+  function render() {
+    renderStats();
+    renderTable();
+  }
 
-        // ---------- Rendering ----------
-        function render() {
-          renderStats();
-          renderDistribution();
-          renderTable();
-        }
+  function renderStats() {
+    const complete = allStocks.filter(s => s.complete);
+    const n = complete.length;
+    const avg3 = mean(complete.map(s => s.p3));
+    const gainers = complete.filter(s => s.p3 > 0).length;
+    const top = complete.slice().sort((a,b) => b.rs - a.rs)[0];
+    const liquidCount = complete.filter(s => s.liquid).length;
+    const up4Count = allStocks.filter(s => s.dayChangePct !== null && s.dayChangePct >= 4).length;
+    const down4Count = allStocks.filter(s => s.dayChangePct !== null && s.dayChangePct <= -4).length;
+    const asOf = mostCommonDate(allStocks);
 
-        function renderStats() {
-          const complete = allStocks.filter((s) => s.complete);
-          const n = complete.length;
-          const avg3 = mean(complete.map((s) => s.p3));
-          const gainers = complete.filter((s) => s.p3 > 0).length;
-          const top = complete.slice().sort((a, b) => b.rs - a.rs)[0];
-          const liquidCount = complete.filter((s) => s.liquid).length;
-          const up4Count = allStocks.filter(
-            (s) => s.dayChangePct !== null && s.dayChangePct >= 4,
-          ).length;
-          const down4Count = allStocks.filter(
-            (s) => s.dayChangePct !== null && s.dayChangePct <= -4,
-          ).length;
-          const asOf = mostCommonDate(allStocks);
-
-          document.getElementById("stats-bar").innerHTML = `
+    document.getElementById('stats-bar').innerHTML = `
       <div class="stat"><div class="label">STOCKS RANKED</div><div class="value">${n.toLocaleString()}</div></div>
-      <div class="stat"><div class="label">AVG 3M MOVE</div><div class="value ${avg3 >= 0 ? "pos" : "neg"}">${fmtPct(avg3)}</div></div>
+      <div class="stat"><div class="label">AVG 3M MOVE</div><div class="value ${avg3>=0?'pos':'neg'}">${fmtPct(avg3)}</div></div>
       <div class="stat"><div class="label">3M GAINERS</div><div class="value">${gainers.toLocaleString()} <span style="font-size:14px;color:var(--text-faint)">/ ${n.toLocaleString()}</span></div></div>
-      <div class="stat"><div class="label">TOP RATED</div><div class="value">${top ? top.symbol : "—"}</div></div>
+      <div class="stat"><div class="label">TOP RATED</div><div class="value">${top ? top.symbol : '—'}</div></div>
       <div class="stat"><div class="label">≥ ₹7CR TURNOVER</div><div class="value">${liquidCount.toLocaleString()}</div></div>
       <div class="stat"><div class="label">UP 4%+ TODAY</div><div class="value pos">${up4Count.toLocaleString()}</div></div>
       <div class="stat"><div class="label">DOWN 4%+ TODAY</div><div class="value neg">${down4Count.toLocaleString()}</div></div>
     `;
-          document.getElementById("data-date").textContent = asOf
-            ? `Data as of ${asOf}`
-            : "";
-        }
+    document.getElementById('data-date').textContent = asOf ? `Data as of ${asOf}` : '';
+  }
 
-        function renderDistribution() {
-          const svg = document.getElementById("dist-chart");
-          const complete = allStocks.filter((s) => s.complete);
-          const buckets = new Array(10).fill(0); // 1-10,11-20,...91-99
-          complete.forEach((s) => {
-            const b = Math.min(9, Math.floor((s.rs - 1) / 10));
-            buckets[b]++;
-          });
-          const max = Math.max(1, ...buckets);
-          const w = 1120,
-            h = 70,
-            gap = 4;
-          const bw = (w - gap * 9) / 10;
-          let bars = "";
-          buckets.forEach((count, i) => {
-            const bh = (count / max) * (h - 14);
-            const x = i * (bw + gap);
-            const y = h - bh;
-            const opacity = 0.35 + (i / 9) * 0.65;
-            bars += `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" fill="var(--accent)" opacity="${opacity.toFixed(2)}" rx="2"></rect>`;
-          });
-          svg.innerHTML = bars;
-        }
+  function renderTable() {
+    const q = searchInput.value.trim().toLowerCase();
+    const minRs = Number(minRsInput.value);
+    const maxRs = Number(maxRsInput.value);
+    const trendFilter = trendSelect.value;
+    const requireLiquid = liquidOnly.checked;
+    const barTypeFilter = barTypeSelect.value;
+    const requireSpecial = specialOnly.checked;
+    const dayMoveFilter = dayMoveSelect.value;
 
-        function renderTable() {
-          const q = searchInput.value.trim().toLowerCase();
-          const minRs = Number(minRsInput.value);
-          const trendFilter = trendSelect.value;
-          const requireLiquid = liquidOnly.checked;
-          const barTypeFilter = barTypeSelect.value;
-          const requireSpecial = specialOnly.checked;
-          const dayMoveFilter = dayMoveSelect.value;
+    let list = allStocks.filter(s => {
+      if (!s.complete) return false;
+      if (s.rs < minRs || s.rs > maxRs) return false;
+      if (!emaCompare(s.ema10, s.ema20, ema1020.value)) return false;
+      if (!emaCompare(s.ema20, s.ema50, ema2050.value)) return false;
+      if (!emaCompare(s.ema10, s.ema50, ema1050.value)) return false;
+      if (trendFilter !== 'all' && s.trend !== trendFilter) return false;
+      if (requireLiquid && !s.liquid) return false;
+      if (barTypeFilter !== 'all' && s.barType !== barTypeFilter) return false;
+      if (requireSpecial && !s.specialCandle) return false;
+      if (dayMoveFilter === 'up4' && !(s.dayChangePct !== null && s.dayChangePct >= 4)) return false;
+      if (dayMoveFilter === 'down4' && !(s.dayChangePct !== null && s.dayChangePct <= -4)) return false;
+      if (q && !(s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q))) return false;
+      return true;
+    });
 
-          let list = allStocks.filter((s) => {
-            if (!s.complete) return false;
-            if (s.rs < minRs) return false;
-            if (trendFilter !== "all" && s.trend !== trendFilter) return false;
-            if (requireLiquid && !s.liquid) return false;
-            if (barTypeFilter !== "all" && s.barType !== barTypeFilter)
-              return false;
-            if (requireSpecial && !s.specialCandle) return false;
-            if (
-              dayMoveFilter === "up4" &&
-              !(s.dayChangePct !== null && s.dayChangePct >= 4)
-            )
-              return false;
-            if (
-              dayMoveFilter === "down4" &&
-              !(s.dayChangePct !== null && s.dayChangePct <= -4)
-            )
-              return false;
-            if (
-              q &&
-              !(
-                s.symbol.toLowerCase().includes(q) ||
-                s.name.toLowerCase().includes(q)
-              )
-            )
-              return false;
-            return true;
-          });
+    list = sortList(list);
 
-          list = sortList(list);
+    if (!list.length) {
+      tbody.innerHTML = '';
+      emptyState.style.display = 'block';
+      return;
+    }
+    emptyState.style.display = 'none';
 
-          if (!list.length) {
-            tbody.innerHTML = "";
-            emptyState.style.display = "block";
-            return;
-          }
-          emptyState.style.display = "none";
-
-          tbody.innerHTML = list
-            .map(
-              (s, i) => `
+    tbody.innerHTML = list.map((s, i) => `
       <tr>
         <td class="num" style="color:var(--text-faint)">${i + 1}</td>
         <td><span class="sym">${escapeHtml(s.symbol)}</span><div class="name">${escapeHtml(s.name)}</div></td>
@@ -1241,7 +749,7 @@
         <td>
           <div class="rs-cell">
             <div class="rs-bar-track"><div class="rs-bar-fill" style="width:${s.rs}%"></div></div>
-            <div class="rs-num ${s.rs >= 90 ? "top" : ""}">${s.rs}</div>
+            <div class="rs-num ${s.rs >= 90 ? 'top' : ''}">${s.rs}</div>
           </div>
         </td>
         <td class="num ${cls(s.p3)}">${fmtPct(s.p3)}</td>
@@ -1257,472 +765,307 @@
         <td>${barTypeBadge(s.barType)}</td>
         <td>${specialBadge(s.specialCandle)}</td>
       </tr>
-    `,
-            )
-            .join("");
+    `).join('');
+  }
+
+  function sortList(list) {
+    const dir = sortDir === 'asc' ? 1 : -1;
+    const key = sortKey;
+    return list.slice().sort((a, b) => {
+      if (key === 'symbol') return dir * a.symbol.localeCompare(b.symbol);
+      if (key === 'trend') return dir * String(a.trend || '').localeCompare(String(b.trend || ''));
+      if (key === 'date') return dir * String(a.date || '').localeCompare(String(b.date || ''));
+      if (key === 'barType') return dir * String(a.barType || '').localeCompare(String(b.barType || ''));
+      if (key === 'specialCandle') return dir * ((a.specialCandle ? 1 : 0) - (b.specialCandle ? 1 : 0));
+      const av = key === 'rank' ? a.rs : a[key];
+      const bv = key === 'rank' ? b.rs : b[key];
+      return dir * ((av ?? -Infinity) - (bv ?? -Infinity));
+    });
+  }
+
+  function cls(v) { if (v === null || v === undefined) return ''; return v >= 0 ? 'pos' : 'neg'; }
+  function fmtPct(v) { if (v === null || v === undefined || isNaN(v)) return '<span class="na">n/a</span>'; return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; }
+  function trendBadge(t) {
+    if (t === 'up') return '<span class="badge up">UPTREND</span>';
+    if (t === 'down') return '<span class="badge down">DOWNTREND</span>';
+    if (t === 'mixed') return '<span class="badge mixed">MIXED</span>';
+    return '<span class="na">n/a</span>';
+  }
+  function fmtEma(price, ema) {
+    if (ema === null || ema === undefined || isNaN(ema)) return '<span class="na">n/a</span>';
+    let flag = '';
+    if (price !== null && price !== undefined && !isNaN(price)) {
+      flag = price >= ema
+        ? '<span class="ema-flag above">▲</span>'
+        : '<span class="ema-flag below">▼</span>';
+    }
+    return ema.toFixed(1) + flag;
+  }
+  function fmtTurnover(turnover, liquid) {
+    if (turnover === null || turnover === undefined || isNaN(turnover)) return '<span class="na">n/a</span>';
+    const cr = (turnover / 10000000).toFixed(2);
+    const badge = liquid
+      ? '<span class="badge liquid">≥7Cr</span>'
+      : '<span class="badge illiquid">&lt;7Cr</span>';
+    return `<div class="turnover-cell"><span>₹${cr} Cr</span>${badge}</div>`;
+  }
+  function barTypeBadge(barType) {
+    if (barType === 'Inside') return '<span class="badge inside">INSIDE</span>';
+    if (barType === 'Outside') return '<span class="badge outside">OUTSIDE</span>';
+    if (barType === 'Normal') return '<span class="badge normal">NORMAL</span>';
+    return '<span class="na">n/a</span>';
+  }
+  function specialBadge(special) {
+    if (special === null || special === undefined) return '<span class="na">n/a</span>';
+    return special ? '<span class="badge special">★ SPECIAL</span>' : '';
+  }
+  function mean(arr) { const a = arr.filter(v => v !== null && !isNaN(v)); return a.length ? a.reduce((s,v)=>s+v,0)/a.length : 0; }
+  function mostCommonDate(stocks) {
+    const counts = {};
+    stocks.forEach(s => { if (s.date) counts[s.date] = (counts[s.date] || 0) + 1; });
+    let best = null, bestCount = 0;
+    for (const d in counts) { if (counts[d] > bestCount) { best = d; bestCount = counts[d]; } }
+    return best;
+  }
+  function fmtPrice(v) { if (v === null || v === undefined || isNaN(v)) return '<span class="na">n/a</span>'; return '₹' + v.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+  function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+  // ---------- Controls ----------
+  searchInput.addEventListener('input', render_table_only);
+  minRsInput.addEventListener('input', () => {
+    if (Number(minRsInput.value) > Number(maxRsInput.value)) { maxRsInput.value = minRsInput.value; maxRsVal.textContent = maxRsInput.value; }
+    minRsVal.textContent = minRsInput.value; render_table_only();
+  });
+  maxRsInput.addEventListener('input', () => {
+    if (Number(maxRsInput.value) < Number(minRsInput.value)) { minRsInput.value = maxRsInput.value; minRsVal.textContent = minRsInput.value; }
+    maxRsVal.textContent = maxRsInput.value; render_table_only();
+  });
+  [ema1020, ema2050, ema1050].forEach(el => el.addEventListener('change', render_table_only));
+  trendSelect.addEventListener('change', render_table_only);
+  liquidOnly.addEventListener('change', render_table_only);
+  dayMoveSelect.addEventListener('change', render_table_only);
+  barTypeSelect.addEventListener('change', render_table_only);
+  specialOnly.addEventListener('change', render_table_only);
+  sortSelect.addEventListener('change', () => {
+    const [k, d] = sortSelect.value.split('-');
+    const map = { rs: 'rs', p3: 'p3', p12: 'p12', sym: 'symbol' };
+    sortKey = map[k]; sortDir = d;
+    render_table_only();
+  });
+  function render_table_only() { renderTable(); }
+
+  document.querySelectorAll('thead th').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.key;
+      const map = { rank: 'rs', symbol: 'symbol', rs: 'rs', price: 'closeToday', date: 'date', p3: 'p3', p6: 'p6', p9: 'p9', p12: 'p12', score: 'score', trend: 'trend', ema10: 'ema10', ema20: 'ema20', ema50: 'ema50', turnover: 'turnover', bartype: 'barType', special: 'specialCandle', daychange: 'dayChangePct' };
+      const newKey = map[key];
+      if (sortKey === newKey) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+      else { sortKey = newKey; sortDir = 'desc'; }
+      document.querySelectorAll('thead th').forEach(t => t.classList.remove('active'));
+      th.classList.add('active');
+      renderTable();
+    });
+  });
+
+  // ---------- Export ----------
+  exportBtn.addEventListener('click', async () => {
+    const list = sortList(allStocks.filter(s => s.complete));
+    const header = 'Rank,Symbol,Name,Price,Day_Change_Pct,Date,RS_Rating,Pct_3M,Pct_6M,Pct_9M,Pct_12M,Weighted_Score,Trend,EMA_10,EMA_20,EMA_50,Turnover_30D_INR,Liquid_7Cr,Bar_Type,Special_Candle\n';
+    const body = list.map((s, i) => [
+      i + 1, s.symbol, `"${(s.name||'').replace(/"/g,'""')}"`,
+      s.closeToday?.toFixed(2) ?? '', s.dayChangePct?.toFixed(2) ?? '', s.date || '', s.rs,
+      s.p3?.toFixed(2), s.p6?.toFixed(2), s.p9?.toFixed(2), s.p12?.toFixed(2), s.score?.toFixed(2),
+      s.trend || '', s.ema10?.toFixed(2) ?? '', s.ema20?.toFixed(2) ?? '', s.ema50?.toFixed(2) ?? '',
+      s.turnover !== null ? Math.round(s.turnover) : '', s.liquid === null ? '' : s.liquid,
+      s.barType || '', s.specialCandle === null || s.specialCandle === undefined ? '' : s.specialCandle
+    ].join(',')).join('\n');
+    const csv = header + body;
+
+    try {
+      const downloads = await claude.use('downloads');
+      if (downloads) {
+        await downloads.save({ filename: 'nse_rs_ratings.csv', data: csv });
+        return;
+      }
+    } catch (e) { /* fall through to blob fallback */ }
+
+    // Fallback for contexts without the downloads capability
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'nse_rs_ratings.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // ---------- Tabs ----------
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+      document.getElementById(btn.dataset.tab).style.display = 'block';
+    });
+  });
+
+  // ---------- Market Breadth ----------
+  const BREADTH_THRESHOLD = 4;
+  let breadthRows = [];
+
+  const bUploadZone = document.getElementById('breadth-upload-zone');
+  const bFileInput = document.getElementById('breadth-file-input');
+  const bUploadError = document.getElementById('breadth-upload-error');
+  const bResults = document.getElementById('breadth-results');
+  const bTableBody = document.getElementById('breadth-table-body');
+  const bExportBtn = document.getElementById('breadth-export-btn');
+
+  bUploadZone.addEventListener('click', () => bFileInput.click());
+  bUploadZone.addEventListener('dragover', e => { e.preventDefault(); bUploadZone.classList.add('drag'); });
+  bUploadZone.addEventListener('dragleave', () => bUploadZone.classList.remove('drag'));
+  bUploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    bUploadZone.classList.remove('drag');
+    if (e.dataTransfer.files.length) handleBreadthFile(e.dataTransfer.files[0]);
+  });
+  bFileInput.addEventListener('change', e => {
+    if (e.target.files.length) handleBreadthFile(e.target.files[0]);
+  });
+
+  function handleBreadthFile(file) {
+    bUploadError.style.display = 'none';
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      dynamicTyping: true,
+      complete: res => {
+        try {
+          processBreadthData(res.data);
+        } catch (err) {
+          bUploadError.textContent = 'Could not process this file: ' + err.message;
+          bUploadError.style.display = 'block';
         }
+      },
+      error: err => {
+        bUploadError.textContent = 'Could not read this CSV: ' + err.message;
+        bUploadError.style.display = 'block';
+      }
+    });
+  }
 
-        function sortList(list) {
-          const dir = sortDir === "asc" ? 1 : -1;
-          const key = sortKey;
-          return list.slice().sort((a, b) => {
-            if (key === "symbol") return dir * a.symbol.localeCompare(b.symbol);
-            if (key === "trend")
-              return (
-                dir * String(a.trend || "").localeCompare(String(b.trend || ""))
-              );
-            if (key === "date")
-              return (
-                dir * String(a.date || "").localeCompare(String(b.date || ""))
-              );
-            if (key === "barType")
-              return (
-                dir *
-                String(a.barType || "").localeCompare(String(b.barType || ""))
-              );
-            if (key === "specialCandle")
-              return (
-                dir * ((a.specialCandle ? 1 : 0) - (b.specialCandle ? 1 : 0))
-              );
-            const av = key === "rank" ? a.rs : a[key];
-            const bv = key === "rank" ? b.rs : b[key];
-            return dir * ((av ?? -Infinity) - (bv ?? -Infinity));
-          });
-        }
+  function processBreadthData(rows) {
+    const cols = rows.length ? Object.keys(rows[0]) : [];
+    if (!['Symbol', 'Date', 'Close'].every(c => cols.includes(c))) {
+      throw new Error('CSV must have Symbol, Date, Close columns.');
+    }
 
-        function cls(v) {
-          if (v === null || v === undefined) return "";
-          return v >= 0 ? "pos" : "neg";
-        }
-        function fmtPct(v) {
-          if (v === null || v === undefined || isNaN(v))
-            return '<span class="na">n/a</span>';
-          return (v >= 0 ? "+" : "") + v.toFixed(1) + "%";
-        }
-        function trendBadge(t) {
-          if (t === "up") return '<span class="badge up">UPTREND</span>';
-          if (t === "down") return '<span class="badge down">DOWNTREND</span>';
-          if (t === "mixed") return '<span class="badge mixed">MIXED</span>';
-          return '<span class="na">n/a</span>';
-        }
-        function fmtEma(price, ema) {
-          if (ema === null || ema === undefined || isNaN(ema))
-            return '<span class="na">n/a</span>';
-          let flag = "";
-          if (price !== null && price !== undefined && !isNaN(price)) {
-            flag =
-              price >= ema
-                ? '<span class="ema-flag above">▲</span>'
-                : '<span class="ema-flag below">▼</span>';
-          }
-          return ema.toFixed(1) + flag;
-        }
-        function fmtTurnover(turnover, liquid) {
-          if (turnover === null || turnover === undefined || isNaN(turnover))
-            return '<span class="na">n/a</span>';
-          const cr = (turnover / 10000000).toFixed(2);
-          const badge = liquid
-            ? '<span class="badge liquid">≥7Cr</span>'
-            : '<span class="badge illiquid">&lt;7Cr</span>';
-          return `<div class="turnover-cell"><span>₹${cr} Cr</span>${badge}</div>`;
-        }
-        function barTypeBadge(barType) {
-          if (barType === "Inside")
-            return '<span class="badge inside">INSIDE</span>';
-          if (barType === "Outside")
-            return '<span class="badge outside">OUTSIDE</span>';
-          if (barType === "Normal")
-            return '<span class="badge normal">NORMAL</span>';
-          return '<span class="na">n/a</span>';
-        }
-        function specialBadge(special) {
-          if (special === null || special === undefined)
-            return '<span class="na">n/a</span>';
-          return special ? '<span class="badge special">★ SPECIAL</span>' : "";
-        }
-        function mean(arr) {
-          const a = arr.filter((v) => v !== null && !isNaN(v));
-          return a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0;
-        }
-        function mostCommonDate(stocks) {
-          const counts = {};
-          stocks.forEach((s) => {
-            if (s.date) counts[s.date] = (counts[s.date] || 0) + 1;
-          });
-          let best = null,
-            bestCount = 0;
-          for (const d in counts) {
-            if (counts[d] > bestCount) {
-              best = d;
-              bestCount = counts[d];
-            }
-          }
-          return best;
-        }
-        function fmtPrice(v) {
-          if (v === null || v === undefined || isNaN(v))
-            return '<span class="na">n/a</span>';
-          return (
-            "₹" +
-            v.toLocaleString("en-IN", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })
-          );
-        }
-        function escapeHtml(s) {
-          const d = document.createElement("div");
-          d.textContent = s;
-          return d.innerHTML;
-        }
+    // Group by symbol, sort each by date, compute day-over-day % change
+    const bySymbol = {};
+    rows.forEach(r => {
+      if (!r.Symbol || !r.Date || r.Close === null || r.Close === undefined) return;
+      (bySymbol[r.Symbol] = bySymbol[r.Symbol] || []).push({ date: String(r.Date), close: Number(r.Close) });
+    });
 
-        // ---------- Controls ----------
-        searchInput.addEventListener("input", render_table_only);
-        minRsInput.addEventListener("input", () => {
-          minRsVal.textContent = minRsInput.value;
-          render_table_only();
-        });
-        trendSelect.addEventListener("change", render_table_only);
-        liquidOnly.addEventListener("change", render_table_only);
-        dayMoveSelect.addEventListener("change", render_table_only);
-        barTypeSelect.addEventListener("change", render_table_only);
-        specialOnly.addEventListener("change", render_table_only);
-        sortSelect.addEventListener("change", () => {
-          const [k, d] = sortSelect.value.split("-");
-          const map = { rs: "rs", p3: "p3", p12: "p12", sym: "symbol" };
-          sortKey = map[k];
-          sortDir = d;
-          render_table_only();
-        });
-        function render_table_only() {
-          renderTable();
-        }
+    const perDate = {}; // date -> {up: 0, down: 0, total: 0}
+    Object.values(bySymbol).forEach(series => {
+      series.sort((a, b) => a.date.localeCompare(b.date));
+      for (let i = 1; i < series.length; i++) {
+        const prev = series[i - 1].close, curr = series[i].close;
+        if (!prev || isNaN(prev) || isNaN(curr)) continue;
+        const pct = ((curr - prev) / prev) * 100;
+        const d = series[i].date;
+        if (!perDate[d]) perDate[d] = { up: 0, down: 0, total: 0 };
+        perDate[d].total++;
+        if (pct >= BREADTH_THRESHOLD) perDate[d].up++;
+        else if (pct <= -BREADTH_THRESHOLD) perDate[d].down++;
+      }
+    });
 
-        document.querySelectorAll("thead th").forEach((th) => {
-          th.addEventListener("click", () => {
-            const key = th.dataset.key;
-            const map = {
-              rank: "rs",
-              symbol: "symbol",
-              rs: "rs",
-              price: "closeToday",
-              date: "date",
-              p3: "p3",
-              p6: "p6",
-              p9: "p9",
-              p12: "p12",
-              score: "score",
-              trend: "trend",
-              ema10: "ema10",
-              ema20: "ema20",
-              ema50: "ema50",
-              turnover: "turnover",
-              bartype: "barType",
-              special: "specialCandle",
-              daychange: "dayChangePct",
-            };
-            const newKey = map[key];
-            if (sortKey === newKey) {
-              sortDir = sortDir === "asc" ? "desc" : "asc";
-            } else {
-              sortKey = newKey;
-              sortDir = "desc";
-            }
-            document
-              .querySelectorAll("thead th")
-              .forEach((t) => t.classList.remove("active"));
-            th.classList.add("active");
-            renderTable();
-          });
-        });
+    breadthRows = Object.keys(perDate)
+      .sort((a, b) => b.localeCompare(a)) // newest first
+      .map(d => ({ date: d, up: perDate[d].up, down: perDate[d].down, total: perDate[d].total }));
 
-        // ---------- Export ----------
-        exportBtn.addEventListener("click", async () => {
-          const list = sortList(allStocks.filter((s) => s.complete));
-          const header =
-            "Rank,Symbol,Name,Price,Day_Change_Pct,Date,RS_Rating,Pct_3M,Pct_6M,Pct_9M,Pct_12M,Weighted_Score,Trend,EMA_10,EMA_20,EMA_50,Turnover_30D_INR,Liquid_7Cr,Bar_Type,Special_Candle\n";
-          const body = list
-            .map((s, i) =>
-              [
-                i + 1,
-                s.symbol,
-                `"${(s.name || "").replace(/"/g, '""')}"`,
-                s.closeToday?.toFixed(2) ?? "",
-                s.dayChangePct?.toFixed(2) ?? "",
-                s.date || "",
-                s.rs,
-                s.p3?.toFixed(2),
-                s.p6?.toFixed(2),
-                s.p9?.toFixed(2),
-                s.p12?.toFixed(2),
-                s.score?.toFixed(2),
-                s.trend || "",
-                s.ema10?.toFixed(2) ?? "",
-                s.ema20?.toFixed(2) ?? "",
-                s.ema50?.toFixed(2) ?? "",
-                s.turnover !== null ? Math.round(s.turnover) : "",
-                s.liquid === null ? "" : s.liquid,
-                s.barType || "",
-                s.specialCandle === null || s.specialCandle === undefined
-                  ? ""
-                  : s.specialCandle,
-              ].join(","),
-            )
-            .join("\n");
-          const csv = header + body;
+    if (!breadthRows.length) throw new Error('No day-over-day price pairs found — need at least 2 dates per stock.');
 
-          try {
-            const downloads = await claude.use("downloads");
-            if (downloads) {
-              await downloads.save({
-                filename: "nse_rs_ratings.csv",
-                data: csv,
-              });
-              return;
-            }
-          } catch (e) {
-            /* fall through to blob fallback */
-          }
+    renderBreadthTable();
+    bResults.style.display = 'block';
+  }
 
-          // Fallback for contexts without the downloads capability
-          const blob = new Blob([csv], { type: "text/csv" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "nse_rs_ratings.csv";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        });
-
-        // ---------- Tabs ----------
-        document.querySelectorAll(".tab-btn").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            document
-              .querySelectorAll(".tab-btn")
-              .forEach((b) => b.classList.remove("active"));
-            btn.classList.add("active");
-            document
-              .querySelectorAll(".tab-panel")
-              .forEach((p) => (p.style.display = "none"));
-            document.getElementById(btn.dataset.tab).style.display = "block";
-          });
-        });
-
-        // ---------- Market Breadth ----------
-        const BREADTH_THRESHOLD = 4;
-        let breadthRows = [];
-
-        const bUploadZone = document.getElementById("breadth-upload-zone");
-        const bFileInput = document.getElementById("breadth-file-input");
-        const bUploadError = document.getElementById("breadth-upload-error");
-        const bResults = document.getElementById("breadth-results");
-        const bTableBody = document.getElementById("breadth-table-body");
-        const bExportBtn = document.getElementById("breadth-export-btn");
-
-        bUploadZone.addEventListener("click", () => bFileInput.click());
-        bUploadZone.addEventListener("dragover", (e) => {
-          e.preventDefault();
-          bUploadZone.classList.add("drag");
-        });
-        bUploadZone.addEventListener("dragleave", () =>
-          bUploadZone.classList.remove("drag"),
-        );
-        bUploadZone.addEventListener("drop", (e) => {
-          e.preventDefault();
-          bUploadZone.classList.remove("drag");
-          if (e.dataTransfer.files.length)
-            handleBreadthFile(e.dataTransfer.files[0]);
-        });
-        bFileInput.addEventListener("change", (e) => {
-          if (e.target.files.length) handleBreadthFile(e.target.files[0]);
-        });
-
-        function handleBreadthFile(file) {
-          bUploadError.style.display = "none";
-          Papa.parse(file, {
-            header: true,
-            skipEmptyLines: true,
-            dynamicTyping: true,
-            complete: (res) => {
-              try {
-                processBreadthData(res.data);
-              } catch (err) {
-                bUploadError.textContent =
-                  "Could not process this file: " + err.message;
-                bUploadError.style.display = "block";
-              }
-            },
-            error: (err) => {
-              bUploadError.textContent =
-                "Could not read this CSV: " + err.message;
-              bUploadError.style.display = "block";
-            },
-          });
-        }
-
-        function processBreadthData(rows) {
-          const cols = rows.length ? Object.keys(rows[0]) : [];
-          if (!["Symbol", "Date", "Close"].every((c) => cols.includes(c))) {
-            throw new Error("CSV must have Symbol, Date, Close columns.");
-          }
-
-          // Group by symbol, sort each by date, compute day-over-day % change
-          const bySymbol = {};
-          rows.forEach((r) => {
-            if (
-              !r.Symbol ||
-              !r.Date ||
-              r.Close === null ||
-              r.Close === undefined
-            )
-              return;
-            (bySymbol[r.Symbol] = bySymbol[r.Symbol] || []).push({
-              date: String(r.Date),
-              close: Number(r.Close),
-            });
-          });
-
-          const perDate = {}; // date -> {up: 0, down: 0, total: 0}
-          Object.values(bySymbol).forEach((series) => {
-            series.sort((a, b) => a.date.localeCompare(b.date));
-            for (let i = 1; i < series.length; i++) {
-              const prev = series[i - 1].close,
-                curr = series[i].close;
-              if (!prev || isNaN(prev) || isNaN(curr)) continue;
-              const pct = ((curr - prev) / prev) * 100;
-              const d = series[i].date;
-              if (!perDate[d]) perDate[d] = { up: 0, down: 0, total: 0 };
-              perDate[d].total++;
-              if (pct >= BREADTH_THRESHOLD) perDate[d].up++;
-              else if (pct <= -BREADTH_THRESHOLD) perDate[d].down++;
-            }
-          });
-
-          breadthRows = Object.keys(perDate)
-            .sort((a, b) => b.localeCompare(a)) // newest first
-            .map((d) => ({
-              date: d,
-              up: perDate[d].up,
-              down: perDate[d].down,
-              total: perDate[d].total,
-            }));
-
-          if (!breadthRows.length)
-            throw new Error(
-              "No day-over-day price pairs found — need at least 2 dates per stock.",
-            );
-
-          renderBreadthTable();
-          bResults.style.display = "block";
-        }
-
-        function renderBreadthTable() {
-          bTableBody.innerHTML = breadthRows
-            .map(
-              (r) => `
+  function renderBreadthTable() {
+    bTableBody.innerHTML = breadthRows.map(r => `
       <tr>
         <td style="font-family:var(--font-mono); font-size:12.5px; color:var(--text-dim);">${escapeHtml(r.date)}</td>
         <td class="num pos">${r.up}</td>
         <td class="num neg">${r.down}</td>
-        <td class="num ${r.up - r.down >= 0 ? "pos" : "neg"}">${r.up - r.down >= 0 ? "+" : ""}${r.up - r.down}</td>
+        <td class="num ${r.up - r.down >= 0 ? 'pos' : 'neg'}">${r.up - r.down >= 0 ? '+' : ''}${r.up - r.down}</td>
         <td class="num" style="color:var(--text-faint);">${r.total}</td>
       </tr>
-    `,
-            )
-            .join("");
-        }
+    `).join('');
+  }
 
-        bExportBtn.addEventListener("click", async () => {
-          const header = "Date,Up_4pct,Down_4pct,Net,Stocks_Scanned\n";
-          const body = breadthRows
-            .map((r) =>
-              [r.date, r.up, r.down, r.up - r.down, r.total].join(","),
-            )
-            .join("\n");
-          const csv = header + body;
-          try {
-            const downloads = await claude.use("downloads");
-            if (downloads) {
-              await downloads.save({
-                filename: "nse_market_breadth.csv",
-                data: csv,
-              });
-              return;
-            }
-          } catch (e) {
-            /* fall through */
-          }
-          const blob = new Blob([csv], { type: "text/csv" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "nse_market_breadth.csv";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        });
+  bExportBtn.addEventListener('click', async () => {
+    const header = 'Date,Up_4pct,Down_4pct,Net,Stocks_Scanned\n';
+    const body = breadthRows.map(r => [r.date, r.up, r.down, r.up - r.down, r.total].join(',')).join('\n');
+    const csv = header + body;
+    try {
+      const downloads = await claude.use('downloads');
+      if (downloads) { await downloads.save({ filename: 'nse_market_breadth.csv', data: csv }); return; }
+    } catch (e) { /* fall through */ }
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'nse_market_breadth.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
 
-        // ---------- Auto-load admin-published data (data/*.csv next to this page) ----------
-        async function tryLoadSharedCsv(url) {
-          const res = await fetch(url);
-          if (!res.ok) throw new Error("not found");
-          const text = await res.text();
-          const parsed = Papa.parse(text, {
-            header: true,
-            dynamicTyping: true,
-            skipEmptyLines: true,
-          });
-          if (!parsed.data.length) throw new Error("empty file");
-          return parsed.data;
-        }
+  // ---------- Auto-load admin-published data (data/*.csv next to this page) ----------
+  async function tryLoadSharedCsv(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('not found');
+    const text = await res.text();
+    const parsed = Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true });
+    if (!parsed.data.length) throw new Error('empty file');
+    return parsed.data;
+  }
 
-        document
-          .getElementById("show-upload-link")
-          .addEventListener("click", () => {
-            document.getElementById("upload-zone").style.display = "block";
-          });
-        document
-          .getElementById("breadth-show-upload-link")
-          .addEventListener("click", () => {
-            bUploadZone.style.display = "block";
-          });
+  document.getElementById('show-upload-link').addEventListener('click', () => {
+    document.getElementById('upload-zone').style.display = 'block';
+  });
+  document.getElementById('breadth-show-upload-link').addEventListener('click', () => {
+    bUploadZone.style.display = 'block';
+  });
 
-        (async () => {
-          try {
-            const rows = await tryLoadSharedCsv(RS_DATA_URL);
-            processData(rows);
-          } catch (e) {
-            // No admin-published file found (or this preview has no /data folder) — fall back
-            // to a locally cached upload, then to showing the manual upload zone.
-            try {
-              const cached = localStorage.getItem("rs_scanner_last_csv");
-              const rows = cached ? JSON.parse(cached) : null;
-              if (Array.isArray(rows) && rows.length) processData(rows);
-              else
-                document.getElementById("upload-zone").style.display = "block";
-            } catch (e2) {
-              document.getElementById("upload-zone").style.display = "block";
-            }
-          } finally {
-            document.getElementById("checking-shared").style.display = "none";
-          }
-        })();
+  (async () => {
+    try {
+      const rows = await tryLoadSharedCsv(RS_DATA_URL);
+      processData(rows);
+    } catch (e) {
+      // No admin-published file found (or this preview has no /data folder) — fall back
+      // to a locally cached upload, then to showing the manual upload zone.
+      try {
+        const cached = localStorage.getItem('rs_scanner_last_csv');
+        const rows = cached ? JSON.parse(cached) : null;
+        if (Array.isArray(rows) && rows.length) processData(rows);
+        else document.getElementById('upload-zone').style.display = 'block';
+      } catch (e2) {
+        document.getElementById('upload-zone').style.display = 'block';
+      }
+    } finally {
+      document.getElementById('checking-shared').style.display = 'none';
+    }
+  })();
 
-        (async () => {
-          try {
-            const rows = await tryLoadSharedCsv(HISTORY_DATA_URL);
-            processBreadthData(rows);
-          } catch (e) {
-            bUploadZone.style.display = "block";
-          } finally {
-            document.getElementById("breadth-checking-shared").style.display =
-              "none";
-          }
-        })();
-      })();
-    </script>
-  </body>
+  (async () => {
+    try {
+      const rows = await tryLoadSharedCsv(HISTORY_DATA_URL);
+      processBreadthData(rows);
+    } catch (e) {
+      bUploadZone.style.display = 'block';
+    } finally {
+      document.getElementById('breadth-checking-shared').style.display = 'none';
+    }
+  })();
+})();
+</script>
+</body>
 </html>
