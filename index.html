@@ -75,6 +75,15 @@
     color: var(--text);
     max-width: 620px;
   }
+  #header-data-date {
+    color: #8B5A2B;
+    font-family: var(--font-ui);
+    font-size: 0.48em;
+    font-weight: 500;
+    white-space: nowrap;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
   header p {
     color: var(--text-dim);
     font-size: 15px;
@@ -396,7 +405,7 @@
   <header>
     <div>
       <div class="brand-mark">NSE · RELATIVE STRENGTH</div>
-      <h1>RS Rating Scanner</h1>
+      <h1>RS Rating Scanner <span id="header-data-date"></span></h1>
       <p>Ranks NSE stocks by weighted price momentum across 3, 6, 9 and 12 months, then scores each on a 1&ndash;99 percentile scale &mdash; same convention as IBD's RS Rating. Data updates automatically when published &mdash; nothing to upload unless you want to test a different file.</p>
     </div>
     <div class="formula-card">
@@ -429,7 +438,7 @@
 
   <div id="results">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-      <div id="data-date" style="font-family: var(--font-mono); font-size: 12px; color: var(--text-faint);"></div>
+      <div id="data-date" style="display:none;"></div>
       <button class="btn secondary" id="show-upload-link" style="font-size:12px; padding:6px 12px;">Load a different file</button>
     </div>
     <div class="stats-bar" id="stats-bar"></div>
@@ -786,7 +795,11 @@
       <div class="stat"><div class="label">UP 4%+ TODAY</div><div class="value pos">${up4Count.toLocaleString()}</div></div>
       <div class="stat"><div class="label">DOWN 4%+ TODAY</div><div class="value neg">${down4Count.toLocaleString()}</div></div>
     `;
-    document.getElementById('data-date').textContent = asOf ? `Data as of ${asOf}` : '';
+    document.getElementById('data-date').textContent = '';
+    const headerDataDate = document.getElementById('header-data-date');
+    if (headerDataDate) {
+      headerDataDate.textContent = asOf ? `(Data as of ${asOf})` : '';
+    }
   }
 
   function renderTable() {
