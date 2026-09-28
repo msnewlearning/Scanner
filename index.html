@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0A0E13">
+<meta name="theme-color" content="#F4F6F9">
 <title>NSE Relative Strength Scanner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,21 +11,21 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
   :root {
-    --bg: #0A0E13;
-    --surface: #12181F;
-    --surface-raised: #1A222B;
-    --border: #232D38;
-    --border-soft: #1B2430;
-    --text: #E7ECF1;
-    --text-dim: #8B98A8;
-    --text-faint: #566274;
-    --accent: #2FA88E;
-    --accent-dim: #1E6E5C;
-    --accent-soft: rgba(47, 168, 142, 0.12);
-    --weak: #C1594F;
-    --weak-soft: rgba(193, 89, 79, 0.12);
-    --gold: #D2A24C;
-    --neutral-badge: #5A6577;
+    --bg: #F4F6F9;
+    --surface: #FFFFFF;
+    --surface-raised: #EDF0F5;
+    --border: #D5DCE5;
+    --border-soft: #E4E8EE;
+    --text: #1A2230;
+    --text-dim: #566274;
+    --text-faint: #8590A0;
+    --accent: #13866E;
+    --accent-dim: #0E6552;
+    --accent-soft: rgba(19, 134, 110, 0.10);
+    --weak: #C0392B;
+    --weak-soft: rgba(192, 57, 43, 0.10);
+    --gold: #A87A1F;
+    --neutral-badge: #8590A0;
     --font-display: 'Fraunces', serif;
     --font-ui: 'IBM Plex Sans', -apple-system, sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
@@ -151,7 +151,7 @@
     margin-top: 14px;
     background: var(--weak-soft);
     border: 1px solid rgba(193,89,79,0.3);
-    color: #E8A8A2;
+    color: #A63A2F;
     padding: 12px 16px;
     border-radius: 8px;
     font-size: 13.5px;
@@ -213,7 +213,7 @@
   .controls input[type="range"] { accent-color: var(--accent); width: 100px; }
   .btn {
     background: var(--accent);
-    color: #06110D;
+    color: #FFFFFF;
     border: none;
     font-family: var(--font-ui);
     font-weight: 600;
@@ -238,7 +238,7 @@
     overflow: auto;
     background: var(--surface);
   }
-  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 1900px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 100%; }
   thead th {
     position: sticky; top: 0;
     background: var(--surface-raised);
@@ -263,7 +263,7 @@
     color: var(--text-dim);
     white-space: nowrap;
   }
-  tbody tr:hover td { background: rgba(255,255,255,0.015); }
+  tbody tr:hover td { background: rgba(0, 0, 0, 0.015); }
   tbody tr:last-child td { border-bottom: none; }
   .sym { font-weight: 600; color: var(--text); }
   .name { color: var(--text-faint); font-size: 12.5px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
@@ -287,12 +287,12 @@
   }
   .badge.up { color: var(--accent); background: var(--accent-soft); }
   .badge.down { color: var(--weak); background: var(--weak-soft); }
-  .badge.mixed { color: var(--text-dim); background: rgba(255,255,255,0.05); }
+  .badge.mixed { color: var(--text-dim); background: rgba(0, 0, 0, 0.05); }
   .badge.liquid { color: var(--accent); background: var(--accent-soft); }
-  .badge.illiquid { color: var(--text-faint); background: rgba(255,255,255,0.04); }
+  .badge.illiquid { color: var(--text-faint); background: rgba(0, 0, 0, 0.04); }
   .badge.inside { color: var(--gold); background: rgba(210, 162, 76, 0.12); }
-  .badge.outside { color: #8E7CC3; background: rgba(142, 124, 195, 0.14); }
-  .badge.normal { color: var(--text-faint); background: rgba(255,255,255,0.04); }
+  .badge.outside { color: #6F5AAE; background: rgba(142, 124, 195, 0.14); }
+  .badge.normal { color: var(--text-faint); background: rgba(0, 0, 0, 0.04); }
   .badge.special { color: var(--gold); background: rgba(210, 162, 76, 0.14); }
   .turnover-cell { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
   .ema-flag { font-size: 10px; margin-left: 4px; }
@@ -344,7 +344,7 @@
   footer { flex: none; margin-top: 8px; font-size: 11px; }
   #breadth-view table { min-width: 560px; }
   tbody td { background: var(--surface); }
-  tbody tr:hover td { background: #151c24; }
+  tbody tr:hover td { background: #F1F5F9; }
   #scanner-view thead th { z-index: 2; }
   #scanner-view th:nth-child(1), #scanner-view td:nth-child(1) { position: sticky; left: 0; width: 48px; min-width: 48px; z-index: 1; }
   #scanner-view th:nth-child(2), #scanner-view td:nth-child(2) { position: sticky; left: 48px; min-width: 150px; max-width: 190px; z-index: 1; border-right: 1px solid var(--border-soft); }
@@ -375,6 +375,19 @@
     .table-wrap table { font-size: 12.5px; }
     tbody td { padding: 8px 10px; }
   }
+
+  /* ---------- Light theme extras / scrollbars / column picker ---------- */
+  :root { color-scheme: light; }
+  tbody tr:hover td { background: #F1F5F9; }
+  .table-wrap { scrollbar-width: auto; scrollbar-color: #A9B4C2 #E9EDF2; }
+  .table-wrap::-webkit-scrollbar { height: 12px; width: 12px; }
+  .table-wrap::-webkit-scrollbar-track { background: #E9EDF2; }
+  .table-wrap::-webkit-scrollbar-thumb { background: #A9B4C2; border-radius: 6px; border: 2px solid #E9EDF2; }
+  .col-picker { position: relative; }
+  .col-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(20, 30, 50, 0.14); padding: 10px 14px; min-width: 230px; max-height: 60vh; overflow: auto; }
+  .col-menu-head { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); margin-bottom: 6px; }
+  .linkbtn { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 12px; font-family: var(--font-ui); font-weight: 600; }
+  .controls .col-menu label { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; color: var(--text); }
 </style>
 </head>
 <body>
@@ -470,6 +483,13 @@
         <option value="sym-asc">Symbol: A → Z</option>
       </select>
       </div>
+      <div class="col-picker">
+        <button class="btn secondary" id="col-toggle" type="button">Columns &#9662;</button>
+        <div class="col-menu" id="col-menu" style="display:none;">
+          <div class="col-menu-head"><span>SHOW COLUMNS</span><button type="button" id="col-reset" class="linkbtn">Show all</button></div>
+          <div id="col-list"></div>
+        </div>
+      </div>
       <button class="btn secondary" id="export-btn">Export ranked CSV</button>
     </div>
 
@@ -492,7 +512,8 @@
             <th data-key="ema10" class="num">EMA 10</th>
             <th data-key="ema20" class="num">EMA 20</th>
             <th data-key="ema50" class="num">EMA 50</th>
-            <th data-key="turnover" class="num">30D Turnover</th>
+            <th data-key="dist10" class="num">Dist EMA 10</th>
+            <th data-key="dist50" class="num">Dist EMA 50</th>
             <th data-key="bartype">Bar Type</th>
             <th data-key="special">Special</th>
           </tr>
@@ -655,6 +676,8 @@
       const ema20 = numOrNull(r.EMA_20);
       const ema50 = numOrNull(r.EMA_50);
       const trend = computeTrend(closeToday, ema10, ema20, ema50);
+      const dist10 = pctFrom(closeToday, ema10);
+      const dist50 = pctFrom(closeToday, ema50);
 
       const avgVolume30D = numOrNull(r.Avg_Volume_30D);
       let turnover = numOrNull(r.Turnover_30D_INR);
@@ -681,7 +704,7 @@
         symbol: String(r.Symbol).trim(),
         name: r.Name ? String(r.Name).trim() : '',
         p3, p6, p9, p12, score, complete,
-        closeToday, ema10, ema20, ema50, trend,
+        closeToday, ema10, ema20, ema50, trend, dist10, dist50,
         avgVolume30D, turnover, liquid, date,
         todayOpen, todayHigh, todayLow, prevOpen, prevHigh, prevLow, prevClose,
         barType, specialCandle, dayChangePct,
@@ -803,29 +826,30 @@
 
     tbody.innerHTML = list.map((s, i) => `
       <tr>
-        <td class="num" style="color:var(--text-faint)">${i + 1}</td>
-        <td><span class="sym">${escapeHtml(s.symbol)}</span><div class="name">${escapeHtml(s.name)}</div></td>
-        <td class="num">${fmtPrice(s.closeToday)}</td>
-        <td class="num ${cls(s.dayChangePct)}">${fmtPct(s.dayChangePct)}</td>
-        <td style="color:var(--text-faint); font-family:var(--font-mono); font-size:12.5px;">${s.date ? escapeHtml(s.date) : '<span class="na">n/a</span>'}</td>
-        <td>
+        <td class="num" data-col="rank" style="color:var(--text-faint)">${i + 1}</td>
+        <td data-col="symbol"><span class="sym">${escapeHtml(s.symbol)}</span><div class="name">${escapeHtml(s.name)}</div></td>
+        <td class="num" data-col="price">${fmtPrice(s.closeToday)}</td>
+        <td class="num ${cls(s.dayChangePct)}" data-col="daychange">${fmtPct(s.dayChangePct)}</td>
+        <td data-col="date" style="color:var(--text-faint); font-family:var(--font-mono); font-size:12.5px;">${s.date ? escapeHtml(s.date) : '<span class="na">n/a</span>'}</td>
+        <td data-col="rs">
           <div class="rs-cell">
             <div class="rs-bar-track"><div class="rs-bar-fill" style="width:${s.rs}%"></div></div>
             <div class="rs-num ${s.rs >= 90 ? 'top' : ''}">${s.rs}</div>
           </div>
         </td>
-        <td class="num ${cls(s.p3)}">${fmtPct(s.p3)}</td>
-        <td class="num ${cls(s.p6)}">${fmtPct(s.p6)}</td>
-        <td class="num ${cls(s.p9)}">${fmtPct(s.p9)}</td>
-        <td class="num ${cls(s.p12)}">${fmtPct(s.p12)}</td>
-        <td class="num ${cls(s.score)}">${fmtPct(s.score)}</td>
-        <td>${trendBadge(s.trend)}</td>
-        <td class="num">${fmtEma(s.closeToday, s.ema10)}</td>
-        <td class="num">${fmtEma(s.closeToday, s.ema20)}</td>
-        <td class="num">${fmtEma(s.closeToday, s.ema50)}</td>
-        <td class="num">${fmtTurnover(s.turnover, s.liquid)}</td>
-        <td>${barTypeBadge(s.barType)}</td>
-        <td>${specialBadge(s.specialCandle)}</td>
+        <td class="num ${cls(s.p3)}" data-col="p3">${fmtPct(s.p3)}</td>
+        <td class="num ${cls(s.p6)}" data-col="p6">${fmtPct(s.p6)}</td>
+        <td class="num ${cls(s.p9)}" data-col="p9">${fmtPct(s.p9)}</td>
+        <td class="num ${cls(s.p12)}" data-col="p12">${fmtPct(s.p12)}</td>
+        <td class="num ${cls(s.score)}" data-col="score">${fmtPct(s.score)}</td>
+        <td data-col="trend">${trendBadge(s.trend)}</td>
+        <td class="num" data-col="ema10">${fmtEma(s.closeToday, s.ema10)}</td>
+        <td class="num" data-col="ema20">${fmtEma(s.closeToday, s.ema20)}</td>
+        <td class="num" data-col="ema50">${fmtEma(s.closeToday, s.ema50)}</td>
+        <td class="num ${cls(s.dist10)}" data-col="dist10">${fmtPct(s.dist10)}</td>
+        <td class="num ${cls(s.dist50)}" data-col="dist50">${fmtPct(s.dist50)}</td>
+        <td data-col="bartype">${barTypeBadge(s.barType)}</td>
+        <td data-col="special">${specialBadge(s.specialCandle)}</td>
       </tr>
     `).join('');
   }
@@ -919,7 +943,7 @@
   document.querySelectorAll('thead th').forEach(th => {
     th.addEventListener('click', () => {
       const key = th.dataset.key;
-      const map = { rank: 'rs', symbol: 'symbol', rs: 'rs', price: 'closeToday', date: 'date', p3: 'p3', p6: 'p6', p9: 'p9', p12: 'p12', score: 'score', trend: 'trend', ema10: 'ema10', ema20: 'ema20', ema50: 'ema50', turnover: 'turnover', bartype: 'barType', special: 'specialCandle', daychange: 'dayChangePct' };
+      const map = { rank: 'rs', symbol: 'symbol', rs: 'rs', price: 'closeToday', date: 'date', p3: 'p3', p6: 'p6', p9: 'p9', p12: 'p12', score: 'score', trend: 'trend', ema10: 'ema10', ema20: 'ema20', ema50: 'ema50', turnover: 'turnover', bartype: 'barType', special: 'specialCandle', daychange: 'dayChangePct', dist10: 'dist10', dist50: 'dist50' };
       const newKey = map[key];
       if (sortKey === newKey) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
       else { sortKey = newKey; sortDir = 'desc'; }
@@ -932,14 +956,15 @@
   // ---------- Export ----------
   exportBtn.addEventListener('click', async () => {
     const list = sortList(allStocks.filter(s => s.complete));
-    const header = 'Rank,Symbol,Name,Price,Day_Change_Pct,Date,RS_Rating,Pct_3M,Pct_6M,Pct_9M,Pct_12M,Weighted_Score,Trend,EMA_10,EMA_20,EMA_50,Turnover_30D_INR,Liquid_7Cr,Bar_Type,Special_Candle\n';
+    const header = 'Rank,Symbol,Name,Price,Day_Change_Pct,Date,RS_Rating,Pct_3M,Pct_6M,Pct_9M,Pct_12M,Weighted_Score,Trend,EMA_10,EMA_20,EMA_50,Turnover_30D_INR,Liquid_7Cr,Bar_Type,Special_Candle,Dist_EMA10_Pct,Dist_EMA50_Pct\n';
     const body = list.map((s, i) => [
       i + 1, s.symbol, `"${(s.name||'').replace(/"/g,'""')}"`,
       s.closeToday?.toFixed(2) ?? '', s.dayChangePct?.toFixed(2) ?? '', s.date || '', s.rs,
       s.p3?.toFixed(2), s.p6?.toFixed(2), s.p9?.toFixed(2), s.p12?.toFixed(2), s.score?.toFixed(2),
       s.trend || '', s.ema10?.toFixed(2) ?? '', s.ema20?.toFixed(2) ?? '', s.ema50?.toFixed(2) ?? '',
       s.turnover !== null ? Math.round(s.turnover) : '', s.liquid === null ? '' : s.liquid,
-      s.barType || '', s.specialCandle === null || s.specialCandle === undefined ? '' : s.specialCandle
+      s.barType || '', s.specialCandle === null || s.specialCandle === undefined ? '' : s.specialCandle,
+      s.dist10?.toFixed(2) ?? '', s.dist50?.toFixed(2) ?? ''
     ].join(',')).join('\n');
     const csv = header + body;
 
@@ -959,6 +984,34 @@
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
   });
+
+  // ---------- Column chooser ----------
+  const COLUMNS = [['price','Price'],['daychange','Day %'],['date','Date'],['rs','RS Rating'],['p3','3M %'],['p6','6M %'],['p9','9M %'],['p12','12M %'],['score','Weighted Score'],['trend','Trend'],['ema10','EMA 10'],['ema20','EMA 20'],['ema50','EMA 50'],['dist10','Dist from EMA 10'],['dist50','Dist from EMA 50'],['bartype','Bar Type'],['special','Special candle']];
+  let hiddenCols = [];
+  try { hiddenCols = JSON.parse(localStorage.getItem('rs_scanner_hidden_cols') || '[]'); } catch (e) {}
+  document.querySelectorAll('#scanner-view thead th').forEach(th => { th.dataset.col = th.dataset.key; });
+  const colStyle = document.createElement('style');
+  document.head.appendChild(colStyle);
+  const colList = document.getElementById('col-list');
+  function applyColumns() {
+    colStyle.textContent = hiddenCols.map(k => `[data-col="${k}"]{display:none}`).join('\n');
+    try { localStorage.setItem('rs_scanner_hidden_cols', JSON.stringify(hiddenCols)); } catch (e) {}
+    colList.querySelectorAll('input').forEach(cb => { cb.checked = !hiddenCols.includes(cb.value); });
+  }
+  colList.innerHTML = COLUMNS.map(([k, label]) => `<label><input type="checkbox" value="${k}" checked> ${label}</label>`).join('');
+  colList.addEventListener('change', e => {
+    const k = e.target.value;
+    hiddenCols = e.target.checked ? hiddenCols.filter(x => x !== k) : hiddenCols.concat(k);
+    applyColumns();
+  });
+  document.getElementById('col-reset').addEventListener('click', () => { hiddenCols = []; applyColumns(); });
+  const colMenu = document.getElementById('col-menu');
+  document.getElementById('col-toggle').addEventListener('click', e => {
+    e.stopPropagation();
+    colMenu.style.display = colMenu.style.display === 'none' ? 'block' : 'none';
+  });
+  document.addEventListener('click', e => { if (!colMenu.contains(e.target)) colMenu.style.display = 'none'; });
+  applyColumns();
 
   // ---------- Mobile filter toggle ----------
   document.getElementById('filters-toggle').addEventListener('click', () => {
