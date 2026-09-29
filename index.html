@@ -11,593 +11,467 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
   :root {
-    --bg: #F4F6F9;
+    --bg: #F8FAFC;
     --surface: #FFFFFF;
-    --surface-raised: #EDF0F5;
-    --border: #D5DCE5;
-    --border-soft: #E4E8EE;
-    --text: #1A2230;
-    --text-dim: #566274;
-    --text-faint: #8590A0;
-    --accent: #13866E;
-    --accent-dim: #0E6552;
-    --accent-soft: rgba(19, 134, 110, 0.10);
-    --weak: #C0392B;
-    --weak-soft: rgba(192, 57, 43, 0.10);
-    --gold: #A87A1F;
-    --neutral-badge: #8590A0;
+    --surface-raised: #F1F5F9;
+    --border: #CBD5E1;
+    --border-soft: #E2E8F0;
+    --text: #0F172A;
+    --text-dim: #475569;
+    --text-faint: #94A3B8;
+    --accent: #0D9488;
+    --accent-dark: #0F766E;
+    --accent-soft: rgba(13, 148, 136, 0.10);
+    --weak: #E11D48;
+    --weak-soft: rgba(225, 29, 72, 0.10);
+    --gold: #D97706;
     --font-display: 'Fraunces', serif;
     --font-ui: 'IBM Plex Sans', -apple-system, sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    color-scheme: light;
   }
   * { box-sizing: border-box; }
-  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
-  html, body { background: var(--bg); }
-  body {
+  html, body {
+    height: 100%;
     margin: 0;
+    padding: 0;
+    background: var(--bg);
     font-family: var(--font-ui);
     color: var(--text);
-    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    overflow: hidden;
   }
   .wrap {
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 48px 28px 80px;
+    width: 100%;
+    height: 100dvh;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
   }
 
-  /* ---------- Header ---------- */
+  /* ---------- Compact Header ---------- */
   header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    gap: 24px;
-    margin-bottom: 40px;
-    padding-bottom: 28px;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 8px;
+    margin-bottom: 6px;
     border-bottom: 1px solid var(--border-soft);
-    flex-wrap: wrap;
+    flex: none;
   }
-  .brand-mark {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    color: var(--accent);
-    margin-bottom: 10px;
-  }
+  .header-left { display: flex; align-items: baseline; gap: 12px; }
   h1 {
     font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 40px;
-    line-height: 1.08;
-    margin: 0 0 10px;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1.2;
+    margin: 0;
     color: var(--text);
-    max-width: 620px;
+  }
+  .brand-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent-dark);
+    font-weight: 600;
   }
   #header-data-date {
-    color: #8B5A2B;
-    font-family: var(--font-ui);
-    font-size: 0.48em;
-    font-weight: 500;
-    white-space: nowrap;
-    margin-left: 6px;
-    vertical-align: middle;
-  }
-  header p {
-    color: var(--text-dim);
-    font-size: 15px;
-    max-width: 480px;
-    margin: 0;
-  }
-  .formula-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 20px;
+    color: var(--gold);
     font-family: var(--font-mono);
-    font-size: 12.5px;
-    color: var(--text-dim);
-    min-width: 250px;
+    font-size: 11.5px;
+    font-weight: 500;
   }
-  .formula-card .row { display: flex; justify-content: space-between; padding: 3px 0; }
-  .formula-card .row b { color: var(--text); font-weight: 500; }
-  .formula-card .total { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 8px; color: var(--accent); }
+  .formula-chips {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .formula-chip {
+    background: var(--surface-raised);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-soft);
+  }
 
   /* ---------- Tabs ---------- */
-  .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border-soft); }
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    flex: none;
+  }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-soft); }
   .tab-btn {
     background: transparent;
     border: none;
     color: var(--text-faint);
     font-family: var(--font-ui);
     font-weight: 600;
-    font-size: 13.5px;
-    padding: 10px 16px;
+    font-size: 13px;
+    padding: 6px 12px;
     cursor: pointer;
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
   }
   .tab-btn:hover { color: var(--text-dim); }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn.active { color: var(--accent-dark); border-bottom-color: var(--accent-dark); }
 
-  /* ---------- Upload zone ---------- */
+  /* ---------- Upload Zone ---------- */
   #upload-zone, #breadth-upload-zone {
     border: 1.5px dashed var(--border);
-    border-radius: 14px;
+    border-radius: 10px;
     background: var(--surface);
-    padding: 56px 32px;
+    padding: 32px 20px;
     text-align: center;
     cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease;
+    transition: all 0.15s ease;
   }
   #upload-zone:hover, #upload-zone.drag, #breadth-upload-zone:hover, #breadth-upload-zone.drag {
     border-color: var(--accent);
     background: var(--accent-soft);
   }
-  #upload-zone .icon, #breadth-upload-zone .icon {
-    width: 44px; height: 44px; margin: 0 auto 18px;
-    color: var(--text-faint);
-  }
-  #upload-zone.drag .icon, #breadth-upload-zone.drag .icon { color: var(--accent); }
-  #upload-zone h2, #breadth-upload-zone h2 {
-    font-family: var(--font-ui);
-    font-weight: 600;
-    font-size: 17px;
-    margin: 0 0 6px;
-    color: var(--text);
-  }
-  #upload-zone p, #breadth-upload-zone p { color: var(--text-dim); font-size: 14px; margin: 0; }
-  #upload-zone .hint, #breadth-upload-zone .hint {
-    margin-top: 18px;
-    font-size: 12.5px;
-    color: var(--text-faint);
-    font-family: var(--font-mono);
-  }
   #file-input, #breadth-file-input { display: none; }
   #upload-error {
     display: none;
-    margin-top: 14px;
+    margin-top: 10px;
     background: var(--weak-soft);
-    border: 1px solid rgba(193,89,79,0.3);
-    color: #A63A2F;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 13.5px;
+    border: 1px solid var(--weak);
+    color: var(--weak);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12.5px;
   }
 
-  /* ---------- Stats bar ---------- */
-  #results { display: none; }
+  /* ---------- Tab Panels ---------- */
+  .tab-panel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  #results, #breadth-results { flex-direction: column; flex: 1 1 auto; min-height: 0; }
+
+  /* ---------- Stats Bar ---------- */
   .stats-bar {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1px;
-    background: var(--border-soft);
-    border: 1px solid var(--border-soft);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 28px;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex: none;
+    overflow-x: auto;
   }
   .stat {
     background: var(--surface);
-    padding: 18px 20px;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    padding: 6px 12px;
+    min-width: 110px;
+    flex: 1;
   }
   .stat .label {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-faint);
-    letter-spacing: 0.04em;
-    margin-bottom: 6px;
+    text-transform: uppercase;
   }
   .stat .value {
     font-family: var(--font-display);
-    font-size: 26px;
-    font-weight: 500;
+    font-size: 18px;
+    font-weight: 600;
     color: var(--text);
   }
-  .stat .value.pos { color: var(--accent); }
+  .stat .value.pos { color: var(--accent-dark); }
   .stat .value.neg { color: var(--weak); }
 
-  /* ---------- Controls ---------- */
-  .controls {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-  .controls input[type="text"], .controls select {
+  /* ---------- Filter Controls ---------- */
+  .controls-panel {
     background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    align-items: center;
+    flex: none;
+  }
+  .controls-panel input[type="text"], .controls-panel select {
+    background: var(--bg);
     border: 1px solid var(--border);
     color: var(--text);
     font-family: var(--font-ui);
-    font-size: 13.5px;
-    padding: 9px 13px;
-    border-radius: 7px;
+    font-size: 12px;
+    padding: 5px 8px;
+    border-radius: 5px;
     outline: none;
   }
-  .controls input[type="text"] { flex: 1; min-width: 180px; }
-  .controls input[type="text"]:focus, .controls select:focus { border-color: var(--accent); }
-  .controls label { font-size: 12.5px; color: var(--text-dim); display: flex; align-items: center; gap: 7px; }
-  .controls input[type="range"] { accent-color: var(--accent); width: 100px; }
+  .controls-panel input[type="text"] { min-width: 180px; flex: 1; }
+  .controls-panel select { max-width: 180px; }
+  .controls-panel input[type="text"]:focus, .controls-panel select:focus { border-color: var(--accent); }
+  .controls-panel label { font-size: 12px; color: var(--text-dim); display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .controls-panel input[type="range"] { accent-color: var(--accent); width: 70px; }
+
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-right: 10px;
+    border-right: 1px solid var(--border-soft);
+  }
+  .filter-group:last-child { border-right: none; }
+
   .btn {
-    background: var(--accent);
+    background: var(--accent-dark);
     color: #FFFFFF;
     border: none;
     font-family: var(--font-ui);
     font-weight: 600;
-    font-size: 13.5px;
-    padding: 9px 16px;
-    border-radius: 7px;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 5px;
     cursor: pointer;
-    transition: opacity 0.15s ease;
   }
-  .btn:hover { opacity: 0.88; }
+  .btn:hover { opacity: 0.9; }
   .btn.secondary {
-    background: transparent;
+    background: var(--surface-raised);
     color: var(--text-dim);
     border: 1px solid var(--border);
   }
-  .btn.secondary:hover { color: var(--text); border-color: var(--text-faint); opacity: 1; }
+  .btn.secondary:hover { color: var(--text); border-color: var(--text-faint); }
 
-  /* ---------- Table ---------- */
+  /* ---------- Table Grid ---------- */
   .table-wrap {
+    flex: 1 1 auto;
+    min-height: 150px;
     border: 1px solid var(--border-soft);
-    border-radius: 10px;
+    border-radius: 8px;
     overflow: auto;
     background: var(--surface);
   }
-  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 100%; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   thead th {
     position: sticky; top: 0;
     background: var(--surface-raised);
     text-align: left;
-    padding: 11px 14px;
+    padding: 8px 10px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 10.5px;
     color: var(--text-faint);
     letter-spacing: 0.03em;
-    font-weight: 500;
     border-bottom: 1px solid var(--border);
     cursor: pointer;
     white-space: nowrap;
     user-select: none;
+    z-index: 2;
   }
   thead th:hover { color: var(--text-dim); }
-  thead th.active { color: var(--accent); }
-  thead th .arrow { font-size: 9px; margin-left: 3px; }
+  thead th.active { color: var(--accent-dark); font-weight: 700; }
   tbody td {
-    padding: 10px 14px;
+    padding: 7px 10px;
     border-bottom: 1px solid var(--border-soft);
     color: var(--text-dim);
     white-space: nowrap;
+    background: var(--surface);
   }
-  tbody tr:hover td { background: rgba(0, 0, 0, 0.015); }
-  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--surface-raised); }
   .sym { font-weight: 600; color: var(--text); }
-  .name { color: var(--text-faint); font-size: 12.5px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+  .name { color: var(--text-faint); font-size: 11px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
   .num { font-family: var(--font-mono); text-align: right; }
-  .num.pos { color: var(--accent); }
-  .num.neg { color: var(--weak); }
-  .rs-cell { display: flex; align-items: center; gap: 10px; }
-  .rs-bar-track { width: 54px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
-  .rs-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
-  .rs-num { font-family: var(--font-mono); font-weight: 600; color: var(--text); width: 22px; text-align: right; }
+  .num.pos { color: var(--accent-dark); font-weight: 500; }
+  .num.neg { color: var(--weak); font-weight: 500; }
+  .rs-cell { display: flex; align-items: center; gap: 8px; }
+  .rs-bar-track { width: 44px; height: 4px; background: var(--border-soft); border-radius: 2px; overflow: hidden; }
+  .rs-bar-fill { height: 100%; background: var(--accent); }
+  .rs-num { font-family: var(--font-mono); font-weight: 600; color: var(--text); width: 20px; text-align: right; }
   .rs-num.top { color: var(--gold); }
-  .na { color: var(--text-faint); font-style: italic; font-size: 12px; }
   .badge {
     display: inline-block;
     font-family: var(--font-mono);
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 600;
-    letter-spacing: 0.03em;
-    padding: 3px 8px;
-    border-radius: 5px;
+    padding: 2px 6px;
+    border-radius: 4px;
   }
-  .badge.up { color: var(--accent); background: var(--accent-soft); }
+  .badge.up { color: var(--accent-dark); background: var(--accent-soft); }
   .badge.down { color: var(--weak); background: var(--weak-soft); }
-  .badge.mixed { color: var(--text-dim); background: rgba(0, 0, 0, 0.05); }
-  .badge.liquid { color: var(--accent); background: var(--accent-soft); }
-  .badge.illiquid { color: var(--text-faint); background: rgba(0, 0, 0, 0.04); }
-  .badge.inside { color: var(--gold); background: rgba(210, 162, 76, 0.12); }
+  .badge.mixed { color: var(--text-dim); background: var(--surface-raised); }
+  .badge.inside { color: var(--gold); background: rgba(217, 119, 6, 0.12); }
   .badge.outside { color: #6F5AAE; background: rgba(142, 124, 195, 0.14); }
-  .badge.normal { color: var(--text-faint); background: rgba(0, 0, 0, 0.04); }
-  .badge.special { color: var(--gold); background: rgba(210, 162, 76, 0.14); }
-  .turnover-cell { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
-  .ema-flag { font-size: 10px; margin-left: 4px; }
-  .ema-flag.above { color: var(--accent); }
-  .ema-flag.below { color: var(--weak); }
-  tfoot td { padding: 10px 14px; color: var(--text-faint); font-size: 12.5px; }
+  .badge.special { color: var(--gold); background: rgba(217, 119, 6, 0.14); }
 
-  .empty-state { text-align: center; padding: 40px; color: var(--text-faint); font-size: 13.5px; }
-
-  footer {
-    margin-top: 30px;
-    text-align: center;
-    color: var(--text-faint);
-    font-size: 12px;
-    font-family: var(--font-mono);
-  }
-
-
-  /* ---------- Full-page app layout ---------- */
-  html, body { height: 100%; }
-  body { overflow: hidden; }
-  .wrap {
-    max-width: none;
-    width: 100%;
-    height: 100dvh;
-    margin: 0;
-    padding: 14px 20px 10px;
-    display: flex;
-    flex-direction: column;
-  }
-  header {
-  margin-bottom: 8px;
-  padding-bottom: 10px;
-  align-items: center;
-  flex: none;
-  flex-wrap: nowrap;
-  gap: 30px;
-}
-
-header > div:first-child {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.brand-mark {
-  margin-bottom: 3px;
-}
-
-h1 {
-  font-size: 28px;
-  line-height: 1.05;
-  margin: 0 0 4px;
-}
-
-header p {
-  font-size: 12.5px;
-  max-width: 720px;
-  margin: 0;
-}
-
-.formula-card {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 8px 14px;
-  min-width: 0;
-  white-space: nowrap;
-}
-
-.formula-card .row {
-  gap: 5px;
-  padding: 0;
-}
-
-.formula-card .total {
-  border-left: 1px solid var(--border);
-  border-top: none;
-  margin: 0 0 0 4px;
-  padding: 0 0 0 14px;
-}
-  .tabs { flex: none; margin-bottom: 12px; }
-  .tab-panel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-  #results, #breadth-results { flex-direction: column; flex: 1 1 auto; min-height: 0; }
-  #results > *, #breadth-results > * { flex: none; }
-  #results > .table-wrap, #breadth-results > .table-wrap { flex: 1 1 auto; min-height: 200px; }
-  .stats-bar { margin-bottom: 12px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
-  .stat { padding: 10px 16px; }
-  .stat .value { font-size: 22px; }
-  .controls { margin-bottom: 12px; }
-  .filters { display: contents; }
-  #filters-toggle { display: none; }
-  footer { flex: none; margin-top: 8px; font-size: 11px; }
-  #breadth-view table { min-width: 560px; }
-  tbody td { background: var(--surface); }
-  tbody tr:hover td { background: #F1F5F9; }
-  #scanner-view thead th { z-index: 2; }
-  #scanner-view th:nth-child(1), #scanner-view td:nth-child(1) { position: sticky; left: 0; width: 48px; min-width: 48px; z-index: 1; }
-  #scanner-view th:nth-child(2), #scanner-view td:nth-child(2) { position: sticky; left: 48px; min-width: 150px; max-width: 190px; z-index: 1; border-right: 1px solid var(--border-soft); }
+  /* Sticky First Two Columns */
+  #scanner-view th:nth-child(1), #scanner-view td:nth-child(1) { position: sticky; left: 0; width: 40px; z-index: 1; }
+  #scanner-view th:nth-child(2), #scanner-view td:nth-child(2) { position: sticky; left: 40px; min-width: 140px; max-width: 170px; z-index: 1; border-right: 1px solid var(--border-soft); }
   #scanner-view thead th:nth-child(-n+2) { z-index: 3; }
 
-  @media (max-width: 900px) {
-    body { overflow: auto; }
-    .wrap { height: auto; min-height: 100dvh; padding: 12px 12px 16px; }
-    h1 { font-size: 22px; }
-    header p { display: none; }
-    .formula-card { font-size: 11.5px; gap: 2px 12px; }
-    .formula-card .total { display: none; }
-    .stats-bar { display: flex; overflow-x: auto; }
-    .stat { flex: 0 0 132px; }
-    .controls { gap: 8px; }
-    .controls input[type="text"] { flex: 1 1 100%; }
-    #filters-toggle { display: inline-block; }
-    .filters { display: none; width: 100%; flex-wrap: wrap; gap: 8px; }
-    .filters.open { display: flex; }
-    .controls select { flex: 1 1 140px; }
-    #results > .table-wrap, #breadth-results > .table-wrap { flex: none; max-height: 78dvh; }
-    #scanner-view th:nth-child(2), #scanner-view td:nth-child(2) { min-width: 110px; max-width: 130px; }
-    #upload-zone, #breadth-upload-zone { padding: 32px 16px; }
-  }
-  @media (max-width: 520px) {
-    .formula-card { display: none; }
-    .tab-btn { flex: 1; padding: 10px 8px; }
-    .table-wrap table { font-size: 12.5px; }
-    tbody td { padding: 8px 10px; }
-  }
-
-  /* ---------- Light theme extras / scrollbars / column picker ---------- */
-  :root { color-scheme: light; }
-  tbody tr:hover td { background: #F1F5F9; }
-  .table-wrap { scrollbar-width: auto; scrollbar-color: #A9B4C2 #E9EDF2; }
-  .table-wrap::-webkit-scrollbar { height: 12px; width: 12px; }
-  .table-wrap::-webkit-scrollbar-track { background: #E9EDF2; }
-  .table-wrap::-webkit-scrollbar-thumb { background: #A9B4C2; border-radius: 6px; border: 2px solid #E9EDF2; }
+  /* ---------- Dropdown Pickers ---------- */
   .col-picker { position: relative; }
-  .col-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(20, 30, 50, 0.14); padding: 10px 14px; min-width: 230px; max-height: 60vh; overflow: auto; }
+  .col-menu {
+    position: absolute; right: 0; top: calc(100% + 4px);
+    z-index: 30; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    padding: 10px 12px; min-width: 200px; max-height: 50vh; overflow: auto;
+  }
   .col-menu-head { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); margin-bottom: 6px; }
-  .linkbtn { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 12px; font-family: var(--font-ui); font-weight: 600; }
-  .controls .col-menu label { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; color: var(--text); }
+  .col-menu label { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 12px; color: var(--text); }
+
+  footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-faint); font-size: 11px; font-family: var(--font-mono); }
+  .empty-state { text-align: center; padding: 30px; color: var(--text-faint); font-size: 13px; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <header>
-    <div>
-      <div class="brand-mark">NSE · RELATIVE STRENGTH</div>
+    <div class="header-left">
+      <span class="brand-sub">NSE Scanner</span>
       <h1>RS Rating Scanner <span id="header-data-date"></span></h1>
-      <p>Ranks NSE stocks by weighted price momentum across 3, 6, 9 and 12 months, then scores each on a 1&ndash;99 percentile scale &mdash; same convention as IBD's RS Rating. Data updates automatically when published &mdash; nothing to upload unless you want to test a different file.</p>
     </div>
-    <div class="formula-card">
-      <div class="row"><span>3 month move</span><b>40%</b></div>
-      <div class="row"><span>6 month move</span><b>20%</b></div>
-      <div class="row"><span>9 month move</span><b>20%</b></div>
-      <div class="row"><span>12 month move</span><b>20%</b></div>
-      <div class="row total"><span>Weighted score → percentile rank</span><b>1&ndash;99</b></div>
+    <div class="formula-chips">
+      <span>Weights:</span>
+      <span class="formula-chip">3M: 40%</span>
+      <span class="formula-chip">6M: 20%</span>
+      <span class="formula-chip">9M: 20%</span>
+      <span class="formula-chip">12M: 20%</span>
     </div>
   </header>
 
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="scanner-view">Scanner</button>
-    <button class="tab-btn" data-tab="breadth-view">Market Breadth</button>
+  <div class="top-bar">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="scanner-view">Scanner</button>
+      <button class="tab-btn" data-tab="breadth-view">Market Breadth</button>
+    </div>
+    <div style="display:flex; gap:6px;">
+      <button class="btn secondary" id="show-upload-link">Load CSV</button>
+      <button class="btn" id="export-btn">Export CSV</button>
+    </div>
   </div>
 
   <div id="scanner-view" class="tab-panel">
-  <div id="checking-shared" style="text-align:center; padding:20px; color:var(--text-faint); font-family:var(--font-mono); font-size:13px;">Checking for today's published data&hellip;</div>
-  <div id="upload-zone" style="display:none;">
-    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
-      <path d="M12 15V3m0 0L7 8m5-5l5 5" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <h2>Drop your price data CSV here</h2>
-    <p>Or click to browse &mdash; generated by fetch_nse_data.py</p>
-    <div class="hint">expects: Symbol, Name, Date, Close_Today / Pct_3M-12M / EMA_10-50 / Avg_Volume_30D / Today_&amp;Prev_Open-High-Low-Close</div>
-    <input type="file" id="file-input" accept=".csv">
-  </div>
-  <div id="upload-error"></div>
-
-  <div id="results">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-      <div id="data-date" style="display:none;"></div>
-      <button class="btn secondary" id="show-upload-link" style="font-size:12px; padding:6px 12px;">Load a different file</button>
+    <div id="checking-shared" style="text-align:center; padding:10px; color:var(--text-faint); font-family:var(--font-mono); font-size:12px;">Checking for today's published data…</div>
+    <div id="upload-zone" style="display:none;">
+      <h3 style="margin:0 0 4px; font-size:15px;">Drop your price data CSV here</h3>
+      <p style="margin:0; font-size:12px; color:var(--text-dim);">Or click to browse — generated by fetch_nse_data.py</p>
+      <input type="file" id="file-input" accept=".csv">
     </div>
-    <div class="stats-bar" id="stats-bar"></div>
+    <div id="upload-error"></div>
 
-    <div class="controls">
-      <input type="text" id="search" placeholder="Search symbol or company name…">
-      <button class="btn secondary" id="filters-toggle" type="button">Filters &#9662;</button>
-      <div class="filters" id="filters">
-      <label>Min RS <input type="range" id="min-rs" min="1" max="99" value="1"><span id="min-rs-val">1</span></label>
-      <label>Max RS <input type="range" id="max-rs" min="1" max="99" value="99"><span id="max-rs-val">99</span></label>
-      <select id="trend-select">
-        <option value="all">Any trend</option>
-        <option value="up">Uptrend only</option>
-        <option value="down">Downtrend only</option>
-        <option value="mixed">Mixed only</option>
-      </select>
-      <select id="ema-10-20" title="Compare EMA 10 with EMA 20">
-        <option value="all">EMA 10 vs 20</option>
-        <option value="gt">EMA 10 &gt; EMA 20</option>
-        <option value="lt">EMA 10 &lt; EMA 20</option>
-      </select>
-      <select id="ema-20-50" title="Compare EMA 20 with EMA 50">
-        <option value="all">EMA 20 vs 50</option>
-        <option value="gt">EMA 20 &gt; EMA 50</option>
-        <option value="lt">EMA 20 &lt; EMA 50</option>
-      </select>
-      <select id="ema-10-50" title="Compare EMA 10 with EMA 50">
-        <option value="all">EMA 10 vs 50</option>
-        <option value="gt">EMA 10 &gt; EMA 50</option>
-        <option value="lt">EMA 10 &lt; EMA 50</option>
-      </select>
-      <label><input type="checkbox" id="liquid-only"> Turnover ≥ ₹7 Cr only</label>
-      <select id="day-move-select">
-        <option value="all">Any day move</option>
-        <option value="up4">Up 4%+ today</option>
-        <option value="down4">Down 4%+ today</option>
-      </select>
-      <select id="bar-type-select" title="Inside: today's high/low fully within yesterday's range. Outside: today's high/low fully engulfs yesterday's range.">
-        <option value="all">Any bar type</option>
-        <option value="Inside">Inside bar only</option>
-        <option value="Outside">Outside bar only</option>
-      </select>
-      <label title="Today's open AND close both fall between yesterday's high and whichever of yesterday's open/close is lower.">
-        <input type="checkbox" id="special-only"> Special candle only
-      </label>
-      <select id="sort-select">
-        <option value="rs-desc">RS Rating: high → low</option>
-        <option value="rs-asc">RS Rating: low → high</option>
-        <option value="p3-desc">3M % : high → low</option>
-        <option value="p12-desc">12M % : high → low</option>
-        <option value="sym-asc">Symbol: A → Z</option>
-      </select>
-      </div>
-      <div class="col-picker">
-        <button class="btn secondary" id="col-toggle" type="button">Columns &#9662;</button>
-        <div class="col-menu" id="col-menu" style="display:none;">
-          <div class="col-menu-head"><span>SHOW COLUMNS</span><button type="button" id="col-reset" class="linkbtn">Show all</button></div>
-          <div id="col-list"></div>
+    <div id="results">
+      <div class="stats-bar" id="stats-bar"></div>
+
+      <div class="controls-panel">
+        <input type="text" id="search" placeholder="Search symbol or name…">
+        
+        <div class="filter-group">
+          <label>RS <input type="range" id="min-rs" min="1" max="99" value="1"><span id="min-rs-val">1</span></label>
+          <label>to <input type="range" id="max-rs" min="1" max="99" value="99"><span id="max-rs-val">99</span></label>
+        </div>
+
+        <div class="filter-group">
+          <select id="trend-select" title="EMA Trend Hierarchy">
+            <option value="all">All Trends</option>
+            <option value="up">Uptrend (Close &gt; 10 &gt; 20 &gt; 50)</option>
+            <option value="down">Downtrend (Close &lt; 10 &lt; 20 &lt; 50)</option>
+            <option value="mixed">Mixed Trend</option>
+            <option value="10gt20">EMA 10 &gt; EMA 20</option>
+            <option value="20gt50">EMA 20 &gt; EMA 50</option>
+            <option value="10gt50">EMA 10 &gt; EMA 50</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <select id="dist10-select" title="Distance from EMA 10">
+            <option value="all">Dist EMA 10 (Any)</option>
+            <option value="w02">Within 0% to 2%</option>
+            <option value="w05">Within 0% to 5%</option>
+            <option value="w10">Within 0% to 10%</option>
+            <option value="gt0">Above EMA 10 (&gt; 0%)</option>
+            <option value="gt5">Above 5%</option>
+            <option value="gt10">Above 10%</option>
+            <option value="lt0">Below EMA 10 (&lt; 0%)</option>
+            <option value="lt-5">Below -5%</option>
+          </select>
+
+          <select id="dist50-select" title="Distance from EMA 50">
+            <option value="all">Dist EMA 50 (Any)</option>
+            <option value="w02">Within 0% to 2%</option>
+            <option value="w05">Within 0% to 5%</option>
+            <option value="w10">Within 0% to 10%</option>
+            <option value="gt0">Above EMA 50 (&gt; 0%)</option>
+            <option value="gt5">Above 5%</option>
+            <option value="gt10">Above 10%</option>
+            <option value="lt0">Below EMA 50 (&lt; 0%)</option>
+            <option value="lt-5">Below -5%</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <select id="day-move-select">
+            <option value="all">Any Day Move</option>
+            <option value="up4">Up 4%+ Today</option>
+            <option value="down4">Down 4%+ Today</option>
+          </select>
+          <select id="bar-type-select">
+            <option value="all">Any Bar Type</option>
+            <option value="Inside">Inside Bar</option>
+            <option value="Outside">Outside Bar</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label><input type="checkbox" id="liquid-only"> Turnover ≥ ₹7Cr</label>
+          <label><input type="checkbox" id="special-only"> Special Candle</label>
+        </div>
+
+        <div class="col-picker" style="margin-left:auto;">
+          <button class="btn secondary" id="col-toggle" type="button">Columns ▾</button>
+          <div class="col-menu" id="col-menu" style="display:none;">
+            <div class="col-menu-head"><span>SHOW COLUMNS</span><button type="button" id="col-reset" style="background:none;border:none;color:var(--accent-dark);cursor:pointer;font-size:11px;">Reset Defaults</button></div>
+            <div id="col-list"></div>
+          </div>
         </div>
       </div>
-      <button class="btn secondary" id="export-btn">Export ranked CSV</button>
-    </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th data-key="rank">#</th>
-            <th data-key="symbol">Symbol</th>
-            <th data-key="price" class="num">Price</th>
-            <th data-key="daychange" class="num">Day %</th>
-            <th data-key="date">Date</th>
-            <th data-key="rs">RS Rating</th>
-            <th data-key="p3" class="num">3M %</th>
-            <th data-key="p6" class="num">6M %</th>
-            <th data-key="p9" class="num">9M %</th>
-            <th data-key="p12" class="num">12M %</th>
-            <th data-key="score" class="num">Weighted Score</th>
-            <th data-key="trend">Trend</th>
-            <th data-key="ema10" class="num">EMA 10</th>
-            <th data-key="ema20" class="num">EMA 20</th>
-            <th data-key="ema50" class="num">EMA 50</th>
-            <th data-key="dist10" class="num">Dist EMA 10</th>
-            <th data-key="dist50" class="num">Dist EMA 50</th>
-            <th data-key="bartype">Bar Type</th>
-            <th data-key="special">Special</th>
-          </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-key="rank">#</th>
+              <th data-key="symbol">Symbol</th>
+              <th data-key="price" class="num">Price</th>
+              <th data-key="daychange" class="num">Day %</th>
+              <th data-key="date">Date</th>
+              <th data-key="rs">RS Rating</th>
+              <th data-key="p3" class="num">3M %</th>
+              <th data-key="p6" class="num">6M %</th>
+              <th data-key="p9" class="num">9M %</th>
+              <th data-key="p12" class="num">12M %</th>
+              <th data-key="score" class="num">Weighted Score</th>
+              <th data-key="trend">Trend</th>
+              <th data-key="ema10" class="num">EMA 10</th>
+              <th data-key="ema20" class="num">EMA 20</th>
+              <th data-key="ema50" class="num">EMA 50</th>
+              <th data-key="dist10" class="num">Dist EMA 10</th>
+              <th data-key="dist50" class="num">Dist EMA 50</th>
+              <th data-key="bartype">Bar Type</th>
+              <th data-key="special">Special</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+      <div id="empty-state" class="empty-state" style="display:none;">No stocks match your filters.</div>
     </div>
-    <div id="empty-state" class="empty-state" style="display:none;">No stocks match your filters.</div>
   </div>
-  </div>
-  <!-- /scanner-view -->
 
   <div id="breadth-view" class="tab-panel" style="display:none;">
-    <div id="breadth-checking-shared" style="text-align:center; padding:20px; color:var(--text-faint); font-family:var(--font-mono); font-size:13px;">Checking for today's published data&hellip;</div>
+    <div id="breadth-checking-shared" style="text-align:center; padding:10px; color:var(--text-faint); font-family:var(--font-mono); font-size:12px;">Checking history data…</div>
     <div id="breadth-upload-zone" style="display:none;">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
-        <path d="M12 15V3m0 0L7 8m5-5l5 5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <h2>Drop your price history CSV here</h2>
-      <p>Or click to browse &mdash; generated by fetch_nse_data.py (history file)</p>
-      <div class="hint">expects long format: Symbol, Date, Close &mdash; one row per stock per day</div>
+      <h3 style="margin:0 0 4px; font-size:15px;">Drop your price history CSV here</h3>
       <input type="file" id="breadth-file-input" accept=".csv">
     </div>
     <div id="breadth-upload-error" class="empty-state" style="display:none;"></div>
 
     <div id="breadth-results" style="display:none;">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
-        <p style="color:var(--text-dim); font-size:14px; max-width:560px; margin:0 0 20px;">Day-wise count of NSE stocks that moved &plusmn;4% or more, over the uploaded history window &mdash; a simple read on market breadth and strength.</p>
-        <button class="btn secondary" id="breadth-show-upload-link" style="font-size:12px; padding:6px 12px; white-space:nowrap;">Load a different file</button>
-      </div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -605,33 +479,29 @@ header p {
               <th>Date</th>
               <th class="num">Up 4%+</th>
               <th class="num">Down 4%+</th>
-              <th class="num">Net (Up&minus;Down)</th>
+              <th class="num">Net (Up−Down)</th>
               <th class="num">Stocks Scanned</th>
             </tr>
           </thead>
           <tbody id="breadth-table-body"></tbody>
         </table>
       </div>
-      <button class="btn secondary" id="breadth-export-btn" style="margin-top:16px;">Export breadth CSV</button>
+      <button class="btn secondary" id="breadth-export-btn" style="margin-top:8px; align-self:flex-start;">Export Breadth CSV</button>
     </div>
   </div>
-  <!-- /breadth-view -->
 
-  <footer>Data as uploaded &middot; not investment advice &middot; verify against your broker before trading</footer>
+  <footer>Data as uploaded · not investment advice</footer>
 </div>
 
 <script>
 (function() {
   const WEIGHTS = { p3: 0.4, p6: 0.2, p9: 0.2, p12: 0.2 };
-  const LIQUIDITY_THRESHOLD = 70000000; // ₹7 crore
+  const LIQUIDITY_THRESHOLD = 70000000;
 
-  // Where the daily data files live. If you're serving them from S3 instead
-  // of GitHub's own data/ folder, replace these with your bucket's object
-  // URLs, e.g. 'https://YOUR-BUCKET-NAME.s3.YOUR-REGION.amazonaws.com/nse_rs_data.csv'
   const RS_DATA_URL = 'https://d2k3wq1952nc58.cloudfront.net/nse_rs_data.csv';
   const HISTORY_DATA_URL = 'https://d2k3wq1952nc58.cloudfront.net/nse_price_history.csv';
 
-  let allStocks = [];   // full parsed + scored dataset
+  let allStocks = [];
   let sortKey = 'rs', sortDir = 'desc';
 
   const uploadZone = document.getElementById('upload-zone');
@@ -643,251 +513,176 @@ header p {
   const searchInput = document.getElementById('search');
   const minRsInput = document.getElementById('min-rs');
   const minRsVal = document.getElementById('min-rs-val');
-  const trendSelect = document.getElementById('trend-select');
   const maxRsInput = document.getElementById('max-rs');
   const maxRsVal = document.getElementById('max-rs-val');
-  const ema1020 = document.getElementById('ema-10-20');
-  const ema2050 = document.getElementById('ema-20-50');
-  const ema1050 = document.getElementById('ema-10-50');
+  const trendSelect = document.getElementById('trend-select');
+  const dist10Select = document.getElementById('dist10-select');
+  const dist50Select = document.getElementById('dist50-select');
   const liquidOnly = document.getElementById('liquid-only');
   const dayMoveSelect = document.getElementById('day-move-select');
   const barTypeSelect = document.getElementById('bar-type-select');
   const specialOnly = document.getElementById('special-only');
-  const sortSelect = document.getElementById('sort-select');
   const exportBtn = document.getElementById('export-btn');
 
-  // ---------- Upload interactions ----------
   uploadZone.addEventListener('click', () => fileInput.click());
-  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });
-  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
-  uploadZone.addEventListener('drop', e => {
-    e.preventDefault();
-    uploadZone.classList.remove('drag');
-    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-  });
-  fileInput.addEventListener('change', e => {
-    if (e.target.files.length) handleFile(e.target.files[0]);
-  });
+  fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
 
-  function showError(msg) {
-    uploadError.textContent = msg;
-    uploadError.style.display = 'block';
-  }
+  function showError(msg) { uploadError.textContent = msg; uploadError.style.display = 'block'; }
 
   function handleFile(file) {
     uploadError.style.display = 'none';
     Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      dynamicTyping: true,
+      header: true, skipEmptyLines: true, dynamicTyping: true,
       complete: res => {
-        try {
-          processData(res.data);
-          try { localStorage.setItem('rs_scanner_last_csv', JSON.stringify(res.data).slice(0, 4500000)); } catch (e) {}
-        } catch (err) {
-          showError('Could not process this file: ' + err.message);
-        }
+        try { processData(res.data); } catch (err) { showError('Could not process this file: ' + err.message); }
       },
-      error: err => showError('Could not read this CSV: ' + err.message)
+      error: err => showError('Could not read CSV: ' + err.message)
     });
   }
 
-  // ---------- Core scoring ----------
   function processData(rows) {
     if (!rows.length) throw new Error('File appears empty.');
     const cols = Object.keys(rows[0]);
-    const hasSymbol = cols.includes('Symbol');
-    if (!hasSymbol) throw new Error('CSV must include a "Symbol" column.');
-
-    const hasPct = ['Pct_3M','Pct_6M','Pct_9M','Pct_12M'].every(c => cols.includes(c));
-    const hasClose = ['Close_Today','Close_3M','Close_6M','Close_9M','Close_12M'].every(c => cols.includes(c));
-    if (!hasPct && !hasClose) {
-      throw new Error('CSV must include either Pct_3M/6M/9M/12M columns or Close_Today + Close_3M/6M/9M/12M columns.');
-    }
+    if (!cols.includes('Symbol')) throw new Error('CSV must include "Symbol".');
 
     const stocks = [];
     for (const r of rows) {
       if (!r.Symbol) continue;
-      let p3, p6, p9, p12;
-      if (hasPct) {
-        p3 = numOrNull(r.Pct_3M); p6 = numOrNull(r.Pct_6M);
-        p9 = numOrNull(r.Pct_9M); p12 = numOrNull(r.Pct_12M);
-      } else {
-        p3 = pctFrom(r.Close_Today, r.Close_3M);
-        p6 = pctFrom(r.Close_Today, r.Close_6M);
-        p9 = pctFrom(r.Close_Today, r.Close_9M);
-        p12 = pctFrom(r.Close_Today, r.Close_12M);
-      }
-
+      const p3 = numOrNull(r.Pct_3M), p6 = numOrNull(r.Pct_6M), p9 = numOrNull(r.Pct_9M), p12 = numOrNull(r.Pct_12M);
       const complete = [p3, p6, p9, p12].every(v => v !== null && !isNaN(v));
-      const score = complete
-        ? p3 * WEIGHTS.p3 + p6 * WEIGHTS.p6 + p9 * WEIGHTS.p9 + p12 * WEIGHTS.p12
-        : null;
+      const score = complete ? p3 * WEIGHTS.p3 + p6 * WEIGHTS.p6 + p9 * WEIGHTS.p9 + p12 * WEIGHTS.p12 : null;
 
       const closeToday = numOrNull(r.Close_Today);
-      const ema10 = numOrNull(r.EMA_10);
-      const ema20 = numOrNull(r.EMA_20);
-      const ema50 = numOrNull(r.EMA_50);
+      const ema10 = numOrNull(r.EMA_10), ema20 = numOrNull(r.EMA_20), ema50 = numOrNull(r.EMA_50);
       const trend = computeTrend(closeToday, ema10, ema20, ema50);
       const dist10 = pctFrom(closeToday, ema10);
       const dist50 = pctFrom(closeToday, ema50);
 
       const avgVolume30D = numOrNull(r.Avg_Volume_30D);
       let turnover = numOrNull(r.Turnover_30D_INR);
-      if (turnover === null && closeToday !== null && avgVolume30D !== null) {
-        turnover = closeToday * avgVolume30D;
-      }
+      if (turnover === null && closeToday !== null && avgVolume30D !== null) turnover = closeToday * avgVolume30D;
       const liquid = turnover === null ? null : turnover >= LIQUIDITY_THRESHOLD;
-      const date = r.Date ? String(r.Date).trim() : '';
 
-      const todayOpen = numOrNull(r.Today_Open);
-      const todayHigh = numOrNull(r.Today_High);
-      const todayLow = numOrNull(r.Today_Low);
-      const prevOpen = numOrNull(r.Prev_Open);
-      const prevHigh = numOrNull(r.Prev_High);
-      const prevLow = numOrNull(r.Prev_Low);
       const prevClose = numOrNull(r.Prev_Close);
-      const barType = computeBarType(todayHigh, todayLow, prevHigh, prevLow);
-      const specialCandle = computeSpecialCandle(todayOpen, closeToday, prevOpen, prevClose, prevHigh);
-      const dayChangePct = (closeToday !== null && prevClose !== null && prevClose !== 0)
-        ? ((closeToday - prevClose) / prevClose) * 100
-        : null;
+      const barType = computeBarType(numOrNull(r.Today_High), numOrNull(r.Today_Low), numOrNull(r.Prev_High), numOrNull(r.Prev_Low));
+      const specialCandle = computeSpecialCandle(numOrNull(r.Today_Open), closeToday, numOrNull(r.Prev_Open), prevClose, numOrNull(r.Prev_High));
+      const dayChangePct = (closeToday !== null && prevClose) ? ((closeToday - prevClose) / prevClose) * 100 : null;
 
       stocks.push({
-        symbol: String(r.Symbol).trim(),
-        name: r.Name ? String(r.Name).trim() : '',
-        p3, p6, p9, p12, score, complete,
-        closeToday, ema10, ema20, ema50, trend, dist10, dist50,
-        avgVolume30D, turnover, liquid, date,
-        todayOpen, todayHigh, todayLow, prevOpen, prevHigh, prevLow, prevClose,
-        barType, specialCandle, dayChangePct,
-        rs: null
+        symbol: String(r.Symbol).trim(), name: r.Name ? String(r.Name).trim() : '',
+        p3, p6, p9, p12, score, complete, closeToday, ema10, ema20, ema50, trend, dist10, dist50,
+        turnover, liquid, date: r.Date ? String(r.Date).trim() : '', barType, specialCandle, dayChangePct, rs: null
       });
     }
 
-    if (!stocks.length) throw new Error('No valid rows found.');
-
-    // Percentile rank (1-99) among stocks with complete data, IBD convention: 99 = strongest
     const ranked = stocks.filter(s => s.complete).sort((a, b) => a.score - b.score);
     const n = ranked.length;
-    ranked.forEach((s, i) => {
-      s.rs = Math.max(1, Math.min(99, Math.round(((i + 1) / n) * 99)));
-    });
+    ranked.forEach((s, i) => { s.rs = Math.max(1, Math.min(99, Math.round(((i + 1) / n) * 99))); });
 
     allStocks = stocks;
     resultsEl.style.display = 'flex';
     render();
   }
 
-  function numOrNull(v) {
-    if (v === null || v === undefined || v === '') return null;
-    const n = Number(v);
-    return isNaN(n) ? null : n;
-  }
-  function pctFrom(today, then) {
-    const t = numOrNull(today), p = numOrNull(then);
-    if (t === null || p === null || p === 0) return null;
-    return ((t - p) / p) * 100;
-  }
+  function numOrNull(v) { return (v === null || v === undefined || v === '') ? null : (isNaN(Number(v)) ? null : Number(v)); }
+  function pctFrom(today, then) { return (today === null || then === null || then === 0) ? null : ((today - then) / then) * 100; }
+  
   function computeTrend(close, e10, e20, e50) {
-    if ([close, e10, e20, e50].some(v => v === null || v === undefined || isNaN(v))) return null;
+    if ([close, e10, e20, e50].some(v => v === null || isNaN(v))) return null;
     if (close > e10 && e10 > e20 && e20 > e50) return 'up';
     if (close < e10 && e10 < e20 && e20 < e50) return 'down';
     return 'mixed';
   }
-  function emaCompare(a, b, mode) {
-    if (mode === 'all') return true;
-    if (a === null || b === null || a === undefined || b === undefined || isNaN(a) || isNaN(b)) return false;
-    return mode === 'gt' ? a > b : a < b;
-  }
-  function computeBarType(todayHigh, todayLow, prevHigh, prevLow) {
-    if ([todayHigh, todayLow, prevHigh, prevLow].some(v => v === null || v === undefined || isNaN(v))) return null;
-    if (todayHigh < prevHigh && todayLow > prevLow) return 'Inside';
-    if (todayHigh > prevHigh && todayLow < prevLow) return 'Outside';
-    return 'Normal';
-  }
-  function computeSpecialCandle(todayOpen, todayClose, prevOpen, prevClose, prevHigh) {
-    if ([todayOpen, todayClose, prevOpen, prevClose, prevHigh].some(v => v === null || v === undefined || isNaN(v))) return null;
-    const lower = Math.min(prevOpen, prevClose);
-    const upper = prevHigh;
-    return todayOpen >= lower && todayOpen <= upper && todayClose >= lower && todayClose <= upper;
+
+  function matchDistanceFilter(val, filter) {
+    if (filter === 'all') return true;
+    if (val === null || isNaN(val)) return false;
+    const abs = Math.abs(val);
+    if (filter === 'w02') return abs <= 2;
+    if (filter === 'w05') return abs <= 5;
+    if (filter === 'w10') return abs <= 10;
+    if (filter === 'gt0') return val > 0;
+    if (filter === 'gt5') return val > 5;
+    if (filter === 'gt10') return val > 10;
+    if (filter === 'lt0') return val < 0;
+    if (filter === 'lt-5') return val < -5;
+    return true;
   }
 
-  // ---------- Rendering ----------
-  function render() {
-    renderStats();
-    renderTable();
+  function computeBarType(tH, tL, pH, pL) {
+    if ([tH, tL, pH, pL].some(v => v === null || isNaN(v))) return null;
+    if (tH < pH && tL > pL) return 'Inside';
+    if (tH > pH && tL < pL) return 'Outside';
+    return 'Normal';
   }
+  function computeSpecialCandle(tO, tC, pO, pC, pH) {
+    if ([tO, tC, pO, pC, pH].some(v => v === null || isNaN(v))) return null;
+    const lower = Math.min(pO, pC);
+    return tO >= lower && tO <= pH && tC >= lower && tC <= pH;
+  }
+
+  function render() { renderStats(); renderTable(); }
 
   function renderStats() {
     const complete = allStocks.filter(s => s.complete);
     const n = complete.length;
     const avg3 = mean(complete.map(s => s.p3));
-    const gainers = complete.filter(s => s.p3 > 0).length;
     const top = complete.slice().sort((a,b) => b.rs - a.rs)[0];
-    const liquidCount = complete.filter(s => s.liquid).length;
     const up4Count = allStocks.filter(s => s.dayChangePct !== null && s.dayChangePct >= 4).length;
     const down4Count = allStocks.filter(s => s.dayChangePct !== null && s.dayChangePct <= -4).length;
-    const asOf = mostCommonDate(allStocks);
 
     document.getElementById('stats-bar').innerHTML = `
-      <div class="stat"><div class="label">STOCKS RANKED</div><div class="value">${n.toLocaleString()}</div></div>
-      <div class="stat"><div class="label">AVG 3M MOVE</div><div class="value ${avg3>=0?'pos':'neg'}">${fmtPct(avg3)}</div></div>
-      <div class="stat"><div class="label">3M GAINERS</div><div class="value">${gainers.toLocaleString()} <span style="font-size:14px;color:var(--text-faint)">/ ${n.toLocaleString()}</span></div></div>
-      <div class="stat"><div class="label">TOP RATED</div><div class="value">${top ? top.symbol : '—'}</div></div>
-      <div class="stat"><div class="label">≥ ₹7CR TURNOVER</div><div class="value">${liquidCount.toLocaleString()}</div></div>
-      <div class="stat"><div class="label">UP 4%+ TODAY</div><div class="value pos">${up4Count.toLocaleString()}</div></div>
-      <div class="stat"><div class="label">DOWN 4%+ TODAY</div><div class="value neg">${down4Count.toLocaleString()}</div></div>
+      <div class="stat"><div class="label">Ranked</div><div class="value">${n.toLocaleString()}</div></div>
+      <div class="stat"><div class="label">Avg 3M</div><div class="value ${avg3>=0?'pos':'neg'}">${fmtPct(avg3)}</div></div>
+      <div class="stat"><div class="label">Top Rated</div><div class="value">${top ? top.symbol : '—'}</div></div>
+      <div class="stat"><div class="label">Up 4%+</div><div class="value pos">${up4Count}</div></div>
+      <div class="stat"><div class="label">Down 4%+</div><div class="value neg">${down4Count}</div></div>
     `;
-    document.getElementById('data-date').textContent = '';
-    const headerDataDate = document.getElementById('header-data-date');
-    if (headerDataDate) {
-      headerDataDate.textContent = asOf ? `(Data as of ${asOf})` : '';
-    }
   }
 
   function renderTable() {
     const q = searchInput.value.trim().toLowerCase();
     const minRs = Number(minRsInput.value);
     const maxRs = Number(maxRsInput.value);
-    const trendFilter = trendSelect.value;
-    const requireLiquid = liquidOnly.checked;
-    const barTypeFilter = barTypeSelect.value;
-    const requireSpecial = specialOnly.checked;
-    const dayMoveFilter = dayMoveSelect.value;
+    const trendVal = trendSelect.value;
+    const dist10Val = dist10Select.value;
+    const dist50Val = dist50Select.value;
 
     let list = allStocks.filter(s => {
       if (!s.complete) return false;
       if (s.rs < minRs || s.rs > maxRs) return false;
-      if (!emaCompare(s.ema10, s.ema20, ema1020.value)) return false;
-      if (!emaCompare(s.ema20, s.ema50, ema2050.value)) return false;
-      if (!emaCompare(s.ema10, s.ema50, ema1050.value)) return false;
-      if (trendFilter !== 'all' && s.trend !== trendFilter) return false;
-      if (requireLiquid && !s.liquid) return false;
-      if (barTypeFilter !== 'all' && s.barType !== barTypeFilter) return false;
-      if (requireSpecial && !s.specialCandle) return false;
-      if (dayMoveFilter === 'up4' && !(s.dayChangePct !== null && s.dayChangePct >= 4)) return false;
-      if (dayMoveFilter === 'down4' && !(s.dayChangePct !== null && s.dayChangePct <= -4)) return false;
+
+      if (trendVal === 'up' && s.trend !== 'up') return false;
+      if (trendVal === 'down' && s.trend !== 'down') return false;
+      if (trendVal === 'mixed' && s.trend !== 'mixed') return false;
+      if (trendVal === '10gt20' && !(s.ema10 > s.ema20)) return false;
+      if (trendVal === '20gt50' && !(s.ema20 > s.ema50)) return false;
+      if (trendVal === '10gt50' && !(s.ema10 > s.ema50)) return false;
+
+      if (!matchDistanceFilter(s.dist10, dist10Val)) return false;
+      if (!matchDistanceFilter(s.dist50, dist50Val)) return false;
+
+      if (liquidOnly.checked && !s.liquid) return false;
+      if (specialOnly.checked && !s.specialCandle) return false;
+      if (barTypeSelect.value !== 'all' && s.barType !== barTypeSelect.value) return false;
+      if (dayMoveSelect.value === 'up4' && !(s.dayChangePct >= 4)) return false;
+      if (dayMoveSelect.value === 'down4' && !(s.dayChangePct <= -4)) return false;
       if (q && !(s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q))) return false;
       return true;
     });
 
     list = sortList(list);
 
-    if (!list.length) {
-      tbody.innerHTML = '';
-      emptyState.style.display = 'block';
-      return;
-    }
+    if (!list.length) { tbody.innerHTML = ''; emptyState.style.display = 'block'; return; }
     emptyState.style.display = 'none';
 
     tbody.innerHTML = list.map((s, i) => `
       <tr>
-        <td class="num" data-col="rank" style="color:var(--text-faint)">${i + 1}</td>
+        <td class="num" data-col="rank">${i + 1}</td>
         <td data-col="symbol"><span class="sym">${escapeHtml(s.symbol)}</span><div class="name">${escapeHtml(s.name)}</div></td>
         <td class="num" data-col="price">${fmtPrice(s.closeToday)}</td>
         <td class="num ${cls(s.dayChangePct)}" data-col="daychange">${fmtPct(s.dayChangePct)}</td>
-        <td data-col="date" style="color:var(--text-faint); font-family:var(--font-mono); font-size:12.5px;">${s.date ? escapeHtml(s.date) : '<span class="na">n/a</span>'}</td>
+        <td data-col="date">${s.date ? escapeHtml(s.date) : 'n/a'}</td>
         <td data-col="rs">
           <div class="rs-cell">
             <div class="rs-bar-track"><div class="rs-bar-fill" style="width:${s.rs}%"></div></div>
@@ -900,9 +695,9 @@ header p {
         <td class="num ${cls(s.p12)}" data-col="p12">${fmtPct(s.p12)}</td>
         <td class="num ${cls(s.score)}" data-col="score">${fmtPct(s.score)}</td>
         <td data-col="trend">${trendBadge(s.trend)}</td>
-        <td class="num" data-col="ema10">${fmtEma(s.closeToday, s.ema10)}</td>
-        <td class="num" data-col="ema20">${fmtEma(s.closeToday, s.ema20)}</td>
-        <td class="num" data-col="ema50">${fmtEma(s.closeToday, s.ema50)}</td>
+        <td class="num" data-col="ema10">${fmtEma(s.ema10)}</td>
+        <td class="num" data-col="ema20">${fmtEma(s.ema20)}</td>
+        <td class="num" data-col="ema50">${fmtEma(s.ema50)}</td>
         <td class="num ${cls(s.dist10)}" data-col="dist10">${fmtPct(s.dist10)}</td>
         <td class="num ${cls(s.dist50)}" data-col="dist50">${fmtPct(s.dist50)}</td>
         <td data-col="bartype">${barTypeBadge(s.barType)}</td>
@@ -913,155 +708,88 @@ header p {
 
   function sortList(list) {
     const dir = sortDir === 'asc' ? 1 : -1;
-    const key = sortKey;
     return list.slice().sort((a, b) => {
-      if (key === 'symbol') return dir * a.symbol.localeCompare(b.symbol);
-      if (key === 'trend') return dir * String(a.trend || '').localeCompare(String(b.trend || ''));
-      if (key === 'date') return dir * String(a.date || '').localeCompare(String(b.date || ''));
-      if (key === 'barType') return dir * String(a.barType || '').localeCompare(String(b.barType || ''));
-      if (key === 'specialCandle') return dir * ((a.specialCandle ? 1 : 0) - (b.specialCandle ? 1 : 0));
-      const av = key === 'rank' ? a.rs : a[key];
-      const bv = key === 'rank' ? b.rs : b[key];
+      const av = sortKey === 'rank' ? a.rs : a[sortKey];
+      const bv = sortKey === 'rank' ? b.rs : b[sortKey];
       return dir * ((av ?? -Infinity) - (bv ?? -Infinity));
     });
   }
 
-  function cls(v) { if (v === null || v === undefined) return ''; return v >= 0 ? 'pos' : 'neg'; }
-  function fmtPct(v) { if (v === null || v === undefined || isNaN(v)) return '<span class="na">n/a</span>'; return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; }
+  function cls(v) { return (v === null || v === undefined) ? '' : (v >= 0 ? 'pos' : 'neg'); }
+  function fmtPct(v) { return (v === null || isNaN(v)) ? 'n/a' : (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; }
+  function fmtPrice(v) { return (v === null || isNaN(v)) ? 'n/a' : '₹' + v.toLocaleString('en-IN', {minimumFractionDigits:2}); }
+  function fmtEma(v) { return (v === null || isNaN(v)) ? 'n/a' : v.toFixed(1); }
   function trendBadge(t) {
     if (t === 'up') return '<span class="badge up">UPTREND</span>';
     if (t === 'down') return '<span class="badge down">DOWNTREND</span>';
-    if (t === 'mixed') return '<span class="badge mixed">MIXED</span>';
-    return '<span class="na">n/a</span>';
+    return '<span class="badge mixed">MIXED</span>';
   }
-  function fmtEma(price, ema) {
-    if (ema === null || ema === undefined || isNaN(ema)) return '<span class="na">n/a</span>';
-    let flag = '';
-    if (price !== null && price !== undefined && !isNaN(price)) {
-      flag = price >= ema
-        ? '<span class="ema-flag above">▲</span>'
-        : '<span class="ema-flag below">▼</span>';
-    }
-    return ema.toFixed(1) + flag;
+  function barTypeBadge(b) {
+    if (b === 'Inside') return '<span class="badge inside">INSIDE</span>';
+    if (b === 'Outside') return '<span class="badge outside">OUTSIDE</span>';
+    return b || 'n/a';
   }
-  function fmtTurnover(turnover, liquid) {
-    if (turnover === null || turnover === undefined || isNaN(turnover)) return '<span class="na">n/a</span>';
-    const cr = (turnover / 10000000).toFixed(2);
-    const badge = liquid
-      ? '<span class="badge liquid">≥7Cr</span>'
-      : '<span class="badge illiquid">&lt;7Cr</span>';
-    return `<div class="turnover-cell"><span>₹${cr} Cr</span>${badge}</div>`;
-  }
-  function barTypeBadge(barType) {
-    if (barType === 'Inside') return '<span class="badge inside">INSIDE</span>';
-    if (barType === 'Outside') return '<span class="badge outside">OUTSIDE</span>';
-    if (barType === 'Normal') return '<span class="badge normal">NORMAL</span>';
-    return '<span class="na">n/a</span>';
-  }
-  function specialBadge(special) {
-    if (special === null || special === undefined) return '<span class="na">n/a</span>';
-    return special ? '<span class="badge special">★ SPECIAL</span>' : '';
-  }
+  function specialBadge(s) { return s ? '<span class="badge special">★ SPECIAL</span>' : ''; }
   function mean(arr) { const a = arr.filter(v => v !== null && !isNaN(v)); return a.length ? a.reduce((s,v)=>s+v,0)/a.length : 0; }
-  function mostCommonDate(stocks) {
-    const counts = {};
-    stocks.forEach(s => { if (s.date) counts[s.date] = (counts[s.date] || 0) + 1; });
-    let best = null, bestCount = 0;
-    for (const d in counts) { if (counts[d] > bestCount) { best = d; bestCount = counts[d]; } }
-    return best;
-  }
-  function fmtPrice(v) { if (v === null || v === undefined || isNaN(v)) return '<span class="na">n/a</span>'; return '₹' + v.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
   function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
-  // ---------- Controls ----------
-  searchInput.addEventListener('input', render_table_only);
-  minRsInput.addEventListener('input', () => {
-    if (Number(minRsInput.value) > Number(maxRsInput.value)) { maxRsInput.value = minRsInput.value; maxRsVal.textContent = maxRsInput.value; }
-    minRsVal.textContent = minRsInput.value; render_table_only();
-  });
-  maxRsInput.addEventListener('input', () => {
-    if (Number(maxRsInput.value) < Number(minRsInput.value)) { minRsInput.value = maxRsInput.value; minRsVal.textContent = minRsInput.value; }
-    maxRsVal.textContent = maxRsInput.value; render_table_only();
-  });
-  [ema1020, ema2050, ema1050].forEach(el => el.addEventListener('change', render_table_only));
-  trendSelect.addEventListener('change', render_table_only);
-  liquidOnly.addEventListener('change', render_table_only);
-  dayMoveSelect.addEventListener('change', render_table_only);
-  barTypeSelect.addEventListener('change', render_table_only);
-  specialOnly.addEventListener('change', render_table_only);
-  sortSelect.addEventListener('change', () => {
-    const [k, d] = sortSelect.value.split('-');
-    const map = { rs: 'rs', p3: 'p3', p12: 'p12', sym: 'symbol' };
-    sortKey = map[k]; sortDir = d;
-    render_table_only();
-  });
-  function render_table_only() { renderTable(); }
+  // Event Listeners
+  searchInput.addEventListener('input', renderTable);
+  minRsInput.addEventListener('input', () => { minRsVal.textContent = minRsInput.value; renderTable(); });
+  maxRsInput.addEventListener('input', () => { maxRsVal.textContent = maxRsInput.value; renderTable(); });
+  [trendSelect, dist10Select, dist50Select, dayMoveSelect, barTypeSelect, liquidOnly, specialOnly].forEach(el => el.addEventListener('change', renderTable));
 
   document.querySelectorAll('thead th').forEach(th => {
     th.addEventListener('click', () => {
       const key = th.dataset.key;
-      const map = { rank: 'rs', symbol: 'symbol', rs: 'rs', price: 'closeToday', date: 'date', p3: 'p3', p6: 'p6', p9: 'p9', p12: 'p12', score: 'score', trend: 'trend', ema10: 'ema10', ema20: 'ema20', ema50: 'ema50', turnover: 'turnover', bartype: 'barType', special: 'specialCandle', daychange: 'dayChangePct', dist10: 'dist10', dist50: 'dist50' };
-      const newKey = map[key];
-      if (sortKey === newKey) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
-      else { sortKey = newKey; sortDir = 'desc'; }
+      if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      else { sortKey = key; sortDir = 'desc'; }
       document.querySelectorAll('thead th').forEach(t => t.classList.remove('active'));
       th.classList.add('active');
       renderTable();
     });
   });
 
-  // ---------- Export ----------
-  exportBtn.addEventListener('click', async () => {
-    const list = sortList(allStocks.filter(s => s.complete));
-    const header = 'Rank,Symbol,Name,Price,Day_Change_Pct,Date,RS_Rating,Pct_3M,Pct_6M,Pct_9M,Pct_12M,Weighted_Score,Trend,EMA_10,EMA_20,EMA_50,Turnover_30D_INR,Liquid_7Cr,Bar_Type,Special_Candle,Dist_EMA10_Pct,Dist_EMA50_Pct\n';
-    const body = list.map((s, i) => [
-      i + 1, s.symbol, `"${(s.name||'').replace(/"/g,'""')}"`,
-      s.closeToday?.toFixed(2) ?? '', s.dayChangePct?.toFixed(2) ?? '', s.date || '', s.rs,
-      s.p3?.toFixed(2), s.p6?.toFixed(2), s.p9?.toFixed(2), s.p12?.toFixed(2), s.score?.toFixed(2),
-      s.trend || '', s.ema10?.toFixed(2) ?? '', s.ema20?.toFixed(2) ?? '', s.ema50?.toFixed(2) ?? '',
-      s.turnover !== null ? Math.round(s.turnover) : '', s.liquid === null ? '' : s.liquid,
-      s.barType || '', s.specialCandle === null || s.specialCandle === undefined ? '' : s.specialCandle,
-      s.dist10?.toFixed(2) ?? '', s.dist50?.toFixed(2) ?? ''
-    ].join(',')).join('\n');
-    const csv = header + body;
+  // ---------- Column Picker Configuration ----------
+  const COLUMNS = [
+    ['price','Price'],['daychange','Day %'],['date','Date'],['rs','RS Rating'],
+    ['p3','3M %'],['p6','6M %'],['p9','9M %'],['p12','12M %'],
+    ['score','Weighted Score'],['trend','Trend'],['ema10','EMA 10'],
+    ['ema20','EMA 20'],['ema50','EMA 50'],['dist10','Dist EMA 10'],
+    ['dist50','Dist EMA 50'],['bartype','Bar Type'],['special','Special']
+  ];
+  
+  // DEFAULT HIDDEN COLUMNS AS REQUESTED: 9M%, Weighted Score, EMA20
+  const DEFAULT_HIDDEN = ['p9', 'score', 'ema20'];
+  let hiddenCols = [...DEFAULT_HIDDEN];
 
-    try {
-      const downloads = await claude.use('downloads');
-      if (downloads) {
-        await downloads.save({ filename: 'nse_rs_ratings.csv', data: csv });
-        return;
-      }
-    } catch (e) { /* fall through to blob fallback */ }
+  try { 
+    const saved = localStorage.getItem('rs_scanner_hidden_cols');
+    if (saved) hiddenCols = JSON.parse(saved);
+  } catch (e) {}
 
-    // Fallback for contexts without the downloads capability
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'nse_rs_ratings.csv';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
-
-  // ---------- Column chooser ----------
-  const COLUMNS = [['price','Price'],['daychange','Day %'],['date','Date'],['rs','RS Rating'],['p3','3M %'],['p6','6M %'],['p9','9M %'],['p12','12M %'],['score','Weighted Score'],['trend','Trend'],['ema10','EMA 10'],['ema20','EMA 20'],['ema50','EMA 50'],['dist10','Dist from EMA 10'],['dist50','Dist from EMA 50'],['bartype','Bar Type'],['special','Special candle']];
-  let hiddenCols = [];
-  try { hiddenCols = JSON.parse(localStorage.getItem('rs_scanner_hidden_cols') || '[]'); } catch (e) {}
-  document.querySelectorAll('#scanner-view thead th').forEach(th => { th.dataset.col = th.dataset.key; });
   const colStyle = document.createElement('style');
   document.head.appendChild(colStyle);
   const colList = document.getElementById('col-list');
+
   function applyColumns() {
-    colStyle.textContent = hiddenCols.map(k => `[data-col="${k}"]{display:none}`).join('\n');
+    colStyle.textContent = hiddenCols.map(k => `[data-col="${k}"]{display:none !important;}`).join('\n');
     try { localStorage.setItem('rs_scanner_hidden_cols', JSON.stringify(hiddenCols)); } catch (e) {}
     colList.querySelectorAll('input').forEach(cb => { cb.checked = !hiddenCols.includes(cb.value); });
   }
-  colList.innerHTML = COLUMNS.map(([k, label]) => `<label><input type="checkbox" value="${k}" checked> ${label}</label>`).join('');
+
+  colList.innerHTML = COLUMNS.map(([k, label]) => `<label><input type="checkbox" value="${k}"> ${label}</label>`).join('');
   colList.addEventListener('change', e => {
     const k = e.target.value;
-    hiddenCols = e.target.checked ? hiddenCols.filter(x => x !== k) : hiddenCols.concat(k);
+    hiddenCols = e.target.checked ? hiddenCols.filter(x => x !== k) : [...hiddenCols, k];
     applyColumns();
   });
-  document.getElementById('col-reset').addEventListener('click', () => { hiddenCols = []; applyColumns(); });
+
+  document.getElementById('col-reset').addEventListener('click', () => {
+    hiddenCols = [...DEFAULT_HIDDEN];
+    applyColumns();
+  });
+
   const colMenu = document.getElementById('col-menu');
   document.getElementById('col-toggle').addEventListener('click', e => {
     e.stopPropagation();
@@ -1070,12 +798,7 @@ header p {
   document.addEventListener('click', e => { if (!colMenu.contains(e.target)) colMenu.style.display = 'none'; });
   applyColumns();
 
-  // ---------- Mobile filter toggle ----------
-  document.getElementById('filters-toggle').addEventListener('click', () => {
-    document.getElementById('filters').classList.toggle('open');
-  });
-
-  // ---------- Tabs ----------
+  // Navigation
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1085,161 +808,22 @@ header p {
     });
   });
 
-  // ---------- Market Breadth ----------
-  const BREADTH_THRESHOLD = 4;
-  let breadthRows = [];
-
-  const bUploadZone = document.getElementById('breadth-upload-zone');
-  const bFileInput = document.getElementById('breadth-file-input');
-  const bUploadError = document.getElementById('breadth-upload-error');
-  const bResults = document.getElementById('breadth-results');
-  const bTableBody = document.getElementById('breadth-table-body');
-  const bExportBtn = document.getElementById('breadth-export-btn');
-
-  bUploadZone.addEventListener('click', () => bFileInput.click());
-  bUploadZone.addEventListener('dragover', e => { e.preventDefault(); bUploadZone.classList.add('drag'); });
-  bUploadZone.addEventListener('dragleave', () => bUploadZone.classList.remove('drag'));
-  bUploadZone.addEventListener('drop', e => {
-    e.preventDefault();
-    bUploadZone.classList.remove('drag');
-    if (e.dataTransfer.files.length) handleBreadthFile(e.dataTransfer.files[0]);
-  });
-  bFileInput.addEventListener('change', e => {
-    if (e.target.files.length) handleBreadthFile(e.target.files[0]);
-  });
-
-  function handleBreadthFile(file) {
-    bUploadError.style.display = 'none';
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      dynamicTyping: true,
-      complete: res => {
-        try {
-          processBreadthData(res.data);
-        } catch (err) {
-          bUploadError.textContent = 'Could not process this file: ' + err.message;
-          bUploadError.style.display = 'block';
-        }
-      },
-      error: err => {
-        bUploadError.textContent = 'Could not read this CSV: ' + err.message;
-        bUploadError.style.display = 'block';
-      }
-    });
-  }
-
-  function processBreadthData(rows) {
-    const cols = rows.length ? Object.keys(rows[0]) : [];
-    if (!['Symbol', 'Date', 'Close'].every(c => cols.includes(c))) {
-      throw new Error('CSV must have Symbol, Date, Close columns.');
-    }
-
-    // Group by symbol, sort each by date, compute day-over-day % change
-    const bySymbol = {};
-    rows.forEach(r => {
-      if (!r.Symbol || !r.Date || r.Close === null || r.Close === undefined) return;
-      (bySymbol[r.Symbol] = bySymbol[r.Symbol] || []).push({ date: String(r.Date), close: Number(r.Close) });
-    });
-
-    const perDate = {}; // date -> {up: 0, down: 0, total: 0}
-    Object.values(bySymbol).forEach(series => {
-      series.sort((a, b) => a.date.localeCompare(b.date));
-      for (let i = 1; i < series.length; i++) {
-        const prev = series[i - 1].close, curr = series[i].close;
-        if (!prev || isNaN(prev) || isNaN(curr)) continue;
-        const pct = ((curr - prev) / prev) * 100;
-        const d = series[i].date;
-        if (!perDate[d]) perDate[d] = { up: 0, down: 0, total: 0 };
-        perDate[d].total++;
-        if (pct >= BREADTH_THRESHOLD) perDate[d].up++;
-        else if (pct <= -BREADTH_THRESHOLD) perDate[d].down++;
-      }
-    });
-
-    breadthRows = Object.keys(perDate)
-      .sort((a, b) => b.localeCompare(a)) // newest first
-      .map(d => ({ date: d, up: perDate[d].up, down: perDate[d].down, total: perDate[d].total }));
-
-    if (!breadthRows.length) throw new Error('No day-over-day price pairs found — need at least 2 dates per stock.');
-
-    renderBreadthTable();
-    bResults.style.display = 'flex';
-  }
-
-  function renderBreadthTable() {
-    bTableBody.innerHTML = breadthRows.map(r => `
-      <tr>
-        <td style="font-family:var(--font-mono); font-size:12.5px; color:var(--text-dim);">${escapeHtml(r.date)}</td>
-        <td class="num pos">${r.up}</td>
-        <td class="num neg">${r.down}</td>
-        <td class="num ${r.up - r.down >= 0 ? 'pos' : 'neg'}">${r.up - r.down >= 0 ? '+' : ''}${r.up - r.down}</td>
-        <td class="num" style="color:var(--text-faint);">${r.total}</td>
-      </tr>
-    `).join('');
-  }
-
-  bExportBtn.addEventListener('click', async () => {
-    const header = 'Date,Up_4pct,Down_4pct,Net,Stocks_Scanned\n';
-    const body = breadthRows.map(r => [r.date, r.up, r.down, r.up - r.down, r.total].join(',')).join('\n');
-    const csv = header + body;
-    try {
-      const downloads = await claude.use('downloads');
-      if (downloads) { await downloads.save({ filename: 'nse_market_breadth.csv', data: csv }); return; }
-    } catch (e) { /* fall through */ }
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'nse_market_breadth.csv';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
-
-  // ---------- Auto-load admin-published data (data/*.csv next to this page) ----------
-  async function tryLoadSharedCsv(url) {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('not found');
-    const text = await res.text();
-    const parsed = Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true });
-    if (!parsed.data.length) throw new Error('empty file');
-    return parsed.data;
-  }
-
   document.getElementById('show-upload-link').addEventListener('click', () => {
-    document.getElementById('upload-zone').style.display = 'block';
-  });
-  document.getElementById('breadth-show-upload-link').addEventListener('click', () => {
-    bUploadZone.style.display = 'block';
+    uploadZone.style.display = uploadZone.style.display === 'none' ? 'block' : 'none';
   });
 
+  // Auto Load
   (async () => {
     try {
-      const rows = await tryLoadSharedCsv(RS_DATA_URL);
-      processData(rows);
+      const res = await fetch(RS_DATA_URL);
+      if (!res.ok) throw new Error();
+      const text = await res.text();
+      const parsed = Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true });
+      processData(parsed.data);
     } catch (e) {
-      // No admin-published file found (or this preview has no /data folder) — fall back
-      // to a locally cached upload, then to showing the manual upload zone.
-      try {
-        const cached = localStorage.getItem('rs_scanner_last_csv');
-        const rows = cached ? JSON.parse(cached) : null;
-        if (Array.isArray(rows) && rows.length) processData(rows);
-        else document.getElementById('upload-zone').style.display = 'block';
-      } catch (e2) {
-        document.getElementById('upload-zone').style.display = 'block';
-      }
+      uploadZone.style.display = 'block';
     } finally {
       document.getElementById('checking-shared').style.display = 'none';
-    }
-  })();
-
-  (async () => {
-    try {
-      const rows = await tryLoadSharedCsv(HISTORY_DATA_URL);
-      processBreadthData(rows);
-    } catch (e) {
-      bUploadZone.style.display = 'block';
-    } finally {
-      document.getElementById('breadth-checking-shared').style.display = 'none';
     }
   })();
 })();
