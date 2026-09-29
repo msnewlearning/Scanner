@@ -299,9 +299,9 @@
   .badge.special { color: var(--gold); background: rgba(217, 119, 6, 0.14); }
 
   /* Sticky First Two Columns */
-  #scanner-view th:nth-child(1), #scanner-view td:nth-child(1) { position: sticky; left: 0; width: 40px; z-index: 1; }
-  #scanner-view th:nth-child(2), #scanner-view td:nth-child(2) { position: sticky; left: 40px; min-width: 140px; max-width: 170px; z-index: 1; border-right: 1px solid var(--border-soft); }
-  #scanner-view thead th:nth-child(-n+2) { z-index: 3; }
+  #scanner-view th[data-col="rank"], #scanner-view td[data-col="rank"] { position: sticky; left: 0; width: 40px; z-index: 1; }
+  #scanner-view th[data-col="symbol"], #scanner-view td[data-col="symbol"] { position: sticky; left: 40px; min-width: 140px; max-width: 170px; z-index: 1; border-right: 1px solid var(--border-soft); }
+  #scanner-view thead th[data-col="rank"], #scanner-view thead th[data-col="symbol"] { z-index: 3; }
 
   /* ---------- Dropdown Pickers ---------- */
   .col-picker { position: relative; }
@@ -435,25 +435,25 @@
         <table>
           <thead>
             <tr>
-              <th data-key="rank">#</th>
-              <th data-key="symbol">Symbol</th>
-              <th data-key="price" class="num">Price</th>
-              <th data-key="daychange" class="num">Day %</th>
-              <th data-key="date">Date</th>
-              <th data-key="rs">RS Rating</th>
-              <th data-key="p3" class="num">3M %</th>
-              <th data-key="p6" class="num">6M %</th>
-              <th data-key="p9" class="num">9M %</th>
-              <th data-key="p12" class="num">12M %</th>
-              <th data-key="score" class="num">Weighted Score</th>
-              <th data-key="trend">Trend</th>
-              <th data-key="ema10" class="num">EMA 10</th>
-              <th data-key="ema20" class="num">EMA 20</th>
-              <th data-key="ema50" class="num">EMA 50</th>
-              <th data-key="dist10" class="num">Dist EMA 10</th>
-              <th data-key="dist50" class="num">Dist EMA 50</th>
-              <th data-key="bartype">Bar Type</th>
-              <th data-key="special">Special</th>
+              <th data-col="rank" data-key="rank">#</th>
+              <th data-col="symbol" data-key="symbol">Symbol</th>
+              <th data-col="price" data-key="price" class="num">Price</th>
+              <th data-col="daychange" data-key="daychange" class="num">Day %</th>
+              <th data-col="date" data-key="date">Date</th>
+              <th data-col="rs" data-key="rs">RS Rating</th>
+              <th data-col="p3" data-key="p3" class="num">3M %</th>
+              <th data-col="p6" data-key="p6" class="num">6M %</th>
+              <th data-col="p9" data-key="p9" class="num">9M %</th>
+              <th data-col="p12" data-key="p12" class="num">12M %</th>
+              <th data-col="score" data-key="score" class="num">Weighted Score</th>
+              <th data-col="trend" data-key="trend">Trend</th>
+              <th data-col="ema10" data-key="ema10" class="num">EMA 10</th>
+              <th data-col="ema20" data-key="ema20" class="num">EMA 20</th>
+              <th data-col="ema50" data-key="ema50" class="num">EMA 50</th>
+              <th data-col="dist10" data-key="dist10" class="num">Dist EMA 10</th>
+              <th data-col="dist50" data-key="dist50" class="num">Dist EMA 50</th>
+              <th data-col="bartype" data-key="bartype">Bar Type</th>
+              <th data-col="special" data-key="special">Special</th>
             </tr>
           </thead>
           <tbody id="table-body"></tbody>
@@ -759,7 +759,7 @@
     ['dist50','Dist EMA 50'],['bartype','Bar Type'],['special','Special']
   ];
   
-  // DEFAULT HIDDEN COLUMNS AS REQUESTED: 9M%, Weighted Score, EMA20
+  // DEFAULT HIDDEN COLUMNS: 9M%, Weighted Score, EMA20
   const DEFAULT_HIDDEN = ['p9', 'score', 'ema20'];
   let hiddenCols = [...DEFAULT_HIDDEN];
 
