@@ -32,61 +32,8 @@
     <div class="note">Chart &amp; indicators via TradingView</div>
   </div>
   <div id="widget-area" class="widget-wrap"></div>
+
 <script>
-(function() {
-  const params = new URLSearchParams(location.search);
-  let rawSymbol = params.get('symbol') || '';
-  
-  // Clean symbol string
-  let symbol = decodeURIComponent(rawSymbol).trim().toUpperCase();
-  
-  const titleEl = document.getElementById('title');
-  const area = document.getElementById('widget-area');
-
-  if (!symbol) {
-    titleEl.textContent = 'No symbol';
-    area.innerHTML = '<div class="status">No symbol given.</div>';
-    return;
-  }
-
-  // Ensure proper format for TradingView (NSE:AHCL)
-  const formattedSymbol = symbol.includes(':') ? symbol : 'NSE:' + symbol;
-
-  titleEl.textContent = symbol;
-  document.title = symbol + ' Chart';
-
-  // Embed TradingView direct iframe to bypass the JS widget API restrictions
-  const container = document.createElement('div');
-  container.style.width = '100%';
-  container.style.height = '100%';
-
-  const iframe = document.createElement('iframe');
-  iframe.style.width = '100%';
-  iframe.style.height = '100%';
-  iframe.style.border = '0';
-  iframe.allowTransparency = 'true';
-  iframe.scrolling = 'no';
-  
-  // Direct chart engine URL - bypasses the "only available on TradingView" popup
-  const tvUrl = new URL('https://s.tradingview.com/widgetembed/');
-  tvUrl.searchParams.set('symbol', formattedSymbol);
-  tvUrl.searchParams.set('interval', 'D');
-  tvUrl.searchParams.set('hidesidetoolbar', '0');
-  tvUrl.searchParams.set('symboledit', '1');
-  tvUrl.searchParams.set('saveimage', '1');
-  tvUrl.searchParams.set('toolbarbg', 'f1f3f6');
-  tvUrl.searchParams.set('studies', '[]');
-  tvUrl.searchParams.set('theme', 'light');
-  tvUrl.searchParams.set('style', '1');
-  tvUrl.searchParams.set('timezone', 'Asia/Kolkata');
-
-  iframe.src = tvUrl.toString();
-  container.appendChild(iframe);
-  area.innerHTML = '';
-  area.appendChild(container);
-})();
-</script>
-<!-- script>
 (function() {
   const params = new URLSearchParams(location.search);
   const symbol = (params.get('symbol') || '').trim().toUpperCase();
@@ -140,6 +87,6 @@
   };
   document.body.appendChild(script);
 })();
-</script -->
+</script>
 </body>
 </html>
