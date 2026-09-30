@@ -453,6 +453,7 @@
               <th data-col="daychange" data-key="daychange" class="num">Day %</th>
               <th data-col="date" data-key="date">Date</th>
               <th data-col="rs" data-key="rs">RS Rating</th>
+              <th data-col="rstrend" data-key="rsChange1w">RS Trend (1W)</th>
               <th data-col="p3" data-key="p3" class="num">3M %</th>
               <th data-col="p6" data-key="p6" class="num">6M %</th>
               <th data-col="p9" data-key="p9" class="num">9M %</th>
@@ -582,17 +583,24 @@
       const specialCandle = computeSpecialCandle(numOrNull(r.Today_Open), closeToday, numOrNull(r.Prev_Open), prevClose, numOrNull(r.Prev_High));
       const dayChangePct = (closeToday !== null && prevClose) ? ((closeToday - prevClose) / prevClose) * 100 : null;
 
+      const rsToday = numOrNull(r.RS_Today);
+      const rs1w = numOrNull(r.RS_1W_Back);
+      const rsChange1w = numOrNull(r.RS_Change_1W);
+
       stocks.push({
         symbol: String(r.Symbol).trim(), name: r.Name ? String(r.Name).trim() : '',
         sector: r.Sector ? String(r.Sector).trim() : '', marketcap: r.Market_Cap ? String(r.Market_Cap).trim() : '',
         p3, p6, p9, p12, score, complete, closeToday, ema10, ema20, ema50, trend, dist10, dist50,
-        turnover, liquid, date: r.Date ? String(r.Date).trim() : '', barType, specialCandle, dayChangePct, rs: null
+        turnover, liquid, date: r.Date ? String(r.Date).trim() : '', barType, specialCandle, dayChangePct,
+        rsToday, rs1w, rsChange1w, rs: rsToday
       });
     }
 
-    const ranked = stocks.filter(s => s.complete).sort((a, b) => a.score - b.score);
-    const n = ranked.length;
-    ranked.forEach((s, i) => { s.rs = Math.max(1, Math.min(99, Math.round(((i + 1) / n) * 99))); });
+    if (!stocks.some(s => s.rsToday !== null)) {
+      const ranked = stocks.filter(s => s.complete).sort((a, b) => a.score - b.score);
+      const n = ranked.length;
+      ranked.forEach((s, i) => { s.rs = Math.max(1, Math.min(99, Math.round(((i + 1) / n) * 99))); });
+    }
 
     allStocks = stocks;
     populateFilterOptions(sectorSelect, [...new Set(stocks.map(s => s.sector).filter(Boolean))], 'All Sectors');
@@ -717,6 +725,7 @@
             <div class="rs-num ${s.rs >= 90 ? 'top' : ''}">${s.rs}</div>
           </div>
         </td>
+        <td data-col="rstrend" class="num ${cls(s.rsChange1w)}">${formatRsTrend(s)}</td>
         <td class="num ${cls(s.p3)}" data-col="p3">${fmtPct(s.p3)}</td>
         <td class="num ${cls(s.p6)}" data-col="p6">${fmtPct(s.p6)}</td>
         <td class="num ${cls(s.p9)}" data-col="p9">${fmtPct(s.p9)}</td>
@@ -755,6 +764,13 @@
     if (t === 'down') return '<span class="badge down">DOWNTREND</span>';
     return '<span class="badge mixed">MIXED</span>';
   }
+  function formatRsTrend(s) {
+    if (s.rsToday === null || s.rs1w === null) return 'n/a';
+    const delta = s.rsChange1w === null ? (s.rsToday - s.rs1w) : s.rsChange1w;
+    const arrow = delta > 0 ? '↑' : (delta < 0 ? '↓' : '→');
+    const clsName = delta > 0 ? 'pos' : (delta < 0 ? 'neg' : '');
+    return `<span class="${clsName}" title="RS ${s.rs1w} one week ago → ${s.rsToday} today">${arrow} ${delta > 0 ? '+' : ''}${delta} <span style="color:var(--text-faint)">(${s.rs1w}→${s.rsToday})</span></span>`;
+  }
   function barTypeBadge(b) {
     if (b === 'Inside') return '<span class="badge inside">INSIDE</span>';
     if (b === 'Outside') return '<span class="badge outside">OUTSIDE</span>';
@@ -785,7 +801,7 @@
 
   // ---------- Column Picker Configuration ----------
   const COLUMNS = [
-    ['sector','Sector'],['marketcap','Market Cap'],['price','Price'],['daychange','Day %'],['date','Date'],['rs','RS Rating'],
+    ['sector','Sector'],['marketcap','Market Cap'],['price','Price'],['daychange','Day %'],['date','Date'],['rs','RS Rating'],['rstrend','RS Trend (1W)'],
     ['p3','3M %'],['p6','6M %'],['p9','9M %'],['p12','12M %'],
     ['score','Weighted Score'],['trend','Trend'],['ema10','EMA 10'],
     ['ema20','EMA 20'],['ema50','EMA 50'],['dist10','Dist EMA 10'],
