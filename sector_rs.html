@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<meta name="theme-color" content="#F4F6F9">
+
+<title>Sector RS Strength</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+<style>
+
+:root {
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-raised: #F1F5F9;
+
+  --border: #CBD5E1;
+  --border-soft: #E2E8F0;
+
+  --text: #0F172A;
+  --text-dim: #475569;
+  --text-faint: #94A3B8;
+
+  --accent: #0D9488;
+  --accent-dark: #0F766E;
+  --accent-soft: rgba(13, 148, 136, 0.10);
+
+  --gold: #D97706;
+  --weak: #E11D48;
+
+  --font-display: 'Fraunces', serif;
+  --font-ui: 'IBM Plex Sans', -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--bg);
+  font-family: var(--font-ui);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 18px 22px 30px;
+}
+
+/* ---------- Header ---------- */
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.brand-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-dark);
+  font-weight: 600;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+#data-date {
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* ---------- Navigation ---------- */
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.btn {
+  display: inline-block;
+
+  background: var(--accent-dark);
+  color: #FFFFFF;
+
+  border: none;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 12px;
+
+  padding: 6px 12px;
+  border-radius: 5px;
+
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn.secondary {
+  background: var(--surface-raised);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+.btn.secondary:hover {
+  color: var(--text);
+  border-color: var(--text-faint);
+}
+
+/* ---------- Intro ---------- */
+
+.intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+
+  background: var(--surface);
+
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+
+  padding: 12px 16px;
+  margin-bottom: 12px;
+}
+
+.intro-text {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.intro-text strong {
+  color: var(--text);
+}
+
+.threshold {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+  border-radius: 5px;
+  padding: 5px 9px;
+  white-space: nowrap;
+}
+
+/* ---------- Stats ---------- */
+
+.stats-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+
+  padding: 7px 12px;
+
+  flex: 1;
+}
+
+.stat .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
+
+.stat .value {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ---------- Chart Card ---------- */
+
+.chart-card {
+  background: var(--surface);
+
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+
+  padding: 16px 18px 18px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+
+  margin-bottom: 16px;
+}
+
+.chart-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.chart-subtitle {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-faint);
+}
+
+/* ---------- Horizontal Bars ---------- */
+
+.sector-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(150px, 220px)
+    minmax(100px, 1fr)
+    42px;
+
+  align-items: center;
+
+  gap: 12px;
+
+  margin-bottom: 8px;
+}
+
+.sector-name {
+  font-size: 12.5px;
+  color: var(--text-dim);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  text-align: right;
+}
+
+.bar-track {
+  height: 20px;
+
+  background: var(--surface-raised);
+
+  border-radius: 4px;
+
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+
+  background: var(--accent);
+
+  border-radius: 4px;
+
+  min-width: 2px;
+
+  transition:
+    width 0.35s ease,
+    opacity 0.2s ease;
+}
+
+.sector-row:hover .bar {
+  opacity: 0.85;
+}
+
+.sector-count {
+  font-family: var(--font-mono);
+
+  font-size: 12px;
+  font-weight: 600;
+
+  color: var(--text);
+
+  text-align: left;
+}
+
+/* ---------- Empty / Loading ---------- */
+
+.status {
+  text-align: center;
+
+  padding: 50px 20px;
+
+  color: var(--text-faint);
+
+  font-family: var(--font-mono);
+
+  font-size: 12px;
+}
+
+.error {
+  color: var(--weak);
+  background: rgba(225, 29, 72, 0.06);
+
+  border: 1px solid rgba(225, 29, 72, 0.2);
+
+  border-radius: 6px;
+
+  padding: 12px;
+
+  margin-bottom: 12px;
+
+  font-size: 12px;
+}
+
+/* ---------- Footer ---------- */
+
+footer {
+  margin-top: 10px;
+
+  text-align: center;
+
+  color: var(--text-faint);
+
+  font-size: 11px;
+
+  font-family: var(--font-mono);
+}
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 720px) {
+
+  .wrap {
+    padding: 12px 12px 25px;
+  }
+
+  header {
+    align-items: flex-start;
+  }
+
+  .header-left {
+    display: block;
+  }
+
+  h1 {
+    font-size: 20px;
+    margin-top: 3px;
+  }
+
+  .top-bar {
+    justify-content: flex-end;
+  }
+
+  .intro {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .stats-bar {
+    overflow-x: auto;
+  }
+
+  .stat {
+    min-width: 105px;
+  }
+
+  .sector-row {
+    grid-template-columns:
+      minmax(105px, 140px)
+      minmax(80px, 1fr)
+      35px;
+
+    gap: 8px;
+  }
+
+  .sector-name {
+    font-size: 11px;
+  }
+
+  .bar-track {
+    height: 18px;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <!-- Header -->
+
+  <header>
+
+    <div class="header-left">
+
+      <span class="brand-sub">
+        NSE Scanner
+      </span>
+
+      <h1>
+        Sector RS Strength
+        <span id="data-date"></span>
+      </h1>
+
+    </div>
+
+    <a href="index.html" class="btn secondary">
+      ← RS Scanner
+    </a>
+
+  </header>
+
+
+  <!-- Intro -->
+
+  <div class="intro">
+
+    <div class="intro-text">
+      Number of stocks in each sector with
+      <strong>RS Rating above 80</strong>.
+    </div>
+
+    <div class="threshold">
+      RS &gt; 80
+    </div>
+
+  </div>
+
+
+  <!-- Stats -->
+
+  <div class="stats-bar">
+
+    <div class="stat">
+      <div class="label">Sectors</div>
+      <div class="value" id="sector-count">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">Stocks RS &gt; 80</div>
+      <div class="value" id="strong-stock-count">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">Highest Sector</div>
+      <div class="value" id="top-sector">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">Top Count</div>
+      <div class="value" id="top-count">—</div>
+    </div>
+
+  </div>
+
+
+  <!-- Error -->
+
+  <div
+    id="error"
+    class="error"
+    style="display:none;"
+  ></div>
+
+
+  <!-- Chart -->
+
+  <div class="chart-card">
+
+    <div class="chart-header">
+
+      <div class="chart-title">
+        Stocks with RS Rating &gt; 80 by Sector
+      </div>
+
+      <div class="chart-subtitle">
+        Higher bar = more strong-RS stocks
+      </div>
+
+    </div>
+
+    <div id="chart">
+
+      <div class="status">
+        Loading sector data…
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <footer>
+    Data as published · RS Rating calculated from 3M / 6M / 9M / 12M momentum · not investment advice
+  </footer>
+
+</div>
+
+
+<script>
+
+(function () {
+
+  /*
+   * Same data source used by index.html
+   */
+
+  const RS_DATA_URL =
+    'https://d2k3wq1952nc58.cloudfront.net/nse_rs_data.csv';
+
+
+  const WEIGHTS = {
+    p3: 0.4,
+    p6: 0.2,
+    p9: 0.2,
+    p12: 0.2
+  };
+
+
+  const chartEl =
+    document.getElementById('chart');
+
+  const errorEl =
+    document.getElementById('error');
+
+
+  /*
+   * Convert CSV values to numbers.
+   */
+
+  function numOrNull(v) {
+
+    if (
+      v === null ||
+      v === undefined ||
+      v === ''
+    ) {
+      return null;
+    }
+
+    const n = Number(v);
+
+    return isNaN(n) ? null : n;
+  }
+
+
+  /*
+   * Escape text before inserting it into HTML.
+   */
+
+  function escapeHtml(value) {
+
+    const div =
+      document.createElement('div');
+
+    div.textContent =
+      String(value ?? '');
+
+    return div.innerHTML;
+  }
+
+
+  /*
+   * Calculate the same weighted momentum score
+   * used by index.html.
+   */
+
+  function calculateScore(row) {
+
+    const p3 =
+      numOrNull(row.Pct_3M);
+
+    const p6 =
+      numOrNull(row.Pct_6M);
+
+    const p9 =
+      numOrNull(row.Pct_9M);
+
+    const p12 =
+      numOrNull(row.Pct_12M);
+
+
+    const values = [
+      p3,
+      p6,
+      p9,
+      p12
+    ];
+
+
+    if (
+      values.some(
+        v => v === null || isNaN(v)
+      )
+    ) {
+      return null;
+    }
+
+
+    return (
+      p3 * WEIGHTS.p3 +
+      p6 * WEIGHTS.p6 +
+      p9 * WEIGHTS.p9 +
+      p12 * WEIGHTS.p12
+    );
+
+  }
+
+
+  /*
+   * Calculate RS percentile exactly like index.html.
+   */
+
+  function calculateRS(rows) {
+
+    const scored = [];
+
+
+    rows.forEach(row => {
+
+      if (!row.Symbol) {
+        return;
+      }
+
+
+      const score =
+        calculateScore(row);
+
+
+      if (score === null) {
+        return;
+      }
+
+
+      scored.push({
+        row: row,
+        score: score
+      });
+
+    });
+
+
+    /*
+     * Same ascending score ranking
+     * as the main scanner.
+     */
+
+    scored.sort(
+      (a, b) => a.score - b.score
+    );
+
+
+    const n = scored.length;
+
+
+    scored.forEach(
+      (item, index) => {
+
+        item.rs = Math.max(
+          1,
+          Math.min(
+            99,
+            Math.round(
+              ((index + 1) / n) * 99
+            )
+          )
+        );
+
+      }
+    );
+
+
+    return scored;
+
+  }
+
+
+  /*
+   * Build sector counts.
+   */
+
+  function buildSectorCounts(scored) {
+
+    const counts = {};
+
+
+    scored.forEach(item => {
+
+      /*
+       * Only stocks with RS > 80.
+       */
+
+      if (item.rs <= 80) {
+        return;
+      }
+
+
+      const sector =
+        item.row.Sector
+          ? String(item.row.Sector).trim()
+          : '';
+
+
+      /*
+       * Ignore rows where sector is missing.
+       */
+
+      if (!sector) {
+        return;
+      }
+
+
+      if (!counts[sector]) {
+        counts[sector] = 0;
+      }
+
+
+      counts[sector]++;
+
+    });
+
+
+    return Object.entries(counts)
+
+      .map(
+        ([sector, count]) => ({
+          sector,
+          count
+        })
+      )
+
+      .sort(
+        (a, b) => {
+
+          if (b.count !== a.count) {
+            return b.count - a.count;
+          }
+
+          return a.sector.localeCompare(
+            b.sector
+          );
+
+        }
+      );
+
+  }
+
+
+  /*
+   * Render horizontal bar chart.
+   */
+
+  function renderChart(sectors) {
+
+    if (!sectors.length) {
+
+      chartEl.innerHTML = `
+        <div class="status">
+          No sector data available for stocks with RS &gt; 80.
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    const maxCount =
+      Math.max(
+        ...sectors.map(
+          s => s.count
+        )
+      );
+
+
+    chartEl.innerHTML =
+      sectors.map(item => {
+
+        const width =
+          maxCount > 0
+            ? (item.count / maxCount) * 100
+            : 0;
+
+
+        return `
+          <div class="sector-row">
+
+            <div
+              class="sector-name"
+              title="${escapeHtml(item.sector)}"
+            >
+              ${escapeHtml(item.sector)}
+            </div>
+
+            <div class="bar-track">
+
+              <div
+                class="bar"
+                style="width:${width}%"
+              ></div>
+
+            </div>
+
+            <div class="sector-count">
+              ${item.count}
+            </div>
+
+          </div>
+        `;
+
+      }).join('');
+
+  }
+
+
+  /*
+   * Update summary cards.
+   */
+
+  function renderStats(sectors, scored) {
+
+    const strongCount =
+      scored.filter(
+        item => item.rs > 80
+      ).length;
+
+
+    document.getElementById(
+      'sector-count'
+    ).textContent =
+      sectors.length.toLocaleString();
+
+
+    document.getElementById(
+      'strong-stock-count'
+    ).textContent =
+      strongCount.toLocaleString();
+
+
+    if (sectors.length) {
+
+      document.getElementById(
+        'top-sector'
+      ).textContent =
+        sectors[0].sector;
+
+
+      document.getElementById(
+        'top-count'
+      ).textContent =
+        sectors[0].count.toLocaleString();
+
+    }
+
+  }
+
+
+  /*
+   * Display data date.
+   */
+
+  function renderDate(rows) {
+
+    const dates =
+      rows
+        .map(r =>
+          r.Date
+            ? String(r.Date).trim()
+            : ''
+        )
+        .filter(Boolean);
+
+
+    if (!dates.length) {
+      return;
+    }
+
+
+    /*
+     * Usually every row has the same date.
+     * Use the latest date defensively.
+     */
+
+    const latest =
+      dates.sort().pop();
+
+
+    document.getElementById(
+      'data-date'
+    ).textContent =
+      ` (${latest})`;
+
+  }
+
+
+  /*
+   * Process downloaded CSV.
+   */
+
+  function processData(rows) {
+
+    if (!rows.length) {
+      throw new Error(
+        'The CSV appears to be empty.'
+      );
+    }
+
+
+    const columns =
+      Object.keys(rows[0]);
+
+
+    if (!columns.includes('Symbol')) {
+
+      throw new Error(
+        'CSV does not contain the Symbol column.'
+      );
+
+    }
+
+
+    if (!columns.includes('Sector')) {
+
+      throw new Error(
+        'CSV does not contain the Sector column. Make sure the latest fetch_nse_data.py output is being used.'
+      );
+
+    }
+
+
+    renderDate(rows);
+
+
+    const scored =
+      calculateRS(rows);
+
+
+    if (!scored.length) {
+
+      throw new Error(
+        'No stocks could be scored from the CSV.'
+      );
+
+    }
+
+
+    const sectors =
+      buildSectorCounts(scored);
+
+
+    renderStats(
+      sectors,
+      scored
+    );
+
+
+    renderChart(
+      sectors
+    );
+
+  }
+
+
+  /*
+   * Show error.
+   */
+
+  function showError(message) {
+
+    errorEl.textContent =
+      message;
+
+    errorEl.style.display =
+      'block';
+
+    chartEl.innerHTML = `
+      <div class="status">
+        Unable to load sector data.
+      </div>
+    `;
+
+  }
+
+
+  /*
+   * Load the same CSV used by the
+   * main RS scanner.
+   */
+
+  async function loadData() {
+
+    try {
+
+      const response =
+        await fetch(
+          RS_DATA_URL
+        );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          `HTTP ${response.status}`
+        );
+
+      }
+
+
+      const text =
+        await response.text();
+
+
+      const parsed =
+        Papa.parse(
+          text,
+          {
+            header: true,
+            dynamicTyping: true,
+            skipEmptyLines: true
+          }
+        );
+
+
+      processData(
+        parsed.data
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        'Sector RS error:',
+        error
+      );
+
+
+      showError(
+        'Could not load the published RS data. Please check that nse_rs_data.csv is available and that the CloudFront URL is accessible.'
+      );
+
+    }
+
+  }
+
+
+  loadData();
+
+})();
+
+</script>
+
+</body>
+</html>
