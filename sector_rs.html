@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -258,15 +259,17 @@ h1 {
   display: grid;
 
   grid-template-columns:
-    minmax(150px, 220px)
+    minmax(160px, 230px)
     minmax(100px, 1fr)
-    42px;
+    110px;
 
   align-items: center;
 
   gap: 12px;
 
-  margin-bottom: 8px;
+  margin-bottom: 9px;
+
+  cursor: default;
 }
 
 .sector-name {
@@ -281,7 +284,7 @@ h1 {
 }
 
 .bar-track {
-  height: 20px;
+  height: 21px;
 
   background: var(--surface-raised);
 
@@ -305,18 +308,49 @@ h1 {
 }
 
 .sector-row:hover .bar {
-  opacity: 0.85;
+  opacity: 0.82;
 }
 
-.sector-count {
+.sector-value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+
+  white-space: nowrap;
+}
+
+.sector-percent {
   font-family: var(--font-mono);
 
   font-size: 12px;
   font-weight: 600;
 
   color: var(--text);
+}
 
-  text-align: left;
+.sector-count {
+  font-family: var(--font-mono);
+
+  font-size: 10px;
+
+  color: var(--text-faint);
+}
+
+/* ---------- Legend ---------- */
+
+.chart-legend {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+
+  margin-top: 14px;
+  padding-top: 10px;
+
+  border-top: 1px solid var(--border-soft);
+
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
 }
 
 /* ---------- Empty / Loading ---------- */
@@ -403,8 +437,8 @@ footer {
   .sector-row {
     grid-template-columns:
       minmax(105px, 140px)
-      minmax(80px, 1fr)
-      35px;
+      minmax(70px, 1fr)
+      95px;
 
     gap: 8px;
   }
@@ -416,9 +450,19 @@ footer {
   .bar-track {
     height: 18px;
   }
+
+  .sector-percent {
+    font-size: 11px;
+  }
+
+  .sector-count {
+    font-size: 9px;
+  }
+
 }
 
 </style>
+
 </head>
 
 <body>
@@ -429,68 +473,71 @@ footer {
 
   <header>
 
-    <div class="header-left">
+```
+<div class="header-left">
 
-      <span class="brand-sub">
-        NSE Scanner
-      </span>
+  <span class="brand-sub">
+    NSE Scanner
+  </span>
 
-      <h1>
-        Sector RS Strength
-        <span id="data-date"></span>
-      </h1>
+  <h1>
+    Sector RS Strength
+    <span id="data-date"></span>
+  </h1>
 
-    </div>
+</div>
 
-    <a href="index.html" class="btn secondary">
-      ← RS Scanner
-    </a>
+<a href="index.html" class="btn secondary">
+  ← RS Scanner
+</a>
+```
 
   </header>
-
 
   <!-- Intro -->
 
   <div class="intro">
 
-    <div class="intro-text">
-      Number of stocks in each sector with
-      <strong>RS Rating above 80</strong>.
-    </div>
+```
+<div class="intro-text">
+  Percentage of stocks in each sector with
+  <strong>RS Rating above 80</strong>.
+</div>
 
-    <div class="threshold">
-      RS &gt; 80
-    </div>
+<div class="threshold">
+  RS &gt; 80
+</div>
+```
 
   </div>
-
 
   <!-- Stats -->
 
   <div class="stats-bar">
 
-    <div class="stat">
-      <div class="label">Sectors</div>
-      <div class="value" id="sector-count">—</div>
-    </div>
+```
+<div class="stat">
+  <div class="label">Sectors</div>
+  <div class="value" id="sector-count">—</div>
+</div>
 
-    <div class="stat">
-      <div class="label">Stocks RS &gt; 80</div>
-      <div class="value" id="strong-stock-count">—</div>
-    </div>
+<div class="stat">
+  <div class="label">Stocks Scanned</div>
+  <div class="value" id="stock-count">—</div>
+</div>
 
-    <div class="stat">
-      <div class="label">Highest Sector</div>
-      <div class="value" id="top-sector">—</div>
-    </div>
+<div class="stat">
+  <div class="label">Stocks RS &gt; 80</div>
+  <div class="value" id="strong-stock-count">—</div>
+</div>
 
-    <div class="stat">
-      <div class="label">Top Count</div>
-      <div class="value" id="top-count">—</div>
-    </div>
+<div class="stat">
+  <div class="label">Highest % Sector</div>
+  <div class="value" id="top-sector">—</div>
+</div>
+```
 
   </div>
-
 
   <!-- Error -->
 
@@ -500,40 +547,43 @@ footer {
     style="display:none;"
   ></div>
 
-
   <!-- Chart -->
 
   <div class="chart-card">
 
-    <div class="chart-header">
+```
+<div class="chart-header">
 
-      <div class="chart-title">
-        Stocks with RS Rating &gt; 80 by Sector
-      </div>
-
-      <div class="chart-subtitle">
-        Higher bar = more strong-RS stocks
-      </div>
-
-    </div>
-
-    <div id="chart">
-
-      <div class="status">
-        Loading sector data…
-      </div>
-
-    </div>
-
+  <div class="chart-title">
+    % of Stocks with RS Rating &gt; 80
   </div>
 
+  <div class="chart-subtitle">
+    Higher % = greater concentration of strong-RS stocks
+  </div>
+
+</div>
+
+<div id="chart">
+
+  <div class="status">
+    Loading sector data…
+  </div>
+
+</div>
+
+<div class="chart-legend">
+  <span>Percentage = RS &gt; 80 ÷ Total sector stocks</span>
+</div>
+```
+
+  </div>
 
   <footer>
     Data as published · RS Rating calculated from 3M / 6M / 9M / 12M momentum · not investment advice
   </footer>
 
 </div>
-
 
 <script>
 
@@ -546,6 +596,10 @@ footer {
   const RS_DATA_URL =
     'https://d2k3wq1952nc58.cloudfront.net/nse_rs_data.csv';
 
+
+  /*
+   * Same weights used by the main scanner.
+   */
 
   const WEIGHTS = {
     p3: 0.4,
@@ -583,7 +637,7 @@ footer {
 
 
   /*
-   * Escape text before inserting it into HTML.
+   * Escape HTML.
    */
 
   function escapeHtml(value) {
@@ -599,8 +653,7 @@ footer {
 
 
   /*
-   * Calculate the same weighted momentum score
-   * used by index.html.
+   * Calculate weighted momentum score.
    */
 
   function calculateScore(row) {
@@ -646,7 +699,11 @@ footer {
 
 
   /*
-   * Calculate RS percentile exactly like index.html.
+   * Calculate RS percentile.
+   *
+   * This matches the main scanner:
+   *
+   * score → ascending rank → 1–99 RS
    */
 
   function calculateRS(rows) {
@@ -678,17 +735,18 @@ footer {
     });
 
 
-    /*
-     * Same ascending score ranking
-     * as the main scanner.
-     */
-
     scored.sort(
       (a, b) => a.score - b.score
     );
 
 
-    const n = scored.length;
+    const n =
+      scored.length;
+
+
+    if (!n) {
+      return [];
+    }
 
 
     scored.forEach(
@@ -714,24 +772,24 @@ footer {
 
 
   /*
-   * Build sector counts.
+   * Build sector statistics.
+   *
+   * IMPORTANT:
+   *
+   * We first count ALL stocks in each sector.
+   * Then count stocks with RS > 80.
+   *
+   * Percentage =
+   *
+   * strongRS / totalStocks * 100
    */
 
-  function buildSectorCounts(scored) {
+  function buildSectorStats(scored) {
 
-    const counts = {};
+    const sectors = {};
 
 
     scored.forEach(item => {
-
-      /*
-       * Only stocks with RS > 80.
-       */
-
-      if (item.rs <= 80) {
-        return;
-      }
-
 
       const sector =
         item.row.Sector
@@ -739,40 +797,87 @@ footer {
           : '';
 
 
-      /*
-       * Ignore rows where sector is missing.
-       */
-
       if (!sector) {
         return;
       }
 
 
-      if (!counts[sector]) {
-        counts[sector] = 0;
+      if (!sectors[sector]) {
+
+        sectors[sector] = {
+          total: 0,
+          strong: 0
+        };
+
       }
 
 
-      counts[sector]++;
+      sectors[sector].total++;
+
+
+      if (item.rs > 80) {
+        sectors[sector].strong++;
+      }
 
     });
 
 
-    return Object.entries(counts)
+    return Object.entries(sectors)
 
       .map(
-        ([sector, count]) => ({
-          sector,
-          count
-        })
+        ([sector, stats]) => {
+
+          const percentage =
+            stats.total > 0
+              ? (stats.strong / stats.total) * 100
+              : 0;
+
+
+          return {
+            sector: sector,
+            total: stats.total,
+            strong: stats.strong,
+            percentage: percentage
+          };
+
+        }
       )
+
+      /*
+       * Highest percentage first.
+       *
+       * If percentages are equal,
+       * larger sector first.
+       */
 
       .sort(
         (a, b) => {
 
-          if (b.count !== a.count) {
-            return b.count - a.count;
+          if (
+            b.percentage !==
+            a.percentage
+          ) {
+
+            return (
+              b.percentage -
+              a.percentage
+            );
+
           }
+
+
+          if (
+            b.total !==
+            a.total
+          ) {
+
+            return (
+              b.total -
+              a.total
+            );
+
+          }
+
 
           return a.sector.localeCompare(
             b.sector
@@ -785,7 +890,9 @@ footer {
 
 
   /*
-   * Render horizontal bar chart.
+   * Render horizontal percentage bars.
+   *
+   * Scale is always 0–100%.
    */
 
   function renderChart(sectors) {
@@ -794,7 +901,7 @@ footer {
 
       chartEl.innerHTML = `
         <div class="status">
-          No sector data available for stocks with RS &gt; 80.
+          No sector data available.
         </div>
       `;
 
@@ -803,32 +910,44 @@ footer {
     }
 
 
-    const maxCount =
-      Math.max(
-        ...sectors.map(
-          s => s.count
-        )
-      );
-
-
     chartEl.innerHTML =
       sectors.map(item => {
 
+        /*
+         * Since the metric itself is a percentage,
+         * width directly represents 0–100%.
+         */
+
         const width =
-          maxCount > 0
-            ? (item.count / maxCount) * 100
-            : 0;
+          Math.max(
+            0,
+            Math.min(
+              100,
+              item.percentage
+            )
+          );
+
+
+        const percentageText =
+          `${item.percentage.toFixed(1)}%`;
+
+
+        const countText =
+          `${item.strong}/${item.total}`;
 
 
         return `
-          <div class="sector-row">
+          <div
+            class="sector-row"
+            title="${escapeHtml(item.sector)}: ${percentageText} (${countText} stocks)"
+          >
 
             <div
               class="sector-name"
-              title="${escapeHtml(item.sector)}"
             >
               ${escapeHtml(item.sector)}
             </div>
+
 
             <div class="bar-track">
 
@@ -839,8 +958,17 @@ footer {
 
             </div>
 
-            <div class="sector-count">
-              ${item.count}
+
+            <div class="sector-value">
+
+              <span class="sector-percent">
+                ${percentageText}
+              </span>
+
+              <span class="sector-count">
+                ${countText}
+              </span>
+
             </div>
 
           </div>
@@ -855,7 +983,10 @@ footer {
    * Update summary cards.
    */
 
-  function renderStats(sectors, scored) {
+  function renderStats(
+    sectors,
+    scored
+  ) {
 
     const strongCount =
       scored.filter(
@@ -870,6 +1001,12 @@ footer {
 
 
     document.getElementById(
+      'stock-count'
+    ).textContent =
+      scored.length.toLocaleString();
+
+
+    document.getElementById(
       'strong-stock-count'
     ).textContent =
       strongCount.toLocaleString();
@@ -880,13 +1017,7 @@ footer {
       document.getElementById(
         'top-sector'
       ).textContent =
-        sectors[0].sector;
-
-
-      document.getElementById(
-        'top-count'
-      ).textContent =
-        sectors[0].count.toLocaleString();
+        `${sectors[0].sector} ${sectors[0].percentage.toFixed(1)}%`;
 
     }
 
@@ -901,10 +1032,11 @@ footer {
 
     const dates =
       rows
-        .map(r =>
-          r.Date
-            ? String(r.Date).trim()
-            : ''
+        .map(
+          r =>
+            r.Date
+              ? String(r.Date).trim()
+              : ''
         )
         .filter(Boolean);
 
@@ -913,11 +1045,6 @@ footer {
       return;
     }
 
-
-    /*
-     * Usually every row has the same date.
-     * Use the latest date defensively.
-     */
 
     const latest =
       dates.sort().pop();
@@ -932,15 +1059,17 @@ footer {
 
 
   /*
-   * Process downloaded CSV.
+   * Process CSV.
    */
 
   function processData(rows) {
 
     if (!rows.length) {
+
       throw new Error(
         'The CSV appears to be empty.'
       );
+
     }
 
 
@@ -948,7 +1077,9 @@ footer {
       Object.keys(rows[0]);
 
 
-    if (!columns.includes('Symbol')) {
+    if (
+      !columns.includes('Symbol')
+    ) {
 
       throw new Error(
         'CSV does not contain the Symbol column.'
@@ -957,7 +1088,9 @@ footer {
     }
 
 
-    if (!columns.includes('Sector')) {
+    if (
+      !columns.includes('Sector')
+    ) {
 
       throw new Error(
         'CSV does not contain the Sector column. Make sure the latest fetch_nse_data.py output is being used.'
@@ -983,7 +1116,7 @@ footer {
 
 
     const sectors =
-      buildSectorCounts(scored);
+      buildSectorStats(scored);
 
 
     renderStats(
@@ -1000,7 +1133,7 @@ footer {
 
 
   /*
-   * Show error.
+   * Display error.
    */
 
   function showError(message) {
@@ -1010,6 +1143,7 @@ footer {
 
     errorEl.style.display =
       'block';
+
 
     chartEl.innerHTML = `
       <div class="status">
@@ -1021,8 +1155,7 @@ footer {
 
 
   /*
-   * Load the same CSV used by the
-   * main RS scanner.
+   * Load published CSV.
    */
 
   async function loadData() {
@@ -1059,6 +1192,19 @@ footer {
         );
 
 
+      if (
+        parsed.errors &&
+        parsed.errors.length
+      ) {
+
+        console.warn(
+          'CSV parse warnings:',
+          parsed.errors
+        );
+
+      }
+
+
       processData(
         parsed.data
       );
@@ -1073,7 +1219,7 @@ footer {
 
 
       showError(
-        'Could not load the published RS data. Please check that nse_rs_data.csv is available and that the CloudFront URL is accessible.'
+        'Could not load the published RS data. Please check that nse_rs_data.csv is available and accessible.'
       );
 
     }
