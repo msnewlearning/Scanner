@@ -37,7 +37,7 @@
   const params = new URLSearchParams(location.search);
   let rawSymbol = params.get('symbol') || '';
   
-  // Clean & decode symbol (e.g. "NSE:RELIANCE", "RELIANCE", or "RELIANCE-EQ")
+  // Clean symbol string
   let symbol = decodeURIComponent(rawSymbol).trim().toUpperCase();
   
   const titleEl = document.getElementById('title');
@@ -45,53 +45,45 @@
 
   if (!symbol) {
     titleEl.textContent = 'No symbol';
-    area.innerHTML = '<div class="status">No symbol provided in URL.</div>';
+    area.innerHTML = '<div class="status">No symbol given.</div>';
     return;
   }
 
-  // Ensure 'NSE:' prefix if no exchange prefix is attached
-  let tvSymbol = symbol;
-  if (!tvSymbol.includes(':')) {
-    tvSymbol = 'NSE:' + tvSymbol;
-  }
+  // Ensure proper format for TradingView (NSE:AHCL)
+  const formattedSymbol = symbol.includes(':') ? symbol : 'NSE:' + symbol;
 
   titleEl.textContent = symbol;
   document.title = symbol + ' Chart';
 
-  // Build TradingView Embed Container
-  const widgetContainer = document.createElement('div');
-  widgetContainer.className = 'tradingview-widget-container';
-  widgetContainer.style.height = '100%';
-  widgetContainer.style.width = '100%';
+  // Embed TradingView direct iframe to bypass the JS widget API restrictions
+  const container = document.createElement('div');
+  container.style.width = '100%';
+  container.style.height = '100%';
 
-  const widgetDiv = document.createElement('div');
-  widgetDiv.className = 'tradingview-widget-container__widget';
-  widgetDiv.style.height = '100%';
-  widgetDiv.style.width = '100%';
-  widgetContainer.appendChild(widgetDiv);
-
-  const tvScript = document.createElement('script');
-  tvScript.type = 'text/javascript';
-  tvScript.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-  tvScript.async = true;
+  const iframe = document.createElement('iframe');
+  iframe.style.width = '100%';
+  iframe.style.height = '100%';
+  iframe.style.border = '0';
+  iframe.allowTransparency = 'true';
+  iframe.scrolling = 'no';
   
-  // Configuration settings to prevent AAPL fallback & symbol popup
-  tvScript.text = JSON.stringify({
-    "autosize": true,
-    "symbol": tvSymbol,
-    "interval": "D",
-    "timezone": "Asia/Kolkata",
-    "theme": "light",
-    "style": "1",
-    "locale": "en",
-    "enable_publishing": false,
-    "allow_symbol_change": true,
-    "calendar": false,
-    "support_host": "https://www.tradingview.com"
-  });
+  // Direct chart engine URL - bypasses the "only available on TradingView" popup
+  const tvUrl = new URL('https://s.tradingview.com/widgetembed/');
+  tvUrl.searchParams.set('symbol', formattedSymbol);
+  tvUrl.searchParams.set('interval', 'D');
+  tvUrl.searchParams.set('hidesidetoolbar', '0');
+  tvUrl.searchParams.set('symboledit', '1');
+  tvUrl.searchParams.set('saveimage', '1');
+  tvUrl.searchParams.set('toolbarbg', 'f1f3f6');
+  tvUrl.searchParams.set('studies', '[]');
+  tvUrl.searchParams.set('theme', 'light');
+  tvUrl.searchParams.set('style', '1');
+  tvUrl.searchParams.set('timezone', 'Asia/Kolkata');
 
-  widgetContainer.appendChild(tvScript);
-  area.appendChild(widgetContainer);
+  iframe.src = tvUrl.toString();
+  container.appendChild(iframe);
+  area.innerHTML = '';
+  area.appendChild(container);
 })();
 </script>
 <!-- script>
