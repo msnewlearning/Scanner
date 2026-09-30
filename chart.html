@@ -7,284 +7,81 @@
 <title>Chart</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #F4F6F9; --surface: #FFFFFF; --border: #D5DCE5; --border-soft: #E4E8EE;
-    --text: #1A2230; --text-dim: #566274; --text-faint: #8590A0;
-    --accent: #13866E; --weak: #C0392B; --gold: #A87A1F; --blue: #2A6FB5; --purple: #6F5AAE;
-    --font-ui: 'IBM Plex Sans', -apple-system, sans-serif; --font-mono: 'IBM Plex Mono', monospace;
-  }
+  :root { --bg: #F4F6F9; --border: #D5DCE5; --text: #1A2230; --text-dim: #566274; --accent: #13866E; --weak: #C0392B; }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-ui); }
-  .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 20px 40px; }
-  .topbar { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', -apple-system, sans-serif; display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 16px; border-bottom: 1px solid var(--border); flex: none; flex-wrap: wrap; }
   .back { font-size: 13px; color: var(--text-dim); text-decoration: none; }
   .back:hover { color: var(--accent); }
-  h1 { font-size: 24px; margin: 4px 0 0; }
-  .price-line { font-family: var(--font-mono); font-size: 15px; color: var(--text-dim); margin-top: 2px; }
-  .price-line .up { color: var(--accent); } .price-line .down { color: var(--weak); }
-  .toggle { display: flex; gap: 6px; }
-  .toggle button {
-    background: var(--surface); border: 1px solid var(--border); color: var(--text-dim);
-    font-family: var(--font-ui); font-size: 13px; font-weight: 600; padding: 6px 14px;
-    border-radius: 7px; cursor: pointer;
-  }
-  .toggle button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .legend { display: flex; gap: 16px; font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); margin: 10px 2px 4px; flex-wrap: wrap; }
-  .legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .swatch { width: 14px; height: 3px; display: inline-block; border-radius: 2px; }
-  .chart-card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 10px; padding: 8px 6px 4px; }
-  canvas { display: block; width: 100%; }
-  .status { text-align: center; padding: 60px 20px; color: var(--text-faint); font-size: 14px; }
-  .status.err { color: var(--weak); }
-  .tooltip {
-    position: absolute; display: none; background: var(--text); color: #fff;
-    font-family: var(--font-mono); font-size: 11.5px; padding: 8px 10px; border-radius: 6px;
-    pointer-events: none; line-height: 1.5; white-space: nowrap; z-index: 5;
-  }
-  .chart-wrap { position: relative; }
+  h1 { font-size: 18px; margin: 0; }
+  .note { font-size: 11.5px; color: var(--text-dim); }
+  .widget-wrap { flex: 1 1 auto; min-height: 0; }
+  .tradingview-widget-container, .tradingview-widget-container__widget { height: 100%; width: 100%; }
+  .status { text-align: center; padding: 60px 20px; color: var(--weak); font-size: 14px; }
 </style>
 </head>
 <body>
-<div class="wrap">
   <div class="topbar">
     <div>
       <a class="back" href="javascript:window.close()">&larr; Close</a>
       <h1 id="title">Loading&hellip;</h1>
-      <div class="price-line" id="price-line"></div>
     </div>
-    <div class="toggle" id="toggle" style="display:none;">
-      <button id="btn-daily" class="active">Daily</button>
-      <button id="btn-weekly">Weekly</button>
-    </div>
+    <div class="note">Chart &amp; indicators via TradingView</div>
   </div>
-  <div id="status" class="status">Loading chart&hellip;</div>
-  <div id="chart-area" style="display:none;">
-    <div class="legend">
-      <span><i class="swatch" style="background:var(--blue)"></i>EMA 10</span>
-      <span><i class="swatch" style="background:var(--gold)"></i>EMA 20</span>
-      <span><i class="swatch" style="background:var(--purple)"></i>EMA 50</span>
-    </div>
-    <div class="chart-card">
-      <div class="chart-wrap">
-        <canvas id="chart"></canvas>
-        <div class="tooltip" id="tooltip"></div>
-      </div>
-    </div>
-  </div>
-</div>
+  <div id="widget-area" class="widget-wrap"></div>
 
 <script>
 (function() {
   const params = new URLSearchParams(location.search);
   const symbol = (params.get('symbol') || '').trim().toUpperCase();
-  const statusEl = document.getElementById('status');
-  const chartArea = document.getElementById('chart-area');
-  const toggleEl = document.getElementById('toggle');
   const titleEl = document.getElementById('title');
-  const priceLineEl = document.getElementById('price-line');
-  const canvas = document.getElementById('chart');
-  const ctx = canvas.getContext('2d');
-  const tooltip = document.getElementById('tooltip');
+  const area = document.getElementById('widget-area');
 
   if (!symbol) {
-    statusEl.textContent = 'No symbol given. Open this page as chart.html?symbol=SYMBOL.';
-    statusEl.classList.add('err');
+    titleEl.textContent = 'No symbol';
+    area.innerHTML = '<div class="status">No symbol given. Open this page as chart.html?symbol=SYMBOL.</div>';
     return;
   }
+
   titleEl.textContent = symbol;
   document.title = symbol + ' chart';
 
-  let data = null, mode = 'daily';
-  const API = 'https://screeningmantis.com/api/stocks/' + encodeURIComponent(symbol) + '/chart';
+  area.innerHTML =
+    '<div class="tradingview-widget-container">' +
+      '<div id="tv_chart_container" class="tradingview-widget-container__widget"></div>' +
+    '</div>';
 
-  fetch(API).then(res => {
-    if (!res.ok) throw new Error('http:' + res.status);
-    return res.json();
-  }).then(json => {
-    data = json;
-    statusEl.style.display = 'none';
-    chartArea.style.display = 'block';
-    toggleEl.style.display = 'flex';
-    updateHeader();
-    draw();
-  }).catch(err => {
-    statusEl.classList.add('err');
-    if (String(err.message).startsWith('http:404')) {
-      statusEl.textContent = 'No chart data found for "' + symbol + '".';
-    } else if (String(err.message).startsWith('http:')) {
-      statusEl.textContent = 'Chart server returned an error (' + err.message.slice(5) + ').';
-    } else {
-      statusEl.textContent = 'Could not load chart data. This is often a CORS restriction — the chart API may not allow requests from this site\u2019s domain. Check the browser console for details.';
-    }
-  });
-
-  document.getElementById('btn-daily').addEventListener('click', () => setMode('daily'));
-  document.getElementById('btn-weekly').addEventListener('click', () => setMode('weekly'));
-  function setMode(m) {
-    mode = m;
-    document.getElementById('btn-daily').classList.toggle('active', m === 'daily');
-    document.getElementById('btn-weekly').classList.toggle('active', m === 'weekly');
-    draw();
-  }
-
-  function series() { return mode === 'weekly' ? data.weekly : data; }
-
-  function updateHeader() {
-    const c = data.candles;
-    if (!c || !c.length) return;
-    const last = c[c.length - 1];
-    const prev = c.length > 1 ? c[c.length - 2] : last;
-    const chg = last.close - prev.close;
-    const pct = prev.close ? (chg / prev.close) * 100 : 0;
-    const cls = chg >= 0 ? 'up' : 'down';
-    priceLineEl.innerHTML = '\u20b9' + last.close.toFixed(2) +
-      ' <span class="' + cls + '">' + (chg >= 0 ? '+' : '') + chg.toFixed(2) +
-      ' (' + (chg >= 0 ? '+' : '') + pct.toFixed(2) + '%)</span> &middot; ' + last.date;
-  }
-
-  function fmtDate(d) { const p = d.split('-'); return p[1] + '/' + p[2]; }
-
-  function draw() {
-    const s = series();
-    const candles = s.candles || [];
-    if (!candles.length) { return; }
-    const n = candles.length;
-    const ema10 = s.ema10 || [], ema20 = s.ema20 || [], ema50 = s.ema50 || [], rsi = s.rsi || [];
-    const hasRsi = rsi.some(v => v !== null && v !== undefined);
-
-    const dpr = window.devicePixelRatio || 1;
-    const cssW = canvas.parentElement.clientWidth;
-    const cssH = window.innerWidth < 640 ? 480 : 580;
-    canvas.width = cssW * dpr; canvas.height = cssH * dpr;
-    canvas.style.height = cssH + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, cssW, cssH);
-
-    const marginL = 54, marginR = 12, marginT = 10, marginB = 24;
-    const priceH = hasRsi ? cssH * 0.58 : cssH * 0.72;
-    const volH = cssH * 0.14;
-    const gap = 8;
-    const rsiH = hasRsi ? (cssH - marginT - marginB - priceH - volH - gap * 2) : 0;
-
-    const priceTop = marginT, priceBot = priceTop + priceH;
-    const volTop = priceBot + gap, volBot = volTop + volH;
-    const rsiTop = volBot + gap, rsiBot = rsiTop + rsiH;
-    const plotL = marginL, plotR = cssW - marginR;
-    const plotW = plotR - plotL;
-
-    const candleW = plotW / n;
-    const xAt = i => plotL + candleW * i + candleW / 2;
-
-    let pMin = Infinity, pMax = -Infinity;
-    candles.forEach(c => { pMin = Math.min(pMin, c.low); pMax = Math.max(pMax, c.high); });
-    [ema10, ema20, ema50].forEach(arr => arr.forEach(v => { if (v !== null && v !== undefined) { pMin = Math.min(pMin, v); pMax = Math.max(pMax, v); } }));
-    const pPad = (pMax - pMin) * 0.08 || 1;
-    pMin -= pPad; pMax += pPad;
-    const priceY = p => priceBot - ((p - pMin) / (pMax - pMin)) * priceH;
-
-    let vMax = 0;
-    candles.forEach(c => { vMax = Math.max(vMax, c.volume || 0); });
-    vMax = vMax || 1;
-    const volY = v => volBot - (v / vMax) * volH;
-
-    const rsiY = v => rsiBot - (v / 100) * rsiH;
-
-    ctx.font = '10.5px "IBM Plex Mono", monospace';
-    ctx.fillStyle = '#8590A0';
-    ctx.strokeStyle = '#E4E8EE';
-    ctx.lineWidth = 1;
-
-    for (let g = 0; g <= 4; g++) {
-      const p = pMin + (pMax - pMin) * (g / 4);
-      const y = priceY(p);
-      ctx.beginPath(); ctx.moveTo(plotL, y); ctx.lineTo(plotR, y); ctx.stroke();
-      ctx.textAlign = 'right';
-      ctx.fillText(p.toFixed(p < 10 ? 2 : 1), marginL - 6, y + 3);
-    }
-
-    candles.forEach((c, i) => {
-      const x = xAt(i);
-      const up = c.close >= c.open;
-      ctx.strokeStyle = up ? '#13866E' : '#C0392B';
-      ctx.lineWidth = 1.3;
-      ctx.beginPath(); ctx.moveTo(x, priceY(c.high)); ctx.lineTo(x, priceY(c.low)); ctx.stroke();
-      const tick = Math.max(candleW * 0.28, 2);
-      ctx.beginPath(); ctx.moveTo(x - tick, priceY(c.open)); ctx.lineTo(x, priceY(c.open)); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(x, priceY(c.close)); ctx.lineTo(x + tick, priceY(c.close)); ctx.stroke();
+  const script = document.createElement('script');
+  script.src = 'https://s3.tradingview.com/tv.js';
+  script.onload = function() {
+    new TradingView.widget({
+      autosize: true,
+      symbol: 'NSE:' + symbol,
+      interval: 'D',
+      timezone: 'Asia/Kolkata',
+      theme: 'light',
+      style: '0',
+      locale: 'en',
+      toolbar_bg: '#F4F6F9',
+      enable_publishing: false,
+      allow_symbol_change: true,
+      hide_side_toolbar: false,
+      studies: [
+        { id: 'MAExp@tv-basicstudies', inputs: { length: 10 } },
+        { id: 'MAExp@tv-basicstudies', inputs: { length: 20 } },
+        { id: 'MAExp@tv-basicstudies', inputs: { length: 50 } },
+        { id: 'RSI@tv-basicstudies' }
+      ],
+      container_id: 'tv_chart_container'
     });
-
-    drawLine(ema10, priceY, xAt, n, '#2A6FB5');
-    drawLine(ema20, priceY, xAt, n, '#A87A1F');
-    drawLine(ema50, priceY, xAt, n, '#6F5AAE');
-
-    ctx.fillStyle = '#8590A0';
-    ctx.textAlign = 'left';
-    ctx.fillText('Vol', marginL - 44 < 4 ? 4 : 4, volTop + 10);
-    candles.forEach((c, i) => {
-      const x = xAt(i);
-      const up = c.close >= c.open;
-      ctx.fillStyle = up ? 'rgba(19,134,110,0.55)' : 'rgba(192,57,43,0.5)';
-      const bw = Math.max(candleW * 0.6, 1);
-      const y = volY(c.volume || 0);
-      ctx.fillRect(x - bw / 2, y, bw, volBot - y);
-    });
-
-    if (hasRsi) {
-      ctx.strokeStyle = '#E4E8EE'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(plotL, rsiTop); ctx.lineTo(plotR, rsiTop); ctx.lineTo(plotL, rsiBot); ctx.closePath();
-      [30, 50, 70].forEach(v => {
-        const y = rsiY(v);
-        ctx.strokeStyle = v === 50 ? '#E4E8EE' : 'rgba(168,122,31,0.4)';
-        ctx.setLineDash(v === 50 ? [] : [3, 3]);
-        ctx.beginPath(); ctx.moveTo(plotL, y); ctx.lineTo(plotR, y); ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = '#8590A0'; ctx.textAlign = 'right';
-        ctx.fillText(String(v), marginL - 6, y + 3);
-      });
-      drawLine(rsi, rsiY, xAt, n, '#6F5AAE');
-    }
-
-    ctx.fillStyle = '#8590A0'; ctx.textAlign = 'center';
-    const step = Math.max(1, Math.ceil(n / (cssW / 60)));
-    for (let i = 0; i < n; i += step) {
-      ctx.fillText(fmtDate(candles[i].date), xAt(i), cssH - 6);
-    }
-
-    canvas.onmousemove = e => {
-      const rect = canvas.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      let idx = Math.round((mx - plotL - candleW / 2) / candleW);
-      idx = Math.max(0, Math.min(n - 1, idx));
-      const c = candles[idx];
-      let html = '<b>' + c.date + '</b><br>O ' + c.open.toFixed(2) + ' H ' + c.high.toFixed(2) +
-        '<br>L ' + c.low.toFixed(2) + ' C ' + c.close.toFixed(2) +
-        '<br>Vol ' + Math.round(c.volume).toLocaleString('en-IN');
-      if (hasRsi && rsi[idx] !== null && rsi[idx] !== undefined) html += '<br>RSI ' + rsi[idx].toFixed(1);
-      tooltip.innerHTML = html;
-      tooltip.style.display = 'block';
-      let tx = e.clientX - canvas.parentElement.getBoundingClientRect().left + 14;
-      if (tx + 150 > cssW) tx = e.clientX - canvas.parentElement.getBoundingClientRect().left - 160;
-      tooltip.style.left = tx + 'px';
-      tooltip.style.top = (e.clientY - canvas.parentElement.getBoundingClientRect().top - 60) + 'px';
-    };
-    canvas.onmouseleave = () => { tooltip.style.display = 'none'; };
-  }
-
-  function drawLine(arr, yFn, xAt, n, color) {
-    ctx.strokeStyle = color; ctx.lineWidth = 1.4; ctx.beginPath();
-    let started = false;
-    for (let i = 0; i < n; i++) {
-      const v = arr[i];
-      if (v === null || v === undefined) { started = false; continue; }
-      const x = xAt(i), y = yFn(v);
-      if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
-    }
-    ctx.stroke();
-  }
-
-  window.addEventListener('resize', () => { if (data) draw(); });
+  };
+  script.onerror = function() {
+    area.innerHTML = '<div class="status">Could not load the TradingView widget script. Check your internet connection and try again.</div>';
+  };
+  document.body.appendChild(script);
 })();
 </script>
 </body>
