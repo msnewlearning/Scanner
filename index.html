@@ -360,11 +360,20 @@
       <div class="stats-bar" id="stats-bar"></div>
 
       <div class="controls-panel">
-        <input type="text" id="search" placeholder="Search symbol or name…">
+        <input type="text" id="search" placeholder="Search symbol, name or sector…">
         
         <div class="filter-group">
           <label>RS <input type="range" id="min-rs" min="1" max="99" value="1"><span id="min-rs-val">1</span></label>
           <label>to <input type="range" id="max-rs" min="1" max="99" value="99"><span id="max-rs-val">99</span></label>
+        </div>
+
+        <div class="filter-group">
+          <select id="sector-select" title="Sector">
+            <option value="all">All Sectors</option>
+          </select>
+          <select id="marketcap-select" title="Market Cap">
+            <option value="all">All Market Caps</option>
+          </select>
         </div>
 
         <div class="filter-group">
@@ -438,6 +447,8 @@
             <tr>
               <th data-col="rank" data-key="rank">#</th>
               <th data-col="symbol" data-key="symbol">Symbol</th>
+              <th data-col="sector" data-key="sector">Sector</th>
+              <th data-col="marketcap" data-key="marketcap">Market Cap</th>
               <th data-col="price" data-key="price" class="num">Price</th>
               <th data-col="daychange" data-key="daychange" class="num">Day %</th>
               <th data-col="date" data-key="date">Date</th>
@@ -512,6 +523,8 @@
   const tbody = document.getElementById('table-body');
   const emptyState = document.getElementById('empty-state');
   const searchInput = document.getElementById('search');
+  const sectorSelect = document.getElementById('sector-select');
+  const marketcapSelect = document.getElementById('marketcap-select');
   const minRsInput = document.getElementById('min-rs');
   const minRsVal = document.getElementById('min-rs-val');
   const maxRsInput = document.getElementById('max-rs');
@@ -571,6 +584,7 @@
 
       stocks.push({
         symbol: String(r.Symbol).trim(), name: r.Name ? String(r.Name).trim() : '',
+        sector: r.Sector ? String(r.Sector).trim() : '', marketcap: r.Market_Cap ? String(r.Market_Cap).trim() : '',
         p3, p6, p9, p12, score, complete, closeToday, ema10, ema20, ema50, trend, dist10, dist50,
         turnover, liquid, date: r.Date ? String(r.Date).trim() : '', barType, specialCandle, dayChangePct, rs: null
       });
@@ -581,8 +595,16 @@
     ranked.forEach((s, i) => { s.rs = Math.max(1, Math.min(99, Math.round(((i + 1) / n) * 99))); });
 
     allStocks = stocks;
+    populateFilterOptions(sectorSelect, [...new Set(stocks.map(s => s.sector).filter(Boolean))], 'All Sectors');
+    populateFilterOptions(marketcapSelect, [...new Set(stocks.map(s => s.marketcap).filter(Boolean))], 'All Market Caps');
     resultsEl.style.display = 'flex';
     render();
+  }
+
+  function populateFilterOptions(select, values, allLabel) {
+    const current = select.value;
+    select.innerHTML = '<option value="all">' + allLabel + '</option>' + values.sort((a,b) => a.localeCompare(b)).map(v => '<option value="' + escapeHtml(v) + '">' + escapeHtml(v) + '</option>').join('');
+    if (values.includes(current)) select.value = current;
   }
 
   function numOrNull(v) { return (v === null || v === undefined || v === '') ? null : (isNaN(Number(v)) ? null : Number(v)); }
@@ -653,6 +675,9 @@
       if (!s.complete) return false;
       if (s.rs < minRs || s.rs > maxRs) return false;
 
+      if (sectorSelect.value !== 'all' && s.sector !== sectorSelect.value) return false;
+      if (marketcapSelect.value !== 'all' && s.marketcap !== marketcapSelect.value) return false;
+
       if (trendVal === 'up' && s.trend !== 'up') return false;
       if (trendVal === 'down' && s.trend !== 'down') return false;
       if (trendVal === 'mixed' && s.trend !== 'mixed') return false;
@@ -668,7 +693,7 @@
       if (barTypeSelect.value !== 'all' && s.barType !== barTypeSelect.value) return false;
       if (dayMoveSelect.value === 'up4' && !(s.dayChangePct >= 4)) return false;
       if (dayMoveSelect.value === 'down4' && !(s.dayChangePct <= -4)) return false;
-      if (q && !(s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q))) return false;
+      if (q && !(s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || s.sector.toLowerCase().includes(q) || s.marketcap.toLowerCase().includes(q))) return false;
       return true;
     });
 
@@ -681,6 +706,8 @@
       <tr>
         <td class="num" data-col="rank">${i + 1}</td>
         <td data-col="symbol"><a class="sym" href="chart.html?symbol=${encodeURIComponent(s.symbol)}" target="_blank" rel="noopener">${escapeHtml(s.symbol)}</a><div class="name">${escapeHtml(s.name)}</div></td>
+        <td data-col="sector">${escapeHtml(s.sector || 'n/a')}</td>
+        <td data-col="marketcap">${escapeHtml(s.marketcap || 'n/a')}</td>
         <td class="num" data-col="price">${fmtPrice(s.closeToday)}</td>
         <td class="num ${cls(s.dayChangePct)}" data-col="daychange">${fmtPct(s.dayChangePct)}</td>
         <td data-col="date">${s.date ? escapeHtml(s.date) : 'n/a'}</td>
@@ -712,6 +739,9 @@
     return list.slice().sort((a, b) => {
       const av = sortKey === 'rank' ? a.rs : a[sortKey];
       const bv = sortKey === 'rank' ? b.rs : b[sortKey];
+      if (typeof av === 'string' || typeof bv === 'string') {
+        return dir * String(av ?? '').localeCompare(String(bv ?? ''), undefined, { sensitivity: 'base' });
+      }
       return dir * ((av ?? -Infinity) - (bv ?? -Infinity));
     });
   }
@@ -736,6 +766,8 @@
 
   // Event Listeners
   searchInput.addEventListener('input', renderTable);
+  sectorSelect.addEventListener('change', renderTable);
+  marketcapSelect.addEventListener('change', renderTable);
   minRsInput.addEventListener('input', () => { minRsVal.textContent = minRsInput.value; renderTable(); });
   maxRsInput.addEventListener('input', () => { maxRsVal.textContent = maxRsInput.value; renderTable(); });
   [trendSelect, dist10Select, dist50Select, dayMoveSelect, barTypeSelect, liquidOnly, specialOnly].forEach(el => el.addEventListener('change', renderTable));
@@ -753,7 +785,7 @@
 
   // ---------- Column Picker Configuration ----------
   const COLUMNS = [
-    ['price','Price'],['daychange','Day %'],['date','Date'],['rs','RS Rating'],
+    ['sector','Sector'],['marketcap','Market Cap'],['price','Price'],['daychange','Day %'],['date','Date'],['rs','RS Rating'],
     ['p3','3M %'],['p6','6M %'],['p9','9M %'],['p12','12M %'],
     ['score','Weighted Score'],['trend','Trend'],['ema10','EMA 10'],
     ['ema20','EMA 20'],['ema50','EMA 50'],['dist10','Dist EMA 10'],
