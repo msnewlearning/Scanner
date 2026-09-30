@@ -32,57 +32,66 @@
     <div class="note">Chart &amp; indicators via TradingView</div>
   </div>
   <div id="widget-area" class="widget-wrap"></div>
-
-  <script>
+<script>
 (function() {
   const params = new URLSearchParams(location.search);
-  let symbol = (params.get('symbol') || '').trim().toUpperCase();
+  let rawSymbol = params.get('symbol') || '';
+  
+  // Clean & decode symbol (e.g. "NSE:RELIANCE", "RELIANCE", or "RELIANCE-EQ")
+  let symbol = decodeURIComponent(rawSymbol).trim().toUpperCase();
+  
   const titleEl = document.getElementById('title');
   const area = document.getElementById('widget-area');
 
   if (!symbol) {
     titleEl.textContent = 'No symbol';
-    area.innerHTML = '<div class="status">No symbol given.</div>';
+    area.innerHTML = '<div class="status">No symbol provided in URL.</div>';
     return;
   }
 
-  // Ensure prefix
-  const formattedSymbol = symbol.includes(':') ? symbol : 'NSE:' + symbol;
+  // Ensure 'NSE:' prefix if no exchange prefix is attached
+  let tvSymbol = symbol;
+  if (!tvSymbol.includes(':')) {
+    tvSymbol = 'NSE:' + tvSymbol;
+  }
 
   titleEl.textContent = symbol;
-  document.title = symbol + ' chart';
+  document.title = symbol + ' Chart';
 
-  // Embed standard TradingView Advanced Chart via embed container
-  const container = document.createElement('div');
-  container.className = 'tradingview-widget-container';
-  container.style.height = '100%';
-  container.style.width = '100%';
+  // Build TradingView Embed Container
+  const widgetContainer = document.createElement('div');
+  widgetContainer.className = 'tradingview-widget-container';
+  widgetContainer.style.height = '100%';
+  widgetContainer.style.width = '100%';
 
   const widgetDiv = document.createElement('div');
   widgetDiv.className = 'tradingview-widget-container__widget';
   widgetDiv.style.height = '100%';
   widgetDiv.style.width = '100%';
-  container.appendChild(widgetDiv);
+  widgetContainer.appendChild(widgetDiv);
 
   const tvScript = document.createElement('script');
   tvScript.type = 'text/javascript';
   tvScript.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
   tvScript.async = true;
+  
+  // Configuration settings to prevent AAPL fallback & symbol popup
   tvScript.text = JSON.stringify({
     "autosize": true,
-    "symbol": formattedSymbol,
+    "symbol": tvSymbol,
     "interval": "D",
     "timezone": "Asia/Kolkata",
     "theme": "light",
     "style": "1",
     "locale": "en",
+    "enable_publishing": false,
     "allow_symbol_change": true,
     "calendar": false,
     "support_host": "https://www.tradingview.com"
   });
 
-  container.appendChild(tvScript);
-  area.appendChild(container);
+  widgetContainer.appendChild(tvScript);
+  area.appendChild(widgetContainer);
 })();
 </script>
 <!-- script>
