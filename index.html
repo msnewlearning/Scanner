@@ -1130,6 +1130,18 @@ footer {
 
           </select>
 
+          <select id="nr-select" title="Narrow Range">
+            <option value="all">
+              Any NR
+            </option>
+            <option value="NR7">
+              NR7
+            </option>
+            <option value="NR4">
+              NR4
+            </option>
+          </select>
+
         </div>
 
 
@@ -1369,6 +1381,13 @@ footer {
                 data-key="bartype"
               >
                 Bar Type
+              </th>
+
+              <th
+                data-col="nr"
+                data-key="nr"
+              >
+                NR
               </th>
 
               <th
@@ -1697,6 +1716,9 @@ footer {
   const specialOnly =
     document.getElementById('special-only');
 
+  const nrSelect =
+    document.getElementById('nr-select');
+
   const exportBtn =
     document.getElementById('export-btn');
 
@@ -1924,6 +1946,18 @@ footer {
           numOrNull(r.Prev_Low)
         );
 
+      /*
+       * NR4 / NR7 is calculated by the fetcher from the
+       * actual historical High-Low ranges.
+       */
+      const nrType =
+        r.NR_Type
+          ? String(r.NR_Type).trim().toUpperCase()
+          : '';
+
+      const candleRange =
+        numOrNull(r.Candle_Range);
+
 
       const specialCandle =
         computeSpecialCandle(
@@ -2006,6 +2040,8 @@ footer {
             : '',
 
         barType,
+        nrType,
+        candleRange,
         specialCandle,
 
         dayChangePct,
@@ -2580,6 +2616,9 @@ footer {
     const dist50Val =
       dist50Select.value;
 
+    const nrVal =
+      nrSelect.value;
+
 
     let list =
       allStocks.filter(
@@ -2747,6 +2786,16 @@ footer {
           if (
             dayMoveSelect.value === 'down4' &&
             !(s.dayChangePct <= -4)
+          ) {
+
+            return false;
+
+          }
+
+
+          if (
+            nrVal !== 'all' &&
+            s.nrType !== nrVal
           ) {
 
             return false;
@@ -2972,6 +3021,10 @@ footer {
 
             <td data-col="bartype">
               ${barTypeBadge(s.barType)}
+            </td>
+
+            <td data-col="nr">
+              ${nrBadge(s.nrType, s.candleRange)}
             </td>
 
             <td data-col="special">
@@ -3235,6 +3288,39 @@ footer {
   }
 
 
+  function nrBadge(type, range) {
+
+    if (type === 'NR7') {
+
+      return `
+        <span
+          class="badge special"
+          title="${range !== null && !isNaN(range) ? `Today's High-Low range: ${range}` : 'Narrow Range 7'}"
+        >
+          NR7
+        </span>
+      `;
+
+    }
+
+    if (type === 'NR4') {
+
+      return `
+        <span
+          class="badge special"
+          title="${range !== null && !isNaN(range) ? `Today's High-Low range: ${range}` : 'Narrow Range 4'}"
+        >
+          NR4
+        </span>
+      `;
+
+    }
+
+    return '';
+
+  }
+
+
   function specialBadge(s) {
 
     return s
@@ -3336,6 +3422,7 @@ footer {
     dist50Select,
     dayMoveSelect,
     barTypeSelect,
+    nrSelect,
     liquidOnly,
     specialOnly
   ].forEach(
@@ -3452,6 +3539,8 @@ footer {
     ['dist50', 'Dist EMA 50'],
 
     ['bartype', 'Bar Type'],
+
+    ['nr', 'NR'],
 
     ['special', 'Special']
 
