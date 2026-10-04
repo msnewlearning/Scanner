@@ -387,6 +387,22 @@ thead th:hover {
   color: var(--text-dim);
 }
 
+thead th.rs-group-header {
+  text-align: center;
+  cursor: default;
+  color: var(--text-dim);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+thead th.rs-group-header:hover {
+  color: var(--text-dim);
+}
+
+thead tr:nth-child(2) th {
+  top: 33px;
+}
+
 thead th.active {
   color: var(--accent-dark);
   font-weight: 700;
@@ -743,6 +759,34 @@ footer {
 
 }
 
+
+/* Compact grouped table headers and vertical group separators */
+.group-header-row th {
+  height: 22px;
+  padding: 3px 6px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  background: var(--surface-raised);
+}
+.group-header-row .col-group {
+  border-left: 2px solid var(--border);
+  border-right: 2px solid var(--border);
+}
+.col-group-start { border-left: 2px solid var(--border) !important; }
+.col-group-end { border-right: 2px solid var(--border) !important; }
+th[data-col="rs"], td[data-col="rs"], th[data-col="rstrend"], td[data-col="rstrend"],
+th[data-col="ema10"], td[data-col="ema10"], th[data-col="dist50"], td[data-col="dist50"] {
+  border-left: 0;
+}
+th[data-col="rstrend"], td[data-col="rstrend"], th[data-col="dist50"], td[data-col="dist50"] {
+  border-right: 2px solid var(--border);
+}
+th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"] {
+  border-left: 2px solid var(--border);
+}
 </style>
 </head>
 
@@ -1221,184 +1265,35 @@ footer {
         <table>
 
           <thead>
-
-            <tr>
-
-              <th
-                data-col="rank"
-                data-key="rank"
-              >
-                #
-              </th>
-
-              <th
-                data-col="symbol"
-                data-key="symbol"
-              >
-                Symbol
-              </th>
-
-              <th
-                data-col="sector"
-                data-key="sector"
-              >
-                Sector
-              </th>
-
-              <th
-                data-col="marketcap"
-                data-key="marketcap"
-              >
-                Market Cap
-              </th>
-
-              <th
-                data-col="price"
-                data-key="price"
-                class="num"
-              >
-                Price
-              </th>
-
-              <th
-                data-col="daychange"
-                data-key="daychange"
-                class="num"
-              >
-                Day %
-              </th>
-
-              <th
-                data-col="date"
-                data-key="date"
-              >
-                Date
-              </th>
-
-              <th
-                data-col="rs"
-                data-key="rs"
-              >
-                RS Rating
-              </th>
-
-              <th
-                data-col="rstrend"
-                data-key="rsChange1w"
-              >
-                RS Trend (1W)
-              </th>
-
-              <th
-                data-col="p3"
-                data-key="p3"
-                class="num"
-              >
-                3M %
-              </th>
-
-              <th
-                data-col="p6"
-                data-key="p6"
-                class="num"
-              >
-                6M %
-              </th>
-
-              <th
-                data-col="p9"
-                data-key="p9"
-                class="num"
-              >
-                9M %
-              </th>
-
-              <th
-                data-col="p12"
-                data-key="p12"
-                class="num"
-              >
-                12M %
-              </th>
-
-              <th
-                data-col="score"
-                data-key="score"
-                class="num"
-              >
-                Weighted Score
-              </th>
-
-              <th
-                data-col="trend"
-                data-key="trend"
-              >
-                Trend
-              </th>
-
-              <th
-                data-col="ema10"
-                data-key="ema10"
-                class="num"
-              >
-                EMA 10
-              </th>
-
-              <th
-                data-col="ema20"
-                data-key="ema20"
-                class="num"
-              >
-                EMA 20
-              </th>
-
-              <th
-                data-col="ema50"
-                data-key="ema50"
-                class="num"
-              >
-                EMA 50
-              </th>
-
-              <th
-                data-col="dist10"
-                data-key="dist10"
-                class="num"
-              >
-                Dist EMA 10
-              </th>
-
-              <th
-                data-col="dist50"
-                data-key="dist50"
-                class="num"
-              >
-                Dist EMA 50
-              </th>
-
-              <th
-                data-col="bartype"
-                data-key="bartype"
-              >
-                Bar Type
-              </th>
-
-              <th
-                data-col="nr"
-                data-key="nr"
-              >
-                NR
-              </th>
-
-              <th
-                data-col="special"
-                data-key="special"
-              >
-                Special
-              </th>
-
+            <tr class="group-header-row">
+              <th rowspan="2" data-col="rank" data-key="rank">#</th>
+              <th rowspan="2" data-col="symbol" data-key="symbol">Symbol</th>
+              <th rowspan="2" data-col="sector" data-key="sector">Sector</th>
+              <th rowspan="2" data-col="marketcap" data-key="marketcap">Market Cap</th>
+              <th rowspan="2" data-col="price" data-key="price" class="num">Price</th>
+              <th rowspan="2" data-col="daychange" data-key="daychange" class="num">Day %</th>
+              <th rowspan="2" data-col="date" data-key="date">Date</th>
+              <th colspan="2" class="col-group">Group RS Ratings</th>
+              <th rowspan="2" data-col="p3" data-key="p3" class="num">3M %</th>
+              <th rowspan="2" data-col="p6" data-key="p6" class="num">6M %</th>
+              <th rowspan="2" data-col="p9" data-key="p9" class="num">9M %</th>
+              <th rowspan="2" data-col="p12" data-key="p12" class="num">12M %</th>
+              <th rowspan="2" data-col="score" data-key="score" class="num">Weighted Score</th>
+              <th rowspan="2" data-col="trend" data-key="trend">Trend</th>
+              <th colspan="5" class="col-group">Group EMA</th>
+              <th rowspan="2" data-col="bartype" data-key="bartype">Bar Type</th>
+              <th rowspan="2" data-col="nr" data-key="nr">NR</th>
+              <th rowspan="2" data-col="special" data-key="special">Special</th>
             </tr>
-
+            <tr>
+              <th data-col="rs" data-key="rs" class="col-group-start">RS Rating</th>
+              <th data-col="rstrend" data-key="rsChange1w" class="col-group-end">3M→1M→1W→T0</th>
+              <th data-col="ema10" data-key="ema10" class="num col-group-start">EMA 10</th>
+              <th data-col="ema20" data-key="ema20" class="num">EMA 20</th>
+              <th data-col="ema50" data-key="ema50" class="num">EMA 50</th>
+              <th data-col="dist10" data-key="dist10" class="num">Dist EMA 10</th>
+              <th data-col="dist50" data-key="dist50" class="num col-group-end">Dist EMA 50</th>
+            </tr>
           </thead>
 
           <tbody id="table-body"></tbody>
@@ -1988,6 +1883,12 @@ footer {
       const rs1w =
         numOrNull(r.RS_1W_Back);
 
+      const rs1m =
+        numOrNull(r.RS_1M_Back);
+
+      const rs3m =
+        numOrNull(r.RS_3M_Back);
+
       const rsChange1w =
         numOrNull(r.RS_Change_1W);
 
@@ -2048,6 +1949,8 @@ footer {
 
         rsToday,
         rs1w,
+        rs1m,
+        rs3m,
         rsChange1w,
 
         rs: rsToday
@@ -3201,29 +3104,17 @@ footer {
 
     if (
       s.rsToday === null ||
-      s.rs1w === null
+      s.rs1w === null ||
+      s.rs1m === null ||
+      s.rs3m === null
     ) {
 
       return 'n/a';
 
     }
 
-
     const delta =
-      s.rsChange1w === null
-        ? s.rsToday - s.rs1w
-        : s.rsChange1w;
-
-
-    const arrow =
-      delta > 0
-        ? '↑'
-        : (
-            delta < 0
-              ? '↓'
-              : '→'
-          );
-
+      s.rsToday - s.rs1w;
 
     const clsName =
       delta > 0
@@ -3234,23 +3125,14 @@ footer {
               : ''
           );
 
-
     return `
 
       <span
         class="${clsName}"
-        title="RS ${s.rs1w} one week ago → ${s.rsToday} today"
+        title="RS ${s.rs3m} 3 months ago → ${s.rs1m} 1 month ago → ${s.rs1w} 1 week ago → ${s.rsToday} today"
       >
 
-        ${arrow}
-
-        ${delta > 0 ? '+' : ''}${delta}
-
-        <span
-          style="color:var(--text-faint)"
-        >
-          (${s.rs1w}→${s.rsToday})
-        </span>
+        (${s.rs3m}→${s.rs1m}→${s.rs1w}→${s.rsToday})
 
       </span>
 
@@ -3448,6 +3330,10 @@ footer {
             const key =
               th.dataset.key;
 
+            if (!key) {
+              return;
+            }
+
 
             if (
               sortKey === key
@@ -3514,7 +3400,7 @@ footer {
 
     ['rs', 'RS Rating'],
 
-    ['rstrend', 'RS Trend (1W)'],
+    ['rstrend', '3M→1M→1W→T0'],
 
     ['p3', '3M %'],
 
@@ -4928,6 +4814,9 @@ footer {
 
             RS_1W_Back:
               s.rs1w,
+
+            RS_1M_Back:
+              s.rs1m,
 
             RS_Change_1W:
               s.rsChange1w,
