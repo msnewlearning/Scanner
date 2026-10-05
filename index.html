@@ -3101,7 +3101,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
 
   function formatRsTrend(s) {
 
-  const vals = [s.rs3m, s.rs1m, s.rs1w, s.rsToday];
+  const vals = [ s.rs1m, s.rs1w, s.rsToday];
 
   // Nothing at all -> n/a
   if (vals.every(v => v === null)) {
