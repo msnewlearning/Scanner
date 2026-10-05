@@ -1287,7 +1287,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
             </tr>
             <tr>
               <th data-col="rs" data-key="rs" class="col-group-start">RS Rating</th>
-              <th data-col="rstrend" data-key="rsChange1w" class="col-group-end">3M→1M→1W→T0</th>
+              <th data-col="rstrend" data-key="rsChange1w" class="col-group-end">1M→1W→T0</th>
               <th data-col="ema10" data-key="ema10" class="num col-group-start">EMA 10</th>
               <th data-col="ema20" data-key="ema20" class="num">EMA 20</th>
               <th data-col="ema50" data-key="ema50" class="num">EMA 50</th>
@@ -3120,7 +3120,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   return `
     <span
       class="${clsName}"
-      title="RS 3M ago: ${fmt(s.rs3m)} → 1M ago: ${fmt(s.rs1m)} → 1W ago: ${fmt(s.rs1w)} → today: ${fmt(s.rsToday)}"
+      title="1M ago: ${fmt(s.rs1m)} → 1W ago: ${fmt(s.rs1w)} → today: ${fmt(s.rsToday)}"
     >
       (${vals.map(fmt).join('→')})
     </span>
