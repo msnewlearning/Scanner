@@ -3099,46 +3099,34 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
 
   }
 
-
   function formatRsTrend(s) {
 
-    if (
-      s.rsToday === null ||
-      s.rs1w === null ||
-      s.rs1m === null ||
-      s.rs3m === null
-    ) {
+  const vals = [s.rs3m, s.rs1m, s.rs1w, s.rsToday];
 
-      return 'n/a';
-
-    }
-
-    const delta =
-      s.rsToday - s.rs1w;
-
-    const clsName =
-      delta > 0
-        ? 'pos'
-        : (
-            delta < 0
-              ? 'neg'
-              : ''
-          );
-
-    return `
-
-      <span
-        class="${clsName}"
-        title="RS ${s.rs3m} 3 months ago → ${s.rs1m} 1 month ago → ${s.rs1w} 1 week ago → ${s.rsToday} today"
-      >
-
-        (${s.rs3m}→${s.rs1m}→${s.rs1w}→${s.rsToday})
-
-      </span>
-
-    `;
-
+  // Nothing at all -> n/a
+  if (vals.every(v => v === null)) {
+    return 'n/a';
   }
+
+  const fmt = v => (v === null ? '–' : v);
+
+  // Colour by change from the earliest available point to today
+  const first = vals.find(v => v !== null);
+  const delta = s.rsToday !== null ? s.rsToday - first : 0;
+
+  const clsName =
+    delta > 0 ? 'pos' : (delta < 0 ? 'neg' : '');
+
+  return `
+    <span
+      class="${clsName}"
+      title="RS 3M ago: ${fmt(s.rs3m)} → 1M ago: ${fmt(s.rs1m)} → 1W ago: ${fmt(s.rs1w)} → today: ${fmt(s.rsToday)}"
+    >
+      (${vals.map(fmt).join('→')})
+    </span>
+  `;
+}
+ 
 
 
   function barTypeBadge(b) {
