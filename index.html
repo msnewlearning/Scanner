@@ -1610,10 +1610,13 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   const LIQUIDITY_THRESHOLD = 70000000;
 
   const RS_DATA_URL =
-    'https://d2k3wq1952nc58.cloudfront.net/nse_rs_data_6102026.csv';
+    'https://d2k3wq1952nc58.cloudfront.net/nse_rs_data.csv';
 
   const HISTORY_DATA_URL =
-    'https://d2k3wq1952nc58.cloudfront.net/nse_price_history_6102026.csv';
+    'https://d2k3wq1952nc58.cloudfront.net/nse_price_history.csv';
+
+  const BREADTH_DATA_URL =
+    'https://d2k3wq1952nc58.cloudfront.net/market_breadth.json';
 
 
   /* ============================================================
@@ -1731,6 +1734,20 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
 
     uploadError.style.display =
       'none';
+
+    if (file.name.toLowerCase().endsWith('.json')) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          processBreadthJson(JSON.parse(reader.result));
+        } catch (err) {
+          showBreadthError('Could not process this JSON: ' + err.message);
+        }
+      };
+      reader.onerror = () => showBreadthError('Could not read JSON file.');
+      reader.readAsText(file);
+      return;
+    }
 
     Papa.parse(
       file,
@@ -4277,6 +4294,42 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   }
 
 
+
+  function processBreadthJson(payload) {
+    if (!payload || !Array.isArray(payload.rows) || !payload.rows.length) {
+      throw new Error('Market breadth JSON is empty or invalid.');
+    }
+
+    breadthRows = payload.rows.map(row => ({
+      date: normalizeDate(row.date || row.Date),
+      advances: Number(row.advances ?? row.Advances ?? 0),
+      declines: Number(row.declines ?? row.Declines ?? 0),
+      adRatio: row.adRatio === null || row.adRatio === undefined
+        ? (Number(row.declines ?? row.Declines ?? 0) > 0
+            ? Number(row.advances ?? row.Advances ?? 0) / Number(row.declines ?? row.Declines ?? 0)
+            : null)
+        : Number(row.adRatio),
+      up4: Number(row.up4 ?? row.Up_4_Plus ?? 0),
+      down4: Number(row.down4 ?? row.Down_4_Plus ?? 0),
+      high52w: Number(row.high52w ?? row.New_52W_High_Within_2Pct ?? 0),
+      low52w: Number(row.low52w ?? row.New_52W_Low ?? 0),
+      scanned: Number(row.scanned ?? row.Stocks_Scanned ?? 0),
+      net: Number(row.net ?? row.Net_Up_Minus_Down ?? 0)
+    })).filter(row => row.date);
+
+    breadthRows.sort((a, b) => b.date.localeCompare(a.date));
+
+    if (!breadthRows.length) {
+      throw new Error('No valid breadth rows found in JSON.');
+    }
+
+    breadthLoaded = true;
+    breadthResults.style.display = 'flex';
+    breadthUploadError.style.display = 'none';
+    breadthChecking.style.display = 'none';
+    renderBreadth();
+  }
+
   /*
    * Manual breadth file.
    */
@@ -4361,101 +4414,32 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
 
   async function loadBreadthIfNeeded() {
 
-    if (
-      breadthLoaded ||
-      breadthLoading
-    ) {
-
+    if (breadthLoaded || breadthLoading) {
       return;
-
     }
 
-
-    breadthLoading =
-      true;
-
-
-    breadthChecking.style.display =
-      'block';
-
+    breadthLoading = true;
+    breadthChecking.style.display = 'block';
 
     try {
-
-      const response =
-        await fetch(
-          HISTORY_DATA_URL,
-          {
-            cache: 'no-store'
-          }
-        );
-
+      const response = await fetch(BREADTH_DATA_URL, { cache: 'no-store' });
 
       if (!response.ok) {
-
-        throw new Error(
-          'HTTP ' +
-          response.status
-        );
-
+        throw new Error('HTTP ' + response.status);
       }
 
-
-      const text =
-        await response.text();
-
-
-      const parsed =
-        Papa.parse(
-          text,
-          {
-            header: true,
-            dynamicTyping: true,
-            skipEmptyLines: true
-          }
-        );
-
-
-      if (
-        parsed.errors &&
-        parsed.errors.length
-      ) {
-
-        console.warn(
-          'Breadth CSV parse warnings:',
-          parsed.errors
-        );
-
-      }
-
-
-      processBreadthData(
-        parsed.data
-      );
-
+      const payload = await response.json();
+      processBreadthJson(payload);
 
     } catch (error) {
-
-      console.error(
-        'Market Breadth loading error:',
-        error
-      );
-
-
+      console.error('Market Breadth loading error:', error);
       showBreadthError(
-        'Could not automatically load nse_price_history.csv. ' +
-        error.message
+        'Could not automatically load market_breadth.json. ' + error.message
       );
-
     } finally {
-
-      breadthLoading =
-        false;
-
-      breadthChecking.style.display =
-        'none';
-
+      breadthLoading = false;
+      breadthChecking.style.display = 'none';
     }
-
   }
 
 
@@ -4520,19 +4504,26 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   }
 
 
+  function chartDateLabel(date) {
+    const d = new Date(date + 'T00:00:00');
+    if (isNaN(d.getTime())) return date;
+    return d.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short'
+    });
+  }
+
+
   function drawBreadthCharts() {
-    /* Show the latest ~3 months, oldest -> newest for the x-axis. */
-    const chartRows = breadthRows
-      .slice(0, 63)
-      .slice()
-      .reverse();
+    const chartRows = breadthRows.slice(0, 63).slice().reverse();
 
     drawLineChart(
       document.getElementById('breadth-ad-chart'),
       chartRows,
       row => row.adRatio === null ? null : Math.min(row.adRatio, 5),
-      'A/D',
-      true
+      [{ label: 'A/D Ratio', valueFn: row => row.adRatio === null ? null : Math.min(row.adRatio, 5) }],
+      true,
+      row => `Advances: ${row.advances.toLocaleString()}<br>Declines: ${row.declines.toLocaleString()}<br>A/D Ratio: ${row.adRatio === null ? '∞' : row.adRatio.toFixed(2)}`
     );
 
     drawDualLineChart(
@@ -4541,7 +4532,8 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       row => row.up4,
       row => row.down4,
       'Up 4%+',
-      'Down 4%+'
+      'Down 4%+',
+      row => `Up 4%+: ${row.up4.toLocaleString()}<br>Down 4%+: ${row.down4.toLocaleString()}`
     );
 
     drawDualLineChart(
@@ -4550,7 +4542,8 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       row => row.high52w,
       row => row.low52w,
       '52W High',
-      '52W Low'
+      '52W Low',
+      row => `52W High: ${row.high52w.toLocaleString()}<br>52W Low: ${row.low52w.toLocaleString()}`
     );
   }
 
@@ -4561,7 +4554,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
     const width = Math.max(280, Math.floor(rect.width));
-    const height = Math.max(130, Math.floor(rect.height));
+    const height = Math.max(160, Math.floor(rect.height));
 
     canvas.width = Math.floor(width * dpr);
     canvas.height = Math.floor(height * dpr);
@@ -4570,6 +4563,20 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     return { ctx, width, height };
+  }
+
+
+  function makeChartTooltip(canvas) {
+    const card = canvas.closest('.breadth-chart-card');
+    if (!card) return null;
+
+    let tip = card.querySelector('.breadth-tooltip');
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.className = 'breadth-tooltip';
+      card.appendChild(tip);
+    }
+    return tip;
   }
 
 
@@ -4586,10 +4593,10 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     ctx.strokeStyle = border;
     ctx.lineWidth = 1;
 
-    const left = 34;
-    const right = 8;
-    const top = 8;
-    const bottom = 22;
+    const left = 42;
+    const right = 10;
+    const top = 10;
+    const bottom = 30;
 
     ctx.beginPath();
     ctx.moveTo(left, top);
@@ -4597,25 +4604,82 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     ctx.lineTo(width - right, height - bottom);
     ctx.stroke();
 
-    ctx.fillStyle = faint;
-    ctx.font = '9px IBM Plex Mono, monospace';
-    ctx.fillText('3M', width - 22, height - 7);
-
     return {
-      ctx,
-      width,
-      height,
-      left,
-      right,
-      top,
-      bottom,
+      ctx, width, height, left, right, top, bottom,
       plotW: width - left - right,
-      plotH: height - top - bottom
+      plotH: height - top - bottom,
+      faint
     };
   }
 
 
-  function drawLineChart(canvas, rows, valueFn, label, zeroLine) {
+  function drawXAxis(g, rows) {
+    if (!rows.length) return;
+    const count = Math.min(6, rows.length);
+    const styles = getComputedStyle(document.documentElement);
+    const faint = styles.getPropertyValue('--text-faint').trim() || '#94A3B8';
+    g.ctx.fillStyle = faint;
+    g.ctx.font = '9px IBM Plex Mono, monospace';
+    g.ctx.textAlign = 'center';
+
+    for (let j = 0; j < count; j++) {
+      const i = count === 1 ? 0 : Math.round(j * (rows.length - 1) / (count - 1));
+      const x = g.left + (rows.length === 1 ? 0 : i / (rows.length - 1)) * g.plotW;
+      g.ctx.fillText(chartDateLabel(rows[i].date), x, g.height - 10);
+    }
+    g.ctx.textAlign = 'left';
+  }
+
+
+  function bindChartHover(canvas, rows, series, getTooltipHtml, valueMin, valueMax, zeroLine) {
+    const tooltip = makeChartTooltip(canvas);
+    if (!tooltip) return;
+
+    if (canvas._breadthHoverHandler) {
+      canvas.removeEventListener('mousemove', canvas._breadthHoverHandler);
+      canvas.removeEventListener('mouseleave', canvas._breadthLeaveHandler);
+    }
+
+    function redrawHover(index) {
+      if (canvas._breadthRedraw) canvas._breadthRedraw(index);
+    }
+
+    canvas._breadthHoverHandler = event => {
+      const rect = canvas.getBoundingClientRect();
+      const g = canvas._breadthGeometry;
+      if (!g || !rows.length) return;
+
+      const x = event.clientX - rect.left;
+      const ratio = Math.max(0, Math.min(1, (x - g.left) / g.plotW));
+      const index = Math.max(0, Math.min(rows.length - 1, Math.round(ratio * (rows.length - 1))));
+      const pointX = g.left + (rows.length === 1 ? 0 : index / (rows.length - 1)) * g.plotW;
+
+      redrawHover(index);
+      tooltip.innerHTML = `<div class="breadth-tooltip-date">${escapeHtml(rows[index].date)}</div><div>${getTooltipHtml(rows[index])}</div>`;
+      tooltip.style.display = 'block';
+
+      const card = canvas.closest('.breadth-chart-card');
+      const cardRect = card.getBoundingClientRect();
+      const tipWidth = tooltip.offsetWidth;
+      let left = rect.left - cardRect.left + pointX + 10;
+      if (left + tipWidth > card.clientWidth - 6) {
+        left = rect.left - cardRect.left + pointX - tipWidth - 10;
+      }
+      tooltip.style.left = Math.max(6, left) + 'px';
+      tooltip.style.top = '28px';
+    };
+
+    canvas._breadthLeaveHandler = () => {
+      tooltip.style.display = 'none';
+      redrawHover(null);
+    };
+
+    canvas.addEventListener('mousemove', canvas._breadthHoverHandler);
+    canvas.addEventListener('mouseleave', canvas._breadthLeaveHandler);
+  }
+
+
+  function drawLineChart(canvas, rows, valueFn, series, zeroLine, getTooltipHtml) {
     const g = drawBaseChart(canvas);
     if (!g || !rows.length) return;
 
@@ -4623,48 +4687,80 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     if (!values.length) return;
 
     let max = Math.max(...values, 1);
-    let min = Math.min(...values, zeroLine ? 0 : 0);
+    let min = 0;
     if (max === min) max = min + 1;
 
     const styles = getComputedStyle(document.documentElement);
     const accent = styles.getPropertyValue('--accent-dark').trim() || '#0F766E';
     const faint = styles.getPropertyValue('--text-faint').trim() || '#94A3B8';
 
-    if (zeroLine && min <= 0 && max >= 0) {
-      const y = g.top + (max / (max - min)) * g.plotH;
-      g.ctx.strokeStyle = faint;
-      g.ctx.setLineDash([3, 3]);
-      g.ctx.beginPath();
-      g.ctx.moveTo(g.left, y);
-      g.ctx.lineTo(g.width - g.right, y);
-      g.ctx.stroke();
-      g.ctx.setLineDash([]);
+    function render(hoverIndex = null) {
+      const setup = drawBaseChart(canvas);
+      const ctx = setup.ctx;
+      g.ctx = ctx;
+
+      if (zeroLine && min <= 0 && max >= 0) {
+        const y = setup.top + (max / (max - min)) * setup.plotH;
+        ctx.strokeStyle = faint;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(setup.left, y);
+        ctx.lineTo(setup.width - setup.right, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 1.7;
+      ctx.beginPath();
+      let started = false;
+      rows.forEach((row, i) => {
+        const v = valueFn(row);
+        if (v === null || !isFinite(v)) { started = false; return; }
+        const x = setup.left + (rows.length === 1 ? 0 : i / (rows.length - 1)) * setup.plotW;
+        const y = setup.top + ((max - v) / (max - min)) * setup.plotH;
+        if (!started) { ctx.moveTo(x, y); started = true; }
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      ctx.fillStyle = faint;
+      ctx.font = '9px IBM Plex Mono, monospace';
+      ctx.fillText(series[0].label, 4, 13);
+      ctx.fillText(max.toFixed(max < 10 ? 1 : 0), 4, 25);
+      ctx.fillText(min.toFixed(min < 10 ? 1 : 0), 4, setup.height - 38);
+      drawXAxis(setup, rows);
+
+      if (hoverIndex !== null) {
+        const x = setup.left + (rows.length === 1 ? 0 : hoverIndex / (rows.length - 1)) * setup.plotW;
+        ctx.strokeStyle = faint;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(x, setup.top);
+        ctx.lineTo(x, setup.height - setup.bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const v = valueFn(rows[hoverIndex]);
+        if (v !== null && isFinite(v)) {
+          const y = setup.top + ((max - v) / (max - min)) * setup.plotH;
+          ctx.fillStyle = accent;
+          ctx.beginPath();
+          ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      canvas._breadthGeometry = setup;
     }
 
-    g.ctx.strokeStyle = accent;
-    g.ctx.lineWidth = 1.7;
-    g.ctx.beginPath();
-
-    rows.forEach((row, i) => {
-      const v = valueFn(row);
-      if (v === null || !isFinite(v)) return;
-      const x = g.left + (rows.length === 1 ? 0 : i / (rows.length - 1)) * g.plotW;
-      const y = g.top + ((max - v) / (max - min)) * g.plotH;
-      if (i === 0 || !isFinite(v)) g.ctx.moveTo(x, y);
-      else g.ctx.lineTo(x, y);
-    });
-
-    g.ctx.stroke();
-
-    g.ctx.fillStyle = faint;
-    g.ctx.font = '9px IBM Plex Mono, monospace';
-    g.ctx.fillText(label, 4, 13);
-    g.ctx.fillText(max.toFixed(max < 10 ? 1 : 0), 4, 25);
-    g.ctx.fillText(min.toFixed(min < 10 ? 1 : 0), 4, g.height - 24);
+    canvas._breadthRedraw = render;
+    render(null);
+    bindChartHover(canvas, rows, series, getTooltipHtml, min, max, zeroLine);
   }
 
 
-  function drawDualLineChart(canvas, rows, valueFn1, valueFn2, label1, label2) {
+  function drawDualLineChart(canvas, rows, valueFn1, valueFn2, label1, label2, getTooltipHtml) {
     const g = drawBaseChart(canvas);
     if (!g || !rows.length) return;
 
@@ -4673,7 +4769,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     if (!values.length) return;
 
     let max = Math.max(...values, 1);
-    let min = 0;
+    const min = 0;
     if (max === min) max = 1;
 
     const styles = getComputedStyle(document.documentElement);
@@ -4681,38 +4777,82 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     const weak = styles.getPropertyValue('--weak').trim() || '#E11D48';
     const faint = styles.getPropertyValue('--text-faint').trim() || '#94A3B8';
 
-    function plot(valueFn, stroke) {
-      g.ctx.strokeStyle = stroke;
-      g.ctx.lineWidth = 1.7;
-      g.ctx.beginPath();
-      rows.forEach((row, i) => {
-        const v = valueFn(row);
-        if (v === null || !isFinite(v)) return;
-        const x = g.left + (rows.length === 1 ? 0 : i / (rows.length - 1)) * g.plotW;
-        const y = g.top + ((max - v) / max) * g.plotH;
-        if (i === 0) g.ctx.moveTo(x, y);
-        else g.ctx.lineTo(x, y);
-      });
-      g.ctx.stroke();
+    function render(hoverIndex = null) {
+      const setup = drawBaseChart(canvas);
+      const ctx = setup.ctx;
+
+      function plot(valueFn, stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 1.7;
+        ctx.beginPath();
+        let started = false;
+        rows.forEach((row, i) => {
+          const v = valueFn(row);
+          if (v === null || !isFinite(v)) { started = false; return; }
+          const x = setup.left + (rows.length === 1 ? 0 : i / (rows.length - 1)) * setup.plotW;
+          const y = setup.top + ((max - v) / max) * setup.plotH;
+          if (!started) { ctx.moveTo(x, y); started = true; }
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+      }
+
+      plot(valueFn1, accent);
+      plot(valueFn2, weak);
+
+      ctx.fillStyle = accent;
+      ctx.font = '9px IBM Plex Mono, monospace';
+      ctx.fillText('— ' + label1, 4, 13);
+      ctx.fillStyle = weak;
+      ctx.fillText('— ' + label2, 4, 25);
+      ctx.fillStyle = faint;
+      ctx.fillText(String(Math.round(max)), 4, 38);
+      ctx.fillText('0', 4, setup.height - 38);
+      drawXAxis(setup, rows);
+
+      if (hoverIndex !== null) {
+        const x = setup.left + (rows.length === 1 ? 0 : hoverIndex / (rows.length - 1)) * setup.plotW;
+        ctx.strokeStyle = faint;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(x, setup.top);
+        ctx.lineTo(x, setup.height - setup.bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        [[valueFn1, accent], [valueFn2, weak]].forEach(([fn, color]) => {
+          const v = fn(rows[hoverIndex]);
+          if (v === null || !isFinite(v)) return;
+          const y = setup.top + ((max - v) / max) * setup.plotH;
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
+
+      canvas._breadthGeometry = setup;
     }
 
-    plot(valueFn1, accent);
-    plot(valueFn2, weak);
-
-    g.ctx.fillStyle = accent;
-    g.ctx.font = '9px IBM Plex Mono, monospace';
-    g.ctx.fillText('— ' + label1, 4, 13);
-    g.ctx.fillStyle = weak;
-    g.ctx.fillText('— ' + label2, 4, 25);
-    g.ctx.fillStyle = faint;
-    g.ctx.fillText(String(Math.round(max)), 4, 38);
-    g.ctx.fillText('0', 4, g.height - 24);
+    canvas._breadthRedraw = render;
+    render(null);
+    bindChartHover(canvas, rows, [
+      { label: label1, valueFn: valueFn1 },
+      { label: label2, valueFn: valueFn2 }
+    ], getTooltipHtml, min, max, false);
   }
 
 
   /*
    * Export breadth data.
    */
+
+  window.addEventListener('resize', () => {
+    if (breadthLoaded) {
+      drawBreadthCharts();
+    }
+  });
+
 
   breadthExportBtn.addEventListener(
     'click',
