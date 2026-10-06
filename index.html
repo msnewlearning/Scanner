@@ -686,6 +686,43 @@ tbody tr:hover td {
   flex: none;
 }
 
+.breadth-charts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+  flex: none;
+}
+
+.breadth-chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 8px 10px 6px;
+  min-width: 0;
+}
+
+.breadth-chart-title {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.breadth-chart-subtitle {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-faint);
+  margin-bottom: 4px;
+}
+
+.breadth-chart {
+  width: 100%;
+  height: 150px;
+  display: block;
+}
+
 /* ---------- Footer ---------- */
 
 footer {
@@ -745,6 +782,10 @@ footer {
   .stats-bar,
   .breadth-summary {
     overflow-x: auto;
+  }
+
+  .breadth-charts {
+    grid-template-columns: 1fr;
   }
 
   .stat,
@@ -1287,7 +1328,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
             </tr>
             <tr>
               <th data-col="rs" data-key="rs" class="col-group-start">RS Rating</th>
-              <th data-col="rstrend" data-key="rsChange1w" class="col-group-end">1M→1W→T0</th>
+              <th data-col="rstrend" data-key="rsChange1w" class="col-group-end">3M→1M→1W→T0</th>
               <th data-col="ema10" data-key="ema10" class="num col-group-start">EMA 10</th>
               <th data-col="ema20" data-key="ema20" class="num">EMA 20</th>
               <th data-col="ema50" data-key="ema50" class="num">EMA 50</th>
@@ -1452,8 +1493,31 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       </div>
 
 
+      <div class="breadth-charts">
+
+        <div class="breadth-chart-card">
+          <div class="breadth-chart-title">Advance / Decline Ratio</div>
+          <div class="breadth-chart-subtitle">Advancers ÷ Decliners · last 3 months</div>
+          <canvas id="breadth-ad-chart" class="breadth-chart"></canvas>
+        </div>
+
+        <div class="breadth-chart-card">
+          <div class="breadth-chart-title">4% Up / Down</div>
+          <div class="breadth-chart-subtitle">Stocks up ≥4% vs down ≤−4% · last 3 months</div>
+          <canvas id="breadth-4pct-chart" class="breadth-chart"></canvas>
+        </div>
+
+        <div class="breadth-chart-card">
+          <div class="breadth-chart-title">52W High / Low</div>
+          <div class="breadth-chart-subtitle">High includes stocks within 2% of 52W high · last 3 months</div>
+          <canvas id="breadth-52w-chart" class="breadth-chart"></canvas>
+        </div>
+
+      </div>
+
+
       <div class="breadth-info">
-        Daily breadth based on stocks with a valid previous trading-day close. Up 4%+ = daily change ≥ +4%; Down 4%+ = daily change ≤ −4%.
+        Advance = close above previous close. Decline = close below previous close. 52W High includes stocks whose close is within 2% of their rolling 52-week high; 52W Low uses the rolling 52-week low. Charts show the latest 3 months.
       </div>
 
 
@@ -1470,11 +1534,23 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
               </th>
 
               <th class="num">
+                A/D Ratio
+              </th>
+
+              <th class="num">
                 Up 4%+
               </th>
 
               <th class="num">
                 Down 4%+
+              </th>
+
+              <th class="num">
+                52W High
+              </th>
+
+              <th class="num">
+                52W Low
               </th>
 
               <th class="num">
@@ -1534,10 +1610,10 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   const LIQUIDITY_THRESHOLD = 70000000;
 
   const RS_DATA_URL =
-    'https://d2k3wq1952nc58.cloudfront.net/nse_rs_data_5102026.csv';
+    'https://d2k3wq1952nc58.cloudfront.net/nse_rs_data.csv';
 
   const HISTORY_DATA_URL =
-    'https://d2k3wq1952nc58.cloudfront.net/nse_price_history_5102026.csv';
+    'https://d2k3wq1952nc58.cloudfront.net/nse_price_history.csv';
 
 
   /* ============================================================
@@ -3099,34 +3175,46 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
 
   }
 
+
   function formatRsTrend(s) {
 
-  const vals = [ s.rs1m, s.rs1w, s.rsToday];
+    if (
+      s.rsToday === null ||
+      s.rs1w === null ||
+      s.rs1m === null ||
+      s.rs3m === null
+    ) {
 
-  // Nothing at all -> n/a
-  if (vals.every(v => v === null)) {
-    return 'n/a';
+      return 'n/a';
+
+    }
+
+    const delta =
+      s.rsToday - s.rs1w;
+
+    const clsName =
+      delta > 0
+        ? 'pos'
+        : (
+            delta < 0
+              ? 'neg'
+              : ''
+          );
+
+    return `
+
+      <span
+        class="${clsName}"
+        title="RS ${s.rs3m} 3 months ago → ${s.rs1m} 1 month ago → ${s.rs1w} 1 week ago → ${s.rsToday} today"
+      >
+
+        (${s.rs3m}→${s.rs1m}→${s.rs1w}→${s.rsToday})
+
+      </span>
+
+    `;
+
   }
-
-  const fmt = v => (v === null ? '–' : v);
-
-  // Colour by change from the earliest available point to today
-  const first = vals.find(v => v !== null);
-  const delta = s.rsToday !== null ? s.rsToday - first : 0;
-
-  const clsName =
-    delta > 0 ? 'pos' : (delta < 0 ? 'neg' : '');
-
-  return `
-    <span
-      class="${clsName}"
-      title="1M ago: ${fmt(s.rs1m)} → 1W ago: ${fmt(s.rs1w)} → today: ${fmt(s.rsToday)}"
-    >
-      (${vals.map(fmt).join('→')})
-    </span>
-  `;
-}
- 
 
 
   function barTypeBadge(b) {
@@ -4001,332 +4089,191 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       !rows ||
       !rows.length
     ) {
-
       throw new Error(
         'History CSV appears empty.'
       );
-
     }
 
-
-    const first =
-      rows.find(
-        r =>
-          r &&
-          Object.keys(r).length
-      );
-
+    const first = rows.find(
+      r => r && Object.keys(r).length
+    );
 
     if (!first) {
-
       throw new Error(
         'No valid rows found in history CSV.'
       );
-
     }
 
+    const dateCol = findColumn(
+      first,
+      ['Date', 'date', 'Trading_Date', 'Trade_Date']
+    );
 
-    const dateCol =
-      findColumn(
-        first,
-        [
-          'Date',
-          'date',
-          'Trading_Date',
-          'Trade_Date'
-        ]
-      );
+    const symbolCol = findColumn(
+      first,
+      ['Symbol', 'symbol', 'Ticker', 'ticker', 'SYMBOL']
+    );
 
+    const closeCol = findColumn(
+      first,
+      ['Close', 'close', 'Close_Price', 'Close_Today', 'CLOSE']
+    );
 
-    const symbolCol =
-      findColumn(
-        first,
-        [
-          'Symbol',
-          'symbol',
-          'Ticker',
-          'ticker',
-          'SYMBOL'
-        ]
-      );
+    const highCol = findColumn(
+      first,
+      ['High', 'high', 'High_Price', 'HIGH']
+    );
 
+    const lowCol = findColumn(
+      first,
+      ['Low', 'low', 'Low_Price', 'LOW']
+    );
 
-    const closeCol =
-      findColumn(
-        first,
-        [
-          'Close',
-          'close',
-          'Close_Price',
-          'Close_Today',
-          'CLOSE'
-        ]
-      );
-
-
-    if (!dateCol) {
-
+    if (!dateCol || !symbolCol || !closeCol) {
       throw new Error(
-        'History CSV must contain a Date column.'
+        'History CSV must contain Date, Symbol and Close columns.'
       );
-
     }
 
+    const bySymbol = {};
 
-    if (!symbolCol) {
+    rows.forEach(row => {
+      const symbol = row[symbolCol]
+        ? String(row[symbolCol]).trim()
+        : '';
 
-      throw new Error(
-        'History CSV must contain a Symbol column.'
+      const date = normalizeDate(row[dateCol]);
+      const close = numOrNull(row[closeCol]);
+      const high = highCol ? numOrNull(row[highCol]) : null;
+      const low = lowCol ? numOrNull(row[lowCol]) : null;
+
+      if (!symbol || !date || close === null || close <= 0) {
+        return;
+      }
+
+      if (!bySymbol[symbol]) {
+        bySymbol[symbol] = [];
+      }
+
+      bySymbol[symbol].push({
+        date,
+        close,
+        high,
+        low
+      });
+    });
+
+    Object.keys(bySymbol).forEach(symbol => {
+      bySymbol[symbol].sort(
+        (a, b) => a.date.localeCompare(b.date)
       );
+    });
 
-    }
+    const daily = {};
+    const rollingWindow = 252;
 
+    Object.keys(bySymbol).forEach(symbol => {
+      const history = bySymbol[symbol];
 
-    if (!closeCol) {
-
-      throw new Error(
-        'History CSV must contain a Close column.'
-      );
-
-    }
-
-
-    /*
-     * Build:
-     *
-     * symbol -> date -> close
-     */
-
-    const bySymbol =
-      {};
-
-
-    rows.forEach(
-      row => {
-
-        const symbol =
-          row[symbolCol]
-            ? String(
-                row[symbolCol]
-              ).trim()
-            : '';
-
-
-        const date =
-          normalizeDate(
-            row[dateCol]
-          );
-
-
-        const close =
-          numOrNull(
-            row[closeCol]
-          );
-
+      for (let i = 1; i < history.length; i++) {
+        const previous = history[i - 1];
+        const current = history[i];
 
         if (
-          !symbol ||
-          !date ||
-          close === null ||
-          close <= 0
+          previous.close === null ||
+          current.close === null ||
+          previous.close === 0
         ) {
-
-          return;
-
+          continue;
         }
 
+        const change =
+          ((current.close - previous.close) / previous.close) * 100;
 
-        if (
-          !bySymbol[symbol]
-        ) {
+        const date = current.date;
 
-          bySymbol[symbol] =
-            [];
-
-        }
-
-
-        bySymbol[symbol].push(
-          {
+        if (!daily[date]) {
+          daily[date] = {
             date,
-            close
-          }
-        );
-
-      }
-    );
-
-
-    /*
-     * Sort each symbol's records by date.
-     */
-
-    Object.keys(
-      bySymbol
-    ).forEach(
-      symbol => {
-
-        bySymbol[symbol].sort(
-          (a, b) =>
-            a.date.localeCompare(
-              b.date
-            )
-        );
-
-      }
-    );
-
-
-    /*
-     * Aggregate daily breadth.
-     */
-
-    const daily =
-      {};
-
-
-    Object.keys(
-      bySymbol
-    ).forEach(
-      symbol => {
-
-        const history =
-          bySymbol[symbol];
-
-
-        for (
-          let i = 1;
-          i < history.length;
-          i++
-        ) {
-
-          const previous =
-            history[i - 1];
-
-          const current =
-            history[i];
-
-
-          if (
-            previous.close === null ||
-            current.close === null ||
-            previous.close === 0
-          ) {
-
-            continue;
-
-          }
-
-
-          const change =
-            (
-              (current.close -
-                previous.close) /
-              previous.close
-            ) * 100;
-
-
-          const date =
-            current.date;
-
-
-          if (
-            !daily[date]
-          ) {
-
-            daily[date] = {
-
-              date,
-
-              up4: 0,
-
-              down4: 0,
-
-              scanned: 0
-
-            };
-
-          }
-
-
-          daily[date].scanned++;
-
-
-          if (
-            change >= 4
-          ) {
-
-            daily[date].up4++;
-
-          }
-
-
-          if (
-            change <= -4
-          ) {
-
-            daily[date].down4++;
-
-          }
-
+            advances: 0,
+            declines: 0,
+            up4: 0,
+            down4: 0,
+            high52w: 0,
+            low52w: 0,
+            scanned: 0
+          };
         }
 
-      }
-    );
+        daily[date].scanned++;
 
-
-    breadthRows =
-      Object.values(
-        daily
-      )
-      .map(
-        item => {
-
-          item.net =
-            item.up4 -
-            item.down4;
-
-          return item;
-
+        if (change > 0) {
+          daily[date].advances++;
+        } else if (change < 0) {
+          daily[date].declines++;
         }
-      )
-      .sort(
-        (a, b) =>
-          b.date.localeCompare(
-            a.date
-          )
-      );
 
+        if (change >= 4) {
+          daily[date].up4++;
+        }
 
-    if (
-      !breadthRows.length
-    ) {
+        if (change <= -4) {
+          daily[date].down4++;
+        }
 
+        /*
+         * 52-week breadth requires 252 prior/current sessions.
+         * High breadth includes stocks within 2% of the rolling high.
+         */
+        if (i >= rollingWindow - 1) {
+          const window = history.slice(
+            i - rollingWindow + 1,
+            i + 1
+          );
+
+          const closes = window
+            .map(x => x.close)
+            .filter(x => x !== null && x > 0);
+
+          if (closes.length >= rollingWindow * 0.95) {
+            const high52 = Math.max(...closes);
+            const low52 = Math.min(...closes);
+
+            if (current.close >= high52 * 0.98) {
+              daily[date].high52w++;
+            }
+
+            if (current.close <= low52) {
+              daily[date].low52w++;
+            }
+          }
+        }
+      }
+    });
+
+    breadthRows = Object.values(daily)
+      .map(item => {
+        item.net = item.up4 - item.down4;
+        item.adRatio =
+          item.declines > 0
+            ? item.advances / item.declines
+            : (item.advances > 0 ? null : 0);
+        return item;
+      })
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    if (!breadthRows.length) {
       throw new Error(
         'No daily breadth records could be calculated. Check the Date, Symbol and Close columns in nse_price_history.csv.'
       );
-
     }
 
-
-    breadthLoaded =
-      true;
-
-
-    breadthResults.style.display =
-      'flex';
-
-
-    breadthUploadError.style.display =
-      'none';
-
-
-    breadthChecking.style.display =
-      'none';
-
+    breadthLoaded = true;
+    breadthResults.style.display = 'flex';
+    breadthUploadError.style.display = 'none';
+    breadthChecking.style.display = 'none';
 
     renderBreadth();
-
   }
 
 
@@ -4518,146 +4465,248 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
 
   function renderBreadth() {
 
-    if (
-      !breadthRows.length
-    ) {
-
-      breadthTableBody.innerHTML =
-        `
-          <tr>
-            <td
-              colspan="5"
-              class="empty-state"
-            >
-              No breadth data available.
-            </td>
-          </tr>
-        `;
-
+    if (!breadthRows.length) {
+      breadthTableBody.innerHTML = `
+        <tr>
+          <td colspan="8" class="empty-state">
+            No breadth data available.
+          </td>
+        </tr>
+      `;
       return;
-
     }
 
+    const latest = breadthRows[0];
 
-    const latest =
-      breadthRows[0];
+    document.getElementById('breadth-latest-date').textContent = latest.date;
+    document.getElementById('breadth-latest-up').textContent = latest.up4.toLocaleString();
+    document.getElementById('breadth-latest-down').textContent = latest.down4.toLocaleString();
 
-
-    document.getElementById(
-      'breadth-latest-date'
-    ).textContent =
-      latest.date;
-
-
-    document.getElementById(
-      'breadth-latest-up'
-    ).textContent =
-      latest.up4.toLocaleString();
-
-
-    document.getElementById(
-      'breadth-latest-down'
-    ).textContent =
-      latest.down4.toLocaleString();
-
-
-    const latestNetEl =
-      document.getElementById(
-        'breadth-latest-net'
-      );
-
-
+    const latestNetEl = document.getElementById('breadth-latest-net');
     latestNetEl.textContent =
-      (
-        latest.net >= 0
-          ? '+'
-          : ''
-      ) +
-      latest.net.toLocaleString();
-
-
+      (latest.net >= 0 ? '+' : '') + latest.net.toLocaleString();
     latestNetEl.className =
       'value ' +
-      (
-        latest.net > 0
-          ? 'pos'
-          : (
-              latest.net < 0
-                ? 'neg'
-                : ''
-            )
-      );
+      (latest.net > 0 ? 'pos' : latest.net < 0 ? 'neg' : '');
 
-
-    document.getElementById(
-      'breadth-latest-scanned'
-    ).textContent =
+    document.getElementById('breadth-latest-scanned').textContent =
       latest.scanned.toLocaleString();
 
+    breadthTableBody.innerHTML = breadthRows
+      .map((row, index) => {
+        const netClass =
+          row.net > 0
+            ? 'breadth-net-positive'
+            : row.net < 0
+              ? 'breadth-net-negative'
+              : 'breadth-net-flat';
 
-    breadthTableBody.innerHTML =
-      breadthRows
-        .map(
-          (row, index) => {
+        return `
+          <tr class="${index === 0 ? 'breadth-latest' : ''}">
+            <td class="breadth-date">${escapeHtml(row.date)}</td>
+            <td class="num">${row.adRatio === null ? '∞' : row.adRatio.toFixed(2)}</td>
+            <td class="num breadth-up">${row.up4.toLocaleString()}</td>
+            <td class="num breadth-down">${row.down4.toLocaleString()}</td>
+            <td class="num">${row.high52w.toLocaleString()}</td>
+            <td class="num">${row.low52w.toLocaleString()}</td>
+            <td class="num ${netClass}">${row.net >= 0 ? '+' : ''}${row.net.toLocaleString()}</td>
+            <td class="num">${row.scanned.toLocaleString()}</td>
+          </tr>
+        `;
+      })
+      .join('');
 
-            const netClass =
-              row.net > 0
-                ? 'breadth-net-positive'
-                : (
-                    row.net < 0
-                      ? 'breadth-net-negative'
-                      : 'breadth-net-flat'
-                  );
+    drawBreadthCharts();
+  }
 
 
-            return `
+  function drawBreadthCharts() {
+    /* Show the latest ~3 months, oldest -> newest for the x-axis. */
+    const chartRows = breadthRows
+      .slice(0, 63)
+      .slice()
+      .reverse();
 
-              <tr
-                class="${index === 0 ? 'breadth-latest' : ''}"
-              >
+    drawLineChart(
+      document.getElementById('breadth-ad-chart'),
+      chartRows,
+      row => row.adRatio === null ? null : Math.min(row.adRatio, 5),
+      'A/D',
+      true
+    );
 
-                <td
-                  class="breadth-date"
-                >
-                  ${escapeHtml(row.date)}
-                </td>
+    drawDualLineChart(
+      document.getElementById('breadth-4pct-chart'),
+      chartRows,
+      row => row.up4,
+      row => row.down4,
+      'Up 4%+',
+      'Down 4%+'
+    );
 
-                <td
-                  class="num breadth-up"
-                >
-                  ${row.up4.toLocaleString()}
-                </td>
+    drawDualLineChart(
+      document.getElementById('breadth-52w-chart'),
+      chartRows,
+      row => row.high52w,
+      row => row.low52w,
+      '52W High',
+      '52W Low'
+    );
+  }
 
-                <td
-                  class="num breadth-down"
-                >
-                  ${row.down4.toLocaleString()}
-                </td>
 
-                <td
-                  class="num ${netClass}"
-                >
-                  ${
-                    row.net >= 0
-                      ? '+'
-                      : ''
-                  }${row.net.toLocaleString()}
-                </td>
+  function prepareCanvas(canvas) {
+    if (!canvas) return null;
 
-                <td
-                  class="num"
-                >
-                  ${row.scanned.toLocaleString()}
-                </td>
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(280, Math.floor(rect.width));
+    const height = Math.max(130, Math.floor(rect.height));
 
-              </tr>
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
 
-            `;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-          }
-        )
-        .join('');
+    return { ctx, width, height };
+  }
 
+
+  function drawBaseChart(canvas) {
+    const setup = prepareCanvas(canvas);
+    if (!setup) return null;
+
+    const { ctx, width, height } = setup;
+    const styles = getComputedStyle(document.documentElement);
+    const border = styles.getPropertyValue('--border-soft').trim() || '#E2E8F0';
+    const faint = styles.getPropertyValue('--text-faint').trim() || '#94A3B8';
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.strokeStyle = border;
+    ctx.lineWidth = 1;
+
+    const left = 34;
+    const right = 8;
+    const top = 8;
+    const bottom = 22;
+
+    ctx.beginPath();
+    ctx.moveTo(left, top);
+    ctx.lineTo(left, height - bottom);
+    ctx.lineTo(width - right, height - bottom);
+    ctx.stroke();
+
+    ctx.fillStyle = faint;
+    ctx.font = '9px IBM Plex Mono, monospace';
+    ctx.fillText('3M', width - 22, height - 7);
+
+    return {
+      ctx,
+      width,
+      height,
+      left,
+      right,
+      top,
+      bottom,
+      plotW: width - left - right,
+      plotH: height - top - bottom
+    };
+  }
+
+
+  function drawLineChart(canvas, rows, valueFn, label, zeroLine) {
+    const g = drawBaseChart(canvas);
+    if (!g || !rows.length) return;
+
+    const values = rows.map(valueFn).filter(v => v !== null && isFinite(v));
+    if (!values.length) return;
+
+    let max = Math.max(...values, 1);
+    let min = Math.min(...values, zeroLine ? 0 : 0);
+    if (max === min) max = min + 1;
+
+    const styles = getComputedStyle(document.documentElement);
+    const accent = styles.getPropertyValue('--accent-dark').trim() || '#0F766E';
+    const faint = styles.getPropertyValue('--text-faint').trim() || '#94A3B8';
+
+    if (zeroLine && min <= 0 && max >= 0) {
+      const y = g.top + (max / (max - min)) * g.plotH;
+      g.ctx.strokeStyle = faint;
+      g.ctx.setLineDash([3, 3]);
+      g.ctx.beginPath();
+      g.ctx.moveTo(g.left, y);
+      g.ctx.lineTo(g.width - g.right, y);
+      g.ctx.stroke();
+      g.ctx.setLineDash([]);
+    }
+
+    g.ctx.strokeStyle = accent;
+    g.ctx.lineWidth = 1.7;
+    g.ctx.beginPath();
+
+    rows.forEach((row, i) => {
+      const v = valueFn(row);
+      if (v === null || !isFinite(v)) return;
+      const x = g.left + (rows.length === 1 ? 0 : i / (rows.length - 1)) * g.plotW;
+      const y = g.top + ((max - v) / (max - min)) * g.plotH;
+      if (i === 0 || !isFinite(v)) g.ctx.moveTo(x, y);
+      else g.ctx.lineTo(x, y);
+    });
+
+    g.ctx.stroke();
+
+    g.ctx.fillStyle = faint;
+    g.ctx.font = '9px IBM Plex Mono, monospace';
+    g.ctx.fillText(label, 4, 13);
+    g.ctx.fillText(max.toFixed(max < 10 ? 1 : 0), 4, 25);
+    g.ctx.fillText(min.toFixed(min < 10 ? 1 : 0), 4, g.height - 24);
+  }
+
+
+  function drawDualLineChart(canvas, rows, valueFn1, valueFn2, label1, label2) {
+    const g = drawBaseChart(canvas);
+    if (!g || !rows.length) return;
+
+    const values = rows.flatMap(row => [valueFn1(row), valueFn2(row)])
+      .filter(v => v !== null && isFinite(v));
+    if (!values.length) return;
+
+    let max = Math.max(...values, 1);
+    let min = 0;
+    if (max === min) max = 1;
+
+    const styles = getComputedStyle(document.documentElement);
+    const accent = styles.getPropertyValue('--accent-dark').trim() || '#0F766E';
+    const weak = styles.getPropertyValue('--weak').trim() || '#E11D48';
+    const faint = styles.getPropertyValue('--text-faint').trim() || '#94A3B8';
+
+    function plot(valueFn, stroke) {
+      g.ctx.strokeStyle = stroke;
+      g.ctx.lineWidth = 1.7;
+      g.ctx.beginPath();
+      rows.forEach((row, i) => {
+        const v = valueFn(row);
+        if (v === null || !isFinite(v)) return;
+        const x = g.left + (rows.length === 1 ? 0 : i / (rows.length - 1)) * g.plotW;
+        const y = g.top + ((max - v) / max) * g.plotH;
+        if (i === 0) g.ctx.moveTo(x, y);
+        else g.ctx.lineTo(x, y);
+      });
+      g.ctx.stroke();
+    }
+
+    plot(valueFn1, accent);
+    plot(valueFn2, weak);
+
+    g.ctx.fillStyle = accent;
+    g.ctx.font = '9px IBM Plex Mono, monospace';
+    g.ctx.fillText('— ' + label1, 4, 13);
+    g.ctx.fillStyle = weak;
+    g.ctx.fillText('— ' + label2, 4, 25);
+    g.ctx.fillStyle = faint;
+    g.ctx.fillText(String(Math.round(max)), 4, 38);
+    g.ctx.fillText('0', 4, g.height - 24);
   }
 
 
@@ -4685,11 +4734,26 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
             Date:
               row.date,
 
+            Advances:
+              row.advances,
+
+            Declines:
+              row.declines,
+
+            AD_Ratio:
+              row.adRatio,
+
             Up_4_Plus:
               row.up4,
 
             Down_4_Plus:
               row.down4,
+
+            New_52W_High_Within_2Pct:
+              row.high52w,
+
+            New_52W_Low:
+              row.low52w,
 
             Net_Up_Minus_Down:
               row.net,
