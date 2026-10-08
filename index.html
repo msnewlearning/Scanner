@@ -688,10 +688,77 @@ tbody tr:hover td {
 
 .breadth-charts {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 8px;
   flex: none;
+}
+
+.breadth-highlights {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+  flex: none;
+}
+
+.breadth-highlight-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 8px 10px 6px;
+  min-width: 0;
+}
+
+.breadth-highlight-title {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-bottom: 2px;
+}
+
+.breadth-highlight-subtitle {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-faint);
+  margin-bottom: 4px;
+}
+
+.breadth-highlight-list {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.breadth-highlight-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 2px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 11.5px;
+}
+
+.breadth-highlight-row:last-child {
+  border-bottom: none;
+}
+
+.breadth-highlight-row a {
+  color: var(--accent-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.breadth-highlight-row a:hover {
+  text-decoration: underline;
+}
+
+.breadth-highlight-meta {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
 }
 
 .breadth-chart-card {
@@ -784,7 +851,8 @@ footer {
     overflow-x: auto;
   }
 
-  .breadth-charts {
+  .breadth-charts,
+  .breadth-highlights {
     grid-template-columns: 1fr;
   }
 
@@ -1493,31 +1561,54 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       </div>
 
 
+      <div class="breadth-highlights">
+
+        <div class="breadth-highlight-card">
+          <div class="breadth-highlight-title">Leaders Slipping</div>
+          <div class="breadth-highlight-subtitle">RS 80+ stocks that closed below their 50-day EMA today</div>
+          <div class="breadth-highlight-list" id="leaders-slipping-list"></div>
+        </div>
+
+        <div class="breadth-highlight-card">
+          <div class="breadth-highlight-title">New 52W High Today</div>
+          <div class="breadth-highlight-subtitle">Closed above their previous 52-week high today</div>
+          <div class="breadth-highlight-list" id="new-52w-high-list"></div>
+        </div>
+
+      </div>
+
+
       <div class="breadth-charts">
 
         <div class="breadth-chart-card">
           <div class="breadth-chart-title">Advance / Decline Ratio</div>
-          <div class="breadth-chart-subtitle">Advancers ÷ Decliners · last 3 months</div>
+          <div class="breadth-chart-subtitle">Advancers ÷ Decliners · last 6 months</div>
           <canvas id="breadth-ad-chart" class="breadth-chart"></canvas>
         </div>
 
         <div class="breadth-chart-card">
           <div class="breadth-chart-title">4% Up / Down</div>
-          <div class="breadth-chart-subtitle">Stocks up ≥4% vs down ≤−4% · last 3 months</div>
+          <div class="breadth-chart-subtitle">Stocks up ≥4% vs down ≤−4% · last 6 months</div>
           <canvas id="breadth-4pct-chart" class="breadth-chart"></canvas>
         </div>
 
         <div class="breadth-chart-card">
           <div class="breadth-chart-title">52W High / Low</div>
-          <div class="breadth-chart-subtitle">High includes stocks within 2% of 52W high · last 3 months</div>
+          <div class="breadth-chart-subtitle">High includes stocks within 2% of 52W high · last 6 months</div>
           <canvas id="breadth-52w-chart" class="breadth-chart"></canvas>
+        </div>
+
+        <div class="breadth-chart-card">
+          <div class="breadth-chart-title">Participation</div>
+          <div class="breadth-chart-subtitle">Stocks above their 50 / 200-EMA · last 6 months</div>
+          <canvas id="breadth-participation-chart" class="breadth-chart"></canvas>
         </div>
 
       </div>
 
 
       <div class="breadth-info">
-        Advance = close above previous close. Decline = close below previous close. 52W High includes stocks whose close is within 2% of their rolling 52-week high; 52W Low uses the rolling 52-week low. Charts show the latest 3 months.
+        Advance = close above previous close. Decline = close below previous close. 52W High includes stocks whose close is within 2% of their rolling 52-week high; 52W Low uses the rolling 52-week low. Participation counts stocks whose close is above their own 50-day / 200-day EMA. Charts show the latest 6 months.
       </div>
 
 
@@ -1986,6 +2077,20 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
         numOrNull(r.RS_Change_1W);
 
 
+      const new52WHigh =
+        parseBool(r.New_52W_High);
+
+
+      const leadersSlipping =
+        (
+          rsToday !== null &&
+          rsToday >= 80 &&
+          closeToday !== null &&
+          ema50 !== null &&
+          closeToday < ema50
+        );
+
+
       stocks.push({
 
         symbol:
@@ -2046,6 +2151,9 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
         rs3m,
         rsChange1w,
 
+        new52WHigh,
+        leadersSlipping,
+
         rs: rsToday
 
       });
@@ -2101,6 +2209,9 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
 
     allStocks =
       stocks;
+
+
+    renderHighlights();
 
 
     populateFilterOptions(
@@ -3330,6 +3441,27 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   }
 
 
+  function parseBool(v) {
+
+    if (v === true || v === false) {
+      return v;
+    }
+
+    if (v === null || v === undefined || v === '') {
+      return null;
+    }
+
+    const s =
+      String(v).trim().toLowerCase();
+
+    if (s === 'true') return true;
+    if (s === 'false') return false;
+
+    return null;
+
+  }
+
+
   function escapeHtml(s) {
 
     const d =
@@ -3866,6 +3998,71 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     );
 
 
+  const leadersSlippingList =
+    document.getElementById(
+      'leaders-slipping-list'
+    );
+
+
+  const new52WHighList =
+    document.getElementById(
+      'new-52w-high-list'
+    );
+
+
+  function renderHighlights() {
+
+    if (!leadersSlippingList || !new52WHighList) {
+      return;
+    }
+
+    if (!allStocks.length) {
+      leadersSlippingList.innerHTML =
+        '<div class="breadth-highlight-row">No data loaded yet.</div>';
+      new52WHighList.innerHTML =
+        '<div class="breadth-highlight-row">No data loaded yet.</div>';
+      return;
+    }
+
+    const slipping = allStocks
+      .filter(s => s.leadersSlipping)
+      .sort((a, b) => (b.rs ?? 0) - (a.rs ?? 0));
+
+    leadersSlippingList.innerHTML =
+      slipping.length
+        ? slipping
+            .map(
+              s => `
+                <div class="breadth-highlight-row">
+                  <a href="chart.html?symbol=${encodeURIComponent(s.symbol)}" target="_blank" rel="noopener">${escapeHtml(s.symbol)}</a>
+                  <span class="breadth-highlight-meta">RS ${s.rs} &middot; ${fmtPct(s.dist50)} vs EMA50</span>
+                </div>
+              `
+            )
+            .join('')
+        : '<div class="breadth-highlight-row">None today.</div>';
+
+    const newHighs = allStocks
+      .filter(s => s.new52WHigh)
+      .sort((a, b) => (b.rs ?? 0) - (a.rs ?? 0));
+
+    new52WHighList.innerHTML =
+      newHighs.length
+        ? newHighs
+            .map(
+              s => `
+                <div class="breadth-highlight-row">
+                  <a href="chart.html?symbol=${encodeURIComponent(s.symbol)}" target="_blank" rel="noopener">${escapeHtml(s.symbol)}</a>
+                  <span class="breadth-highlight-meta">RS ${s.rs} &middot; ${fmtPrice(s.closeToday)}</span>
+                </div>
+              `
+            )
+            .join('')
+        : '<div class="breadth-highlight-row">None today.</div>';
+
+  }
+
+
   breadthUploadZone.addEventListener(
     'click',
     () =>
@@ -4313,6 +4510,8 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       down4: Number(row.down4 ?? row.Down_4_Plus ?? 0),
       high52w: Number(row.high52w ?? row.New_52W_High_Within_2Pct ?? 0),
       low52w: Number(row.low52w ?? row.New_52W_Low ?? 0),
+      above50ema: row.above50ema === null || row.above50ema === undefined ? null : Number(row.above50ema),
+      above200ema: row.above200ema === null || row.above200ema === undefined ? null : Number(row.above200ema),
       scanned: Number(row.scanned ?? row.Stocks_Scanned ?? 0),
       net: Number(row.net ?? row.Net_Up_Minus_Down ?? 0)
     })).filter(row => row.date);
@@ -4515,7 +4714,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
 
 
   function drawBreadthCharts() {
-    const chartRows = breadthRows.slice(0, 63).slice().reverse();
+    const chartRows = breadthRows.slice(0, 126).slice().reverse();
 
     drawLineChart(
       document.getElementById('breadth-ad-chart'),
@@ -4545,6 +4744,40 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       '52W Low',
       row => `52W High: ${row.high52w.toLocaleString()}<br>52W Low: ${row.low52w.toLocaleString()}`
     );
+
+    const hasParticipation =
+      chartRows.some(
+        row =>
+          row.above50ema !== null &&
+          row.above50ema !== undefined
+      );
+
+    const participationCanvas =
+      document.getElementById('breadth-participation-chart');
+
+    if (hasParticipation && participationCanvas) {
+      drawDualLineChart(
+        participationCanvas,
+        chartRows,
+        row => row.above50ema,
+        row => row.above200ema,
+        'Above 50-EMA',
+        'Above 200-EMA',
+        row => {
+          const pct50 = row.scanned ? ((row.above50ema / row.scanned) * 100).toFixed(1) : null;
+          const pct200 = row.scanned ? ((row.above200ema / row.scanned) * 100).toFixed(1) : null;
+          return `Above 50-EMA: ${row.above50ema.toLocaleString()}${pct50 !== null ? ' (' + pct50 + '%)' : ''}<br>Above 200-EMA: ${row.above200ema.toLocaleString()}${pct200 !== null ? ' (' + pct200 + '%)' : ''}`;
+        }
+      );
+    } else if (participationCanvas) {
+      const ctx = participationCanvas.getContext('2d');
+      const setup = drawBaseChart(participationCanvas);
+      if (setup) {
+        setup.ctx.fillStyle = setup.faint;
+        setup.ctx.font = '10px IBM Plex Mono, monospace';
+        setup.ctx.fillText('Re-run fetch_nse_data.py to add this chart.', 8, setup.height / 2);
+      }
+    }
   }
 
 
