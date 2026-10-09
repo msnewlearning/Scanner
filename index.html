@@ -212,6 +212,19 @@ h1 {
   min-height: 0;
 }
 
+/* The Breadth tab can have more fixed-height content (highlight cards +
+   charts) than the viewport, so the whole panel scrolls as a unit and the
+   table gets a capped height with its own internal scroll, instead of
+   everything below the charts being clipped with no way to reach it. */
+#breadth-results {
+  overflow-y: auto;
+}
+
+#breadth-results .table-wrap {
+  flex: none;
+  max-height: 360px;
+}
+
 /* ---------- Stats Bar ---------- */
 
 .stats-bar {
