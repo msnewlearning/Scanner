@@ -709,10 +709,19 @@ tbody tr:hover td {
 
 .breadth-highlights {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 8px;
   flex: none;
+}
+
+.breadth-highlight-card.blank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
 }
 
 .breadth-highlight-card {
@@ -758,7 +767,7 @@ tbody tr:hover td {
 }
 
 .breadth-highlight-row a {
-  color: var(--accent-dark);
+  color: #2563EB;
   font-weight: 600;
   text-decoration: none;
 }
@@ -772,6 +781,11 @@ tbody tr:hover td {
   font-size: 10.5px;
   color: var(--text-dim);
   white-space: nowrap;
+}
+
+.breadth-highlight-rs {
+  color: var(--accent-dark);
+  font-weight: 700;
 }
 
 .breadth-chart-card {
@@ -1587,6 +1601,8 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
           <div class="breadth-highlight-subtitle">Closed above their previous 52-week high today</div>
           <div class="breadth-highlight-list" id="new-52w-high-list"></div>
         </div>
+
+        <div class="breadth-highlight-card blank" id="breadth-highlight-blank"></div>
 
       </div>
 
@@ -4048,7 +4064,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
               s => `
                 <div class="breadth-highlight-row">
                   <a href="chart.html?symbol=${encodeURIComponent(s.symbol)}" target="_blank" rel="noopener">${escapeHtml(s.symbol)}</a>
-                  <span class="breadth-highlight-meta">RS ${s.rs} &middot; ${fmtPct(s.dist50)} vs EMA50</span>
+                  <span class="breadth-highlight-meta"><span class="breadth-highlight-rs">RS ${s.rs}</span> &middot; ${fmtPct(s.dist50)} vs EMA50</span>
                 </div>
               `
             )
@@ -4066,7 +4082,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
               s => `
                 <div class="breadth-highlight-row">
                   <a href="chart.html?symbol=${encodeURIComponent(s.symbol)}" target="_blank" rel="noopener">${escapeHtml(s.symbol)}</a>
-                  <span class="breadth-highlight-meta">RS ${s.rs} &middot; ${fmtPrice(s.closeToday)}</span>
+                  <span class="breadth-highlight-meta"><span class="breadth-highlight-rs">RS ${s.rs}</span></span>
                 </div>
               `
             )
