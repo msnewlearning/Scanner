@@ -1,82 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#F4F6F9">
-<title>Stock Chart</title>
-<style>
-:root{--bg:#F4F6F9;--surface:#fff;--border:#D5DCE5;--text:#1A2230;--text-dim:#566274;--accent:#13866E;--font-ui:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,sans-serif}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%}body{background:var(--bg);color:var(--text);font-family:var(--font-ui)}
-.wrap{max-width:1500px;margin:0 auto;padding:16px 18px 24px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px;flex-wrap:wrap}
-.back{color:var(--text-dim);text-decoration:none;font-size:13px}.back:hover{color:var(--accent)}h1{margin:4px 0 0;font-size:23px;font-weight:600}.hint{color:var(--text-dim);font-size:12px;margin-top:3px}
-.chart-card{height:calc(100vh - 110px);min-height:540px;overflow:hidden;background:var(--surface);border:1px solid var(--border);border-radius:10px}
-#tv_chart_container{height:100%;width:100%}.error{display:none;color:#C0392B;padding:12px 0;font-size:13px}
-@media(max-width:640px){.wrap{padding:10px 8px 14px}h1{font-size:19px}.chart-card{height:calc(100vh - 105px);min-height:480px;border-radius:7px}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NSE Stock Chart</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page-bg: #ffffff;
+      --text: #182230;
+      --muted: #667085;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--page-bg); color: var(--text); }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .page { max-width: 1600px; margin: 0 auto; padding: 14px 16px 18px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .heading { min-width: 0; }
+    .back { color: var(--muted); text-decoration: none; font-size: 12px; }
+    h1 { font-size: 20px; line-height: 1.25; margin: 5px 0 0; font-weight: 650; }
+    .subtitle { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .chart-card { height: calc(100vh - 105px); min-height: 520px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: #fff; }
+    #tv_chart { width: 100%; height: 100%; }
+    @media (max-width: 600px) {
+      .page { padding: 10px 8px; }
+      h1 { font-size: 17px; }
+      .chart-card { height: calc(100vh - 100px); min-height: 480px; }
+    }
+  </style>
 </head>
 <body>
-<main class="wrap">
-<header class="topbar"><div>
-<a class="back" href="javascript:window.close()">&larr; Close</a>
-<h1 id="title">Loading chart…</h1>
-<div class="hint">Use the chart toolbar to switch between daily, weekly, monthly, and other intervals.</div>
-</div></header>
-<div id="error" class="error"></div>
-<section class="chart-card"><div id="tv_chart_container"></div></section>
-</main>
-<script>
-(function(){
-  const params=new URLSearchParams(window.location.search);
-  const rawSymbol=(params.get('symbol')||'').trim().toUpperCase();
-  const title=document.getElementById('title');
-  const error=document.getElementById('error');
-  const container=document.getElementById('tv_chart_container');
-  if(!rawSymbol){
-    title.textContent='Stock chart';
-    error.textContent='No stock symbol supplied. Open this page as chart.html?symbol=RELIANCE.';
-    error.style.display='block';container.style.display='none';return;
-  }
-  // Convert scanner symbols to TradingView's NSE-prefixed format.
-  const symbol=rawSymbol.includes(':')?rawSymbol:'NSE:'+rawSymbol;
-  title.textContent=rawSymbol+' chart';document.title=rawSymbol+' chart';
-  const config={
-    autosize:true,
-    symbol:symbol,
-    interval:'D',
-    timezone:'Asia/Kolkata',
-    theme:'light',
-    style:'1',
-    locale:'en',
-    toolbar_bg:'#F4F6F9',
-    enable_publishing:false,
-    allow_symbol_change:true,
-    hide_top_toolbar:false,
-    hide_side_toolbar:false,
-    details:true,
-    hotlist:false,
-    calendar:false,
-    withdateranges:true,
-    save_image:false,
-    studies:['MAExp@tv-basicstudies','RSI@tv-basicstudies'],
-    overrides:{
-      'paneProperties.vertGridProperties.color':'#F0F2F5',
-      'paneProperties.horzGridProperties.color':'#F0F2F5'
-    },
-    container_id:'tv_chart_container'
-  };
-  const script=document.createElement('script');
-  script.src='https://s3.tradingview.com/tv.js';script.async=true;
-  script.onload=function(){
-    if(window.TradingView&&window.TradingView.widget){new window.TradingView.widget(config);}
-    else{error.textContent='TradingView loaded, but the chart widget could not be initialized.';error.style.display='block';}
-  };
-  script.onerror=function(){
-    error.textContent='Could not load TradingView. Check your internet connection or content-blocking settings.';
-    error.style.display='block';
-  };
-  document.head.appendChild(script);
-})();
-</script>
+  <main class="page">
+    <header class="topbar">
+      <div class="heading">
+        <a class="back" href="javascript:window.close()">← Close chart</a>
+        <h1 id="symbol-title">NSE Stock Chart</h1>
+        <div class="subtitle">Bar chart · EMA 10 / 21 / 50 · TradingView</div>
+      </div>
+    </header>
+    <div class="chart-card">
+      <div id="tv_chart"></div>
+    </div>
+  </main>
+
+  <script src="https://s3.tradingview.com/tv.js"></script>
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      let symbol = (params.get("symbol") || "NIFTY").trim().toUpperCase();
+      // Accept either RELIANCE or NSE:RELIANCE in the query string.
+      if (!symbol.includes(":")) symbol = "NSE:" + symbol;
+      document.getElementById("symbol-title").textContent = symbol.replace(/^NSE:/, "") + " Chart";
+      document.title = symbol.replace(/^NSE:/, "") + " Chart";
+
+      new TradingView.widget({
+        autosize: true,
+        symbol: symbol,
+        interval: "D",
+        timezone: "Asia/Kolkata",
+        theme: "Light",
+        style: "1",
+        locale: "en",
+        enable_publishing: false,
+        allow_symbol_change: true,
+        hide_top_toolbar: false,
+        hide_legend: false,
+        save_image: false,
+        container_id: "tv_chart",
+        backgroundColor: "#ffffff",
+        gridColor: "#f0f2f5",
+        studies: [
+          { id: "MAExp@tv-basicstudies", inputs: { length: 10 } },
+          { id: "MAExp@tv-basicstudies", inputs: { length: 21 } },
+          { id: "MAExp@tv-basicstudies", inputs: { length: 50 } }
+        ],
+        overrides: {
+          "paneProperties.background": "#ffffff",
+          "paneProperties.backgroundType": "solid",
+          "paneProperties.vertGridProperties.color": "#f0f2f5",
+          "paneProperties.horzGridProperties.color": "#f0f2f5",
+          "scalesProperties.textColor": "#475467",
+          "mainSeriesProperties.barStyle.upColor": "#089981",
+          "mainSeriesProperties.barStyle.downColor": "#F23645",
+          "mainSeriesProperties.barStyle.barColorsOnPrevClose": false
+        },
+        studies_overrides: {
+          "moving average exponential.plot.color": "#2962FF",
+          "moving average exponential.plot.linewidth": 2
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
