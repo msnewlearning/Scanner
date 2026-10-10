@@ -57,9 +57,9 @@ body { min-height: 100vh; }
 
 .wrap {
   width: 100%;
-  max-width: 1250px;
+  max-width: none;
   margin: 0 auto;
-  padding: 18px 22px 30px;
+  padding: 18px 28px 30px;
 }
 
 /* ---------- Header ---------- */
@@ -229,7 +229,7 @@ h1 {
 
 .content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 1.2fr);
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 0.8fr) minmax(0, 1.5fr);
   gap: 12px;
   align-items: start;
 }
@@ -858,7 +858,7 @@ footer {
     stockTableBodyEl.innerHTML = rows
       .map(s => `
         <tr data-symbol="${escapeHtml(s.symbol)}" class="${s.symbol === selectedStock ? 'stock-row-selected' : ''}">
-          <td><a class="sym" href="chart.html?symbol=${encodeURIComponent(s.symbol)}" target="_blank" rel="noopener">${escapeHtml(s.symbol)}</a></td>
+          <td><span class="sym">${escapeHtml(s.symbol)}</span></td>
           <td>${escapeHtml(s.name)}</td>
           <td class="num"><span class="rs-pill">${s.rs === null ? 'n/a' : s.rs}</span></td>
           <td class="num ${clsPct(s[selectedPeriod])}">${fmtPct(s[selectedPeriod])}</td>
