@@ -584,6 +584,9 @@ footer {
       <div id="chart-widget-area">
         <div class="chart-placeholder">Click a stock on the left to load its chart here.</div>
       </div>
+      <div class="panel-subtitle" style="margin-top:6px;">
+        Some small/SME-cap stocks aren't covered by TradingView's free data — if you see "symbol not available", use the search icon inside the chart to look for it under a different listing.
+      </div>
     </div>
 
   </div>
@@ -895,10 +898,15 @@ footer {
     loadChart(symbol);
   }
 
+  let chartInstanceCounter = 0;
+
   function loadChart(symbol) {
+    chartInstanceCounter++;
+    const containerId = 'tv_industry_chart_' + chartInstanceCounter;
+
     chartWidgetAreaEl.innerHTML =
       '<div class="tradingview-widget-container">' +
-        '<div id="tv_industry_chart" class="tradingview-widget-container__widget"></div>' +
+        '<div id="' + containerId + '" class="tradingview-widget-container__widget"></div>' +
       '</div>';
 
     function createWidget() {
@@ -912,9 +920,9 @@ footer {
         locale: 'en',
         toolbar_bg: '#F8FAFC',
         enable_publishing: false,
-        allow_symbol_change: false,
+        allow_symbol_change: true,
         hide_top_toolbar: false,
-        hide_side_toolbar: true,
+        hide_side_toolbar: false,
         withdateranges: true,
         overrides: {
           'paneProperties.vertGridProperties.color': 'rgba(0,0,0,0)',
@@ -925,12 +933,24 @@ footer {
           { id: 'MAExp@tv-basicstudies', inputs: { length: 20 } },
           { id: 'MAExp@tv-basicstudies', inputs: { length: 50 } }
         ],
-        container_id: 'tv_industry_chart'
+        container_id: containerId
+      });
+    }
+
+    // Give the browser a layout pass before TradingView measures the
+    // container. Without this, a widget created in the same tick as its
+    // container is inserted (as opposed to chart.html's full page load,
+    // where layout has already settled) can get measured at 0x0 and falls
+    // into a broken state that looks like "symbol not available" — even
+    // though the symbol and data are fine.
+    function createWidgetAfterLayout() {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(createWidget);
       });
     }
 
     if (tvScriptLoaded) {
-      createWidget();
+      createWidgetAfterLayout();
       return;
     }
 
@@ -939,7 +959,7 @@ footer {
       const check = setInterval(() => {
         if (tvScriptLoaded) {
           clearInterval(check);
-          createWidget();
+          createWidgetAfterLayout();
         }
       }, 100);
       return;
@@ -951,7 +971,7 @@ footer {
     script.onload = function () {
       tvScriptLoaded = true;
       tvScriptLoading = false;
-      createWidget();
+      createWidgetAfterLayout();
     };
     script.onerror = function () {
       tvScriptLoading = false;
