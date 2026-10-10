@@ -229,7 +229,7 @@ h1 {
 
 .content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 1.2fr);
   gap: 12px;
   align-items: start;
 }
@@ -373,7 +373,13 @@ tbody td {
   white-space: nowrap;
 }
 
+tbody tr { cursor: pointer; }
+
 tbody tr:hover td { background: var(--surface-raised); }
+
+tbody tr.stock-row-selected td {
+  background: var(--accent-soft);
+}
 
 .sym {
   font-weight: 600;
@@ -382,6 +388,50 @@ tbody tr:hover td { background: var(--surface-raised); }
 }
 
 .sym:hover { text-decoration: underline; }
+
+/* ---------- Inline chart panel ---------- */
+
+.chart-panel-wrap {
+  height: 640px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-open-link {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--accent-dark);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.chart-open-link:hover { text-decoration: underline; }
+
+#chart-widget-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.tradingview-widget-container,
+.tradingview-widget-container__widget {
+  height: 100%;
+  width: 100%;
+}
+
+.chart-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-align: center;
+  padding: 20px;
+}
 
 .rs-pill {
   font-family: var(--font-mono);
@@ -422,9 +472,15 @@ footer {
 
 /* ---------- Mobile ---------- */
 
+@media (max-width: 1150px) {
+  .content-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .chart-panel-wrap { height: 420px; grid-column: 1 / -1; }
+}
+
 @media (max-width: 860px) {
   .content-grid { grid-template-columns: 1fr; }
   .industry-list, .stock-table-wrap { max-height: 420px; }
+  .chart-panel-wrap { height: 380px; }
 }
 
 @media (max-width: 560px) {
@@ -520,6 +576,16 @@ footer {
       </div>
     </div>
 
+    <div class="panel chart-panel-wrap">
+      <div class="panel-header">
+        <div class="panel-title" id="chart-panel-title">Chart</div>
+        <a class="chart-open-link" id="chart-open-link" href="#" target="_blank" rel="noopener" style="display:none;">Open full chart ↗</a>
+      </div>
+      <div id="chart-widget-area">
+        <div class="chart-placeholder">Click a stock on the left to load its chart here.</div>
+      </div>
+    </div>
+
   </div>
 
   <footer>
@@ -545,8 +611,11 @@ footer {
 
   let selectedPeriod = '1W';
   let selectedIndustry = null;
+  let selectedStock = null;
   let stocks = [];
   let industries = [];
+  let tvScriptLoading = false;
+  let tvScriptLoaded = false;
 
   const errorEl = document.getElementById('error');
   const loadingEl = document.getElementById('loading');
@@ -558,6 +627,9 @@ footer {
   const stockPanelSubtitleEl = document.getElementById('stock-panel-subtitle');
   const stockPeriodHeaderEl = document.getElementById('stock-period-header');
   const stockTableBodyEl = document.getElementById('stock-table-body');
+  const chartPanelTitleEl = document.getElementById('chart-panel-title');
+  const chartOpenLinkEl = document.getElementById('chart-open-link');
+  const chartWidgetAreaEl = document.getElementById('chart-widget-area');
 
   function numOrNull(v) {
     if (v === null || v === undefined || v === '') return null;
@@ -785,7 +857,7 @@ footer {
 
     stockTableBodyEl.innerHTML = rows
       .map(s => `
-        <tr>
+        <tr data-symbol="${escapeHtml(s.symbol)}" class="${s.symbol === selectedStock ? 'stock-row-selected' : ''}">
           <td><a class="sym" href="chart.html?symbol=${encodeURIComponent(s.symbol)}" target="_blank" rel="noopener">${escapeHtml(s.symbol)}</a></td>
           <td>${escapeHtml(s.name)}</td>
           <td class="num"><span class="rs-pill">${s.rs === null ? 'n/a' : s.rs}</span></td>
@@ -793,6 +865,99 @@ footer {
         </tr>
       `)
       .join('');
+
+    if (rows.length && !rows.some(s => s.symbol === selectedStock)) {
+      selectStock(rows[0].symbol);
+    } else if (selectedStock) {
+      selectStock(selectedStock);
+    }
+  }
+
+  stockTableBodyEl.addEventListener('click', e => {
+    const row = e.target.closest('tr[data-symbol]');
+    if (!row) return;
+    selectStock(row.dataset.symbol);
+  });
+
+  /* ---------- Inline TradingView chart ---------- */
+
+  function selectStock(symbol) {
+    selectedStock = symbol;
+
+    stockTableBodyEl.querySelectorAll('tr[data-symbol]').forEach(tr => {
+      tr.classList.toggle('stock-row-selected', tr.dataset.symbol === symbol);
+    });
+
+    chartPanelTitleEl.textContent = symbol;
+    chartOpenLinkEl.href = 'chart.html?symbol=' + encodeURIComponent(symbol);
+    chartOpenLinkEl.style.display = 'inline';
+
+    loadChart(symbol);
+  }
+
+  function loadChart(symbol) {
+    chartWidgetAreaEl.innerHTML =
+      '<div class="tradingview-widget-container">' +
+        '<div id="tv_industry_chart" class="tradingview-widget-container__widget"></div>' +
+      '</div>';
+
+    function createWidget() {
+      new TradingView.widget({
+        autosize: true,
+        symbol: 'NSE:' + symbol,
+        interval: 'D',
+        timezone: 'Asia/Kolkata',
+        theme: 'light',
+        style: '1',
+        locale: 'en',
+        toolbar_bg: '#F8FAFC',
+        enable_publishing: false,
+        allow_symbol_change: false,
+        hide_top_toolbar: false,
+        hide_side_toolbar: true,
+        withdateranges: true,
+        overrides: {
+          'paneProperties.vertGridProperties.color': 'rgba(0,0,0,0)',
+          'paneProperties.horzGridProperties.color': 'rgba(0,0,0,0)'
+        },
+        studies: [
+          { id: 'MAExp@tv-basicstudies', inputs: { length: 10 } },
+          { id: 'MAExp@tv-basicstudies', inputs: { length: 20 } },
+          { id: 'MAExp@tv-basicstudies', inputs: { length: 50 } }
+        ],
+        container_id: 'tv_industry_chart'
+      });
+    }
+
+    if (tvScriptLoaded) {
+      createWidget();
+      return;
+    }
+
+    if (tvScriptLoading) {
+      // Script is already on its way from an earlier click; wait for it.
+      const check = setInterval(() => {
+        if (tvScriptLoaded) {
+          clearInterval(check);
+          createWidget();
+        }
+      }, 100);
+      return;
+    }
+
+    tvScriptLoading = true;
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/tv.js';
+    script.onload = function () {
+      tvScriptLoaded = true;
+      tvScriptLoading = false;
+      createWidget();
+    };
+    script.onerror = function () {
+      tvScriptLoading = false;
+      chartWidgetAreaEl.innerHTML = '<div class="chart-placeholder">Could not load the TradingView widget script.</div>';
+    };
+    document.body.appendChild(script);
   }
 
   loadData();
