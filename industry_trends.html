@@ -15,7 +15,7 @@
 <style>
 
 :root {
-  --bg: #F8FAFC;
+  --bg: #D1D5DB;
   --surface: #FFFFFF;
   --surface-raised: #F1F5F9;
 
@@ -197,6 +197,11 @@ h1 {
   gap: 8px;
   margin-bottom: 12px;
   overflow-x: auto;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  padding: 6px 0 6px;
 }
 
 .stat {
@@ -260,9 +265,48 @@ h1 {
   color: var(--text-faint);
 }
 
+/* ---------- Industry filter + toggle ---------- */
+
+.industry-controls {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.industry-search {
+  flex: 1;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px 9px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text);
+  outline: none;
+}
+
+.industry-search::placeholder { color: var(--text-faint); }
+.industry-search:focus { border-color: var(--accent); }
+
+.toggle-btn {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.toggle-btn:hover { color: var(--text); border-color: var(--text-faint); }
+.toggle-btn.active { background: var(--accent-dark); color: #fff; border-color: var(--accent-dark); }
+
 /* ---------- Industry rows ---------- */
 
-.industry-list { max-height: 640px; overflow-y: auto; }
+.industry-list { max-height: 600px; overflow-y: auto; }
 
 .industry-row {
   display: grid;
@@ -344,9 +388,56 @@ h1 {
   color: var(--text-faint);
 }
 
+.breadth-track {
+  width: 100%;
+  height: 3px;
+  background: var(--weak-soft);
+  border-radius: 2px;
+  margin-top: 2px;
+  overflow: hidden;
+}
+
+.breadth-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.2s;
+}
+
 /* ---------- Stock drill-down table ---------- */
 
-.stock-table-wrap { max-height: 640px; overflow-y: auto; }
+.stock-controls {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.cap-filter-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  margin-right: 2px;
+}
+
+.cap-btn {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 9px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cap-btn:hover { color: var(--text); }
+.cap-btn.active { background: var(--accent-dark); color: #fff; border-color: var(--accent-dark); }
+
+.stock-table-wrap { max-height: 580px; overflow-y: auto; }
 
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
 
@@ -362,7 +453,12 @@ thead th {
   text-transform: uppercase;
   border-bottom: 1px solid var(--border-soft);
   white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
 }
+
+thead th:hover { color: var(--text); }
+thead th.sort-active { color: var(--accent-dark); border-bottom: 2px solid var(--accent-dark); }
 
 th.num, td.num { text-align: right; }
 
@@ -371,6 +467,10 @@ tbody td {
   border-bottom: 1px solid var(--border-soft);
   color: var(--text-dim);
   white-space: nowrap;
+}
+
+tbody td:nth-child(2) {
+  font-size: 10px;
 }
 
 tbody tr { cursor: pointer; }
@@ -553,6 +653,10 @@ footer {
         <div class="panel-title">Industries</div>
         <div class="panel-subtitle" id="industry-panel-subtitle">by 1W return</div>
       </div>
+      <div class="industry-controls">
+        <input class="industry-search" id="industry-search" type="text" placeholder="Filter industries…" autocomplete="off">
+        <button class="toggle-btn" id="laggard-toggle" title="Flip to worst → best">↓ Laggards</button>
+      </div>
       <div class="industry-list" id="industry-list"></div>
     </div>
 
@@ -561,14 +665,21 @@ footer {
         <div class="panel-title" id="stock-panel-title">Select an industry</div>
         <div class="panel-subtitle" id="stock-panel-subtitle"></div>
       </div>
+      <div class="stock-controls">
+        <span class="cap-filter-label">Cap:</span>
+        <button class="cap-btn active" data-cap="All">All</button>
+        <button class="cap-btn" data-cap="Large">Large</button>
+        <button class="cap-btn" data-cap="Mid">Mid</button>
+        <button class="cap-btn" data-cap="Small">Small</button>
+      </div>
       <div class="stock-table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Symbol</th>
-              <th>Name</th>
-              <th class="num">RS</th>
-              <th class="num" id="stock-period-header">1W %</th>
+              <th data-col="symbol">Symbol</th>
+              <th data-col="name">Name</th>
+              <th class="num sort-active" data-col="rs">RS ↓</th>
+              <th class="num" data-col="pct" id="stock-period-header">1W %</th>
             </tr>
           </thead>
           <tbody id="stock-table-body"></tbody>
@@ -619,6 +730,11 @@ footer {
   let industries = [];
   let tvScriptLoading = false;
   let tvScriptLoaded = false;
+  let laggardMode = false;
+  let industryFilter = '';
+  let selectedCap = 'All';
+  let stockSortCol = 'rs';
+  let stockSortAsc = false;
 
   const errorEl = document.getElementById('error');
   const loadingEl = document.getElementById('loading');
@@ -633,6 +749,8 @@ footer {
   const chartPanelTitleEl = document.getElementById('chart-panel-title');
   const chartOpenLinkEl = document.getElementById('chart-open-link');
   const chartWidgetAreaEl = document.getElementById('chart-widget-area');
+  const industrySearchEl = document.getElementById('industry-search');
+  const laggardToggleEl = document.getElementById('laggard-toggle');
 
   function numOrNull(v) {
     if (v === null || v === undefined || v === '') return null;
@@ -788,8 +906,17 @@ footer {
     industries = buildIndustries(selectedPeriod);
 
     const periodLabel = PERIODS.find(p => p.key === selectedPeriod).label;
-    industryPanelSubtitleEl.textContent = 'by ' + periodLabel + ' return';
+    industryPanelSubtitleEl.textContent = 'by ' + periodLabel + ' return' + (laggardMode ? ' · laggards first' : '');
     stockPeriodHeaderEl.textContent = periodLabel + ' %';
+
+    // Apply laggard mode (reverse sort)
+    const displayList = laggardMode ? [...industries].reverse() : industries;
+
+    // Apply search filter
+    const filterTerm = industryFilter.toLowerCase();
+    const filtered = filterTerm
+      ? displayList.filter(i => i.sector.toLowerCase().includes(filterTerm))
+      : displayList;
 
     const maxAbs = Math.max(
       1,
@@ -806,11 +933,12 @@ footer {
     const leader = industries.find(i => i.avg !== null);
     document.getElementById('top-industry').textContent = leader ? leader.sector : '—';
 
-    industryListEl.innerHTML = industries
+    industryListEl.innerHTML = filtered
       .map(i => {
         const pctWidth = i.avg === null ? 0 : (Math.abs(i.avg) / maxAbs) * 50;
         const barCls = i.avg !== null && i.avg < 0 ? 'neg' : 'pos';
         const isSelected = i.sector === selectedIndustry;
+        const breadthPct = (i.up + i.down) > 0 ? Math.round((i.up / (i.up + i.down)) * 100) : 0;
         return `
           <div class="industry-row${isSelected ? ' selected' : ''}" data-sector="${escapeHtml(i.sector)}">
             <div class="industry-name" title="${escapeHtml(i.sector)}">${escapeHtml(i.sector)}</div>
@@ -821,6 +949,9 @@ footer {
             <div class="industry-value">
               <span class="industry-pct ${clsPct(i.avg)}">${fmtPct(i.avg)}</span>
               <span class="industry-count">${i.up}↑ ${i.down}↓ · ${i.total}</span>
+              <div class="breadth-track" title="${breadthPct}% stocks advancing">
+                <div class="breadth-fill" style="width:${breadthPct}%;"></div>
+              </div>
             </div>
           </div>
         `;
@@ -840,6 +971,43 @@ footer {
     renderIndustries();
   });
 
+  // Industry search filter
+  industrySearchEl.addEventListener('input', e => {
+    industryFilter = e.target.value.trim();
+    renderIndustries();
+  });
+
+  // Laggard toggle
+  laggardToggleEl.addEventListener('click', () => {
+    laggardMode = !laggardMode;
+    laggardToggleEl.classList.toggle('active', laggardMode);
+    laggardToggleEl.textContent = laggardMode ? '↑ Leaders' : '↓ Laggards';
+    renderIndustries();
+  });
+
+  // Market cap filter
+  document.querySelector('.stock-controls').addEventListener('click', e => {
+    const btn = e.target.closest('.cap-btn');
+    if (!btn) return;
+    selectedCap = btn.dataset.cap;
+    document.querySelectorAll('.cap-btn').forEach(b => b.classList.toggle('active', b === btn));
+    renderStockTable();
+  });
+
+  // Sortable stock table headers
+  document.querySelector('thead tr').addEventListener('click', e => {
+    const th = e.target.closest('th[data-col]');
+    if (!th) return;
+    const col = th.dataset.col;
+    if (stockSortCol === col) {
+      stockSortAsc = !stockSortAsc;
+    } else {
+      stockSortCol = col;
+      stockSortAsc = col === 'symbol' || col === 'name';
+    }
+    renderStockTable();
+  });
+
   /* ---------- Stock drill-down ---------- */
 
   function renderStockTable() {
@@ -851,12 +1019,43 @@ footer {
     }
 
     const periodLabel = PERIODS.find(p => p.key === selectedPeriod).label;
-    const rows = stocks
-      .filter(s => s.sector === selectedIndustry)
-      .sort((a, b) => (b.rs ?? -1) - (a.rs ?? -1));
+
+    // Cap filter
+    let rows = stocks.filter(s => s.sector === selectedIndustry);
+    if (selectedCap !== 'All') {
+      rows = rows.filter(s => s.marketcap && s.marketcap.toLowerCase().includes(selectedCap.toLowerCase()));
+    }
+
+    // Sort
+    rows = rows.sort((a, b) => {
+      let va, vb;
+      if (stockSortCol === 'symbol') { va = a.symbol; vb = b.symbol; }
+      else if (stockSortCol === 'name') { va = a.name; vb = b.name; }
+      else if (stockSortCol === 'rs') { va = a.rs ?? -Infinity; vb = b.rs ?? -Infinity; }
+      else if (stockSortCol === 'pct') { va = a[selectedPeriod] ?? -Infinity; vb = b[selectedPeriod] ?? -Infinity; }
+      if (typeof va === 'string') return stockSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      return stockSortAsc ? va - vb : vb - va;
+    });
+
+    // Update header indicators
+    document.querySelectorAll('thead th[data-col]').forEach(th => {
+      const col = th.dataset.col;
+      const isActive = col === stockSortCol;
+      th.classList.toggle('sort-active', isActive);
+      if (isActive) {
+        const arrow = stockSortAsc ? ' ↑' : ' ↓';
+        const base = col === 'pct' ? periodLabel + ' %' : th.textContent.replace(/ [↑↓]$/, '');
+        th.textContent = base + arrow;
+        if (col === 'pct') stockPeriodHeaderEl.textContent = periodLabel + ' %' + arrow;
+      } else if (col === 'pct') {
+        th.textContent = periodLabel + ' %';
+      } else {
+        th.textContent = th.textContent.replace(/ [↑↓]$/, '');
+      }
+    });
 
     stockPanelTitleEl.textContent = selectedIndustry;
-    stockPanelSubtitleEl.textContent = rows.length + ' stocks · sorted by RS · ' + periodLabel + ' return shown';
+    stockPanelSubtitleEl.textContent = rows.length + ' stocks' + (selectedCap !== 'All' ? ' · ' + selectedCap + ' cap' : '') + ' · ' + periodLabel + ' return shown';
 
     stockTableBodyEl.innerHTML = rows
       .map(s => `
@@ -898,6 +1097,26 @@ footer {
 
     loadChart(tvSymbol);
   }
+
+  // Keyboard navigation: ↑/↓ to move between industries
+  document.addEventListener('keydown', e => {
+    if (e.target === industrySearchEl) return; // don't interfere while typing
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    if (!industries.length) return;
+    e.preventDefault();
+    const visibleSectors = Array.from(industryListEl.querySelectorAll('.industry-row'))
+      .map(r => r.dataset.sector);
+    if (!visibleSectors.length) return;
+    const idx = visibleSectors.indexOf(selectedIndustry);
+    let next;
+    if (e.key === 'ArrowDown') next = idx < visibleSectors.length - 1 ? idx + 1 : idx;
+    else next = idx > 0 ? idx - 1 : 0;
+    selectedIndustry = visibleSectors[next];
+    renderIndustries();
+    // Scroll the selected row into view
+    const selectedRow = industryListEl.querySelector('.industry-row.selected');
+    if (selectedRow) selectedRow.scrollIntoView({ block: 'nearest' });
+  });
 
   function normalizeTradingViewSymbol(rawSymbol) {
     // CSV symbols are usually plain NSE tickers, but accept qualified
