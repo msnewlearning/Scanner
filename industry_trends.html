@@ -234,7 +234,7 @@ h1 {
 
 .content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 0.8fr) minmax(0, 1.5fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
   gap: 12px;
   align-items: start;
 }
@@ -489,12 +489,65 @@ tbody tr.stock-row-selected td {
 
 .sym:hover { text-decoration: underline; }
 
-/* ---------- Inline chart panel ---------- */
+/* ---------- Chart drawer ---------- */
 
-.chart-panel-wrap {
-  height: 640px;
+.chart-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  z-index: 100;
+}
+
+.chart-backdrop.open { display: block; }
+
+.chart-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(560px, 96vw);
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
   display: flex;
   flex-direction: column;
+  z-index: 101;
+  transform: translateX(100%);
+  transition: transform 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+
+.chart-drawer.open { transform: translateX(0); }
+
+.chart-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.chart-drawer-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.chart-drawer-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-top: 1px;
+}
+
+.chart-drawer-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
 }
 
 .chart-open-link {
@@ -507,18 +560,44 @@ tbody tr.stock-row-selected td {
 
 .chart-open-link:hover { text-decoration: underline; }
 
+.chart-nav-btn {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 9px;
+  font-size: 13px;
+  color: var(--text-dim);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.chart-nav-btn:hover { color: var(--text); border-color: var(--text-faint); }
+.chart-nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+.chart-close-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.chart-close-btn:hover { color: var(--text); background: var(--surface-raised); }
+
 #chart-widget-area {
   flex: 1 1 auto;
   min-height: 0;
-  border: 1px solid var(--border-soft);
-  border-radius: 6px;
   overflow: hidden;
 }
 
-.tradingview-widget-container,
-.tradingview-widget-container__widget {
-  height: 100%;
+#chart-widget-area iframe {
   width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
 }
 
 .chart-placeholder {
@@ -531,6 +610,15 @@ tbody tr.stock-row-selected td {
   font-size: 12px;
   text-align: center;
   padding: 20px;
+}
+
+.chart-drawer-hint {
+  padding: 6px 16px 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  border-top: 1px solid var(--border-soft);
+  flex-shrink: 0;
 }
 
 .rs-pill {
@@ -572,15 +660,10 @@ footer {
 
 /* ---------- Mobile ---------- */
 
-@media (max-width: 1150px) {
-  .content-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  .chart-panel-wrap { height: 420px; grid-column: 1 / -1; }
-}
-
 @media (max-width: 860px) {
   .content-grid { grid-template-columns: 1fr; }
   .industry-list, .stock-table-wrap { max-height: 420px; }
-  .chart-panel-wrap { height: 380px; }
+  .chart-drawer { width: 100vw; }
 }
 
 @media (max-width: 560px) {
@@ -687,25 +770,33 @@ footer {
       </div>
     </div>
 
-    <div class="panel chart-panel-wrap">
-      <div class="panel-header">
-        <div class="panel-title" id="chart-panel-title">Chart</div>
-        <a class="chart-open-link" id="chart-open-link" href="#" target="_blank" rel="noopener" style="display:none;">Open full chart ↗</a>
-      </div>
-      <div id="chart-widget-area">
-        <div class="chart-placeholder">Click a stock on the left to load its chart here.</div>
-      </div>
-      <div class="panel-subtitle" style="margin-top:6px;">
-        Some small/SME-cap stocks aren't covered by TradingView's free data — if you see "symbol not available", use the search icon inside the chart to look for it under a different listing.
-      </div>
-    </div>
-
   </div>
 
   <footer>
     Data as published · Industry = Sector column from the scanner CSV · not investment advice
   </footer>
 
+</div>
+
+<!-- Chart drawer (outside .wrap so it overlays the full viewport) -->
+<div class="chart-backdrop" id="chart-backdrop"></div>
+<div class="chart-drawer" id="chart-drawer">
+  <div class="chart-drawer-header">
+    <div>
+      <div class="chart-drawer-title" id="chart-panel-title">Chart</div>
+      <div class="chart-drawer-meta" id="chart-drawer-meta"></div>
+    </div>
+    <div class="chart-drawer-actions">
+      <button class="chart-nav-btn" id="chart-prev-btn" title="Previous stock (↑)">↑</button>
+      <button class="chart-nav-btn" id="chart-next-btn" title="Next stock (↓)">↓</button>
+      <a class="chart-open-link" id="chart-open-link" href="#" target="_blank" rel="noopener" style="display:none;">Open full chart ↗</a>
+      <button class="chart-close-btn" id="chart-close-btn" title="Close">✕</button>
+    </div>
+  </div>
+  <div id="chart-widget-area">
+    <div class="chart-placeholder">Click a stock to load its chart.</div>
+  </div>
+  <div class="chart-drawer-hint">Press ↑ / ↓ to step through stocks · Esc to close</div>
 </div>
 
 <script>
@@ -728,29 +819,35 @@ footer {
   let selectedStock = null;
   let stocks = [];
   let industries = [];
-  let tvScriptLoading = false;
-  let tvScriptLoaded = false;
   let laggardMode = false;
   let industryFilter = '';
   let selectedCap = 'All';
   let stockSortCol = 'rs';
   let stockSortAsc = false;
+  let drawerOpen = false;
+  let currentStockRows = []; // the rendered/sorted rows for arrow-key nav
 
-  const errorEl = document.getElementById('error');
-  const loadingEl = document.getElementById('loading');
-  const contentEl = document.getElementById('content');
-  const periodTabsEl = document.getElementById('period-tabs');
-  const industryListEl = document.getElementById('industry-list');
+  const errorEl              = document.getElementById('error');
+  const loadingEl            = document.getElementById('loading');
+  const contentEl            = document.getElementById('content');
+  const periodTabsEl         = document.getElementById('period-tabs');
+  const industryListEl       = document.getElementById('industry-list');
   const industryPanelSubtitleEl = document.getElementById('industry-panel-subtitle');
-  const stockPanelTitleEl = document.getElementById('stock-panel-title');
+  const stockPanelTitleEl    = document.getElementById('stock-panel-title');
   const stockPanelSubtitleEl = document.getElementById('stock-panel-subtitle');
-  const stockPeriodHeaderEl = document.getElementById('stock-period-header');
-  const stockTableBodyEl = document.getElementById('stock-table-body');
-  const chartPanelTitleEl = document.getElementById('chart-panel-title');
-  const chartOpenLinkEl = document.getElementById('chart-open-link');
-  const chartWidgetAreaEl = document.getElementById('chart-widget-area');
-  const industrySearchEl = document.getElementById('industry-search');
-  const laggardToggleEl = document.getElementById('laggard-toggle');
+  const stockPeriodHeaderEl  = document.getElementById('stock-period-header');
+  const stockTableBodyEl     = document.getElementById('stock-table-body');
+  const chartPanelTitleEl    = document.getElementById('chart-panel-title');
+  const chartDrawerMetaEl    = document.getElementById('chart-drawer-meta');
+  const chartOpenLinkEl      = document.getElementById('chart-open-link');
+  const chartWidgetAreaEl    = document.getElementById('chart-widget-area');
+  const chartBackdropEl      = document.getElementById('chart-backdrop');
+  const chartDrawerEl        = document.getElementById('chart-drawer');
+  const chartPrevBtnEl       = document.getElementById('chart-prev-btn');
+  const chartNextBtnEl       = document.getElementById('chart-next-btn');
+  const chartCloseBtnEl      = document.getElementById('chart-close-btn');
+  const industrySearchEl     = document.getElementById('industry-search');
+  const laggardToggleEl      = document.getElementById('laggard-toggle');
 
   function numOrNull(v) {
     if (v === null || v === undefined || v === '') return null;
@@ -1015,6 +1112,7 @@ footer {
       stockPanelTitleEl.textContent = 'Select an industry';
       stockPanelSubtitleEl.textContent = '';
       stockTableBodyEl.innerHTML = '';
+      currentStockRows = [];
       return;
     }
 
@@ -1037,6 +1135,8 @@ footer {
       return stockSortAsc ? va - vb : vb - va;
     });
 
+    currentStockRows = rows; // keep for arrow-key nav
+
     // Update header indicators
     document.querySelectorAll('thead th[data-col]').forEach(th => {
       const col = th.dataset.col;
@@ -1046,7 +1146,6 @@ footer {
         const arrow = stockSortAsc ? ' ↑' : ' ↓';
         const base = col === 'pct' ? periodLabel + ' %' : th.textContent.replace(/ [↑↓]$/, '');
         th.textContent = base + arrow;
-        if (col === 'pct') stockPeriodHeaderEl.textContent = periodLabel + ' %' + arrow;
       } else if (col === 'pct') {
         th.textContent = periodLabel + ' %';
       } else {
@@ -1055,7 +1154,9 @@ footer {
     });
 
     stockPanelTitleEl.textContent = selectedIndustry;
-    stockPanelSubtitleEl.textContent = rows.length + ' stocks' + (selectedCap !== 'All' ? ' · ' + selectedCap + ' cap' : '') + ' · ' + periodLabel + ' return shown';
+    stockPanelSubtitleEl.textContent = rows.length + ' stocks' +
+      (selectedCap !== 'All' ? ' · ' + selectedCap + ' cap' : '') +
+      ' · click row to open chart';
 
     stockTableBodyEl.innerHTML = rows
       .map(s => `
@@ -1067,90 +1168,141 @@ footer {
         </tr>
       `)
       .join('');
-
-    if (rows.length && !rows.some(s => s.symbol === selectedStock)) {
-      selectStock(rows[0].symbol);
-    } else if (selectedStock) {
-      selectStock(selectedStock);
-    }
   }
 
+  // Click row → open drawer
   stockTableBodyEl.addEventListener('click', e => {
     const row = e.target.closest('tr[data-symbol]');
     if (!row) return;
-    selectStock(row.dataset.symbol);
+    selectStock(row.dataset.symbol, true);
   });
 
-  /* ---------- Inline TradingView chart ---------- */
+  /* ---------- Chart drawer ---------- */
 
-  function selectStock(symbol) {
+  function openDrawer() {
+    drawerOpen = true;
+    chartBackdropEl.classList.add('open');
+    chartDrawerEl.classList.add('open');
+  }
+
+  function closeDrawer() {
+    drawerOpen = false;
+    chartBackdropEl.classList.remove('open');
+    chartDrawerEl.classList.remove('open');
+  }
+
+  chartCloseBtnEl.addEventListener('click', closeDrawer);
+  chartBackdropEl.addEventListener('click', closeDrawer);
+
+  function updateNavButtons() {
+    const idx = currentStockRows.findIndex(s => s.symbol === selectedStock);
+    chartPrevBtnEl.disabled = idx <= 0;
+    chartNextBtnEl.disabled = idx < 0 || idx >= currentStockRows.length - 1;
+  }
+
+  chartPrevBtnEl.addEventListener('click', () => {
+    const idx = currentStockRows.findIndex(s => s.symbol === selectedStock);
+    if (idx > 0) selectStock(currentStockRows[idx - 1].symbol, false);
+  });
+
+  chartNextBtnEl.addEventListener('click', () => {
+    const idx = currentStockRows.findIndex(s => s.symbol === selectedStock);
+    if (idx < currentStockRows.length - 1) selectStock(currentStockRows[idx + 1].symbol, false);
+  });
+
+  function selectStock(symbol, openChart) {
     selectedStock = symbol;
 
+    // Highlight row in table
     stockTableBodyEl.querySelectorAll('tr[data-symbol]').forEach(tr => {
       tr.classList.toggle('stock-row-selected', tr.dataset.symbol === symbol);
     });
+    // Scroll selected row into view
+    const selRow = stockTableBodyEl.querySelector('tr.stock-row-selected');
+    if (selRow) selRow.scrollIntoView({ block: 'nearest' });
 
+    const s = currentStockRows.find(r => r.symbol === symbol);
     const tvSymbol = normalizeTradingViewSymbol(symbol);
-    chartPanelTitleEl.textContent = tvSymbol.split(':').pop();
-    chartOpenLinkEl.href = 'chart.html?symbol=' + encodeURIComponent(tvSymbol.split(':').pop());
+    const ticker = tvSymbol.split(':').pop();
+
+    chartPanelTitleEl.textContent = ticker;
+    chartDrawerMetaEl.textContent = s
+      ? (s.name ? s.name + ' · ' : '') + 'RS ' + (s.rs ?? 'n/a') + ' · ' + fmtPct(s[selectedPeriod])
+      : '';
+    chartOpenLinkEl.href = 'https://www.tradingview.com/chart/?symbol=NSE%3A' + encodeURIComponent(ticker);
     chartOpenLinkEl.style.display = 'inline';
 
+    updateNavButtons();
+
+    if (openChart) openDrawer();
     loadChart(tvSymbol);
   }
 
-  // Keyboard navigation: ↑/↓ to move between industries
+  /* ---------- Keyboard navigation ---------- */
+
   document.addEventListener('keydown', e => {
-    if (e.target === industrySearchEl) return; // don't interfere while typing
+    if (e.target === industrySearchEl) return;
+
+    // Esc → close drawer
+    if (e.key === 'Escape') {
+      if (drawerOpen) { e.preventDefault(); closeDrawer(); }
+      return;
+    }
+
+    // ↑ / ↓ — when drawer open: step through stocks; otherwise: step through industries
     if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
-    if (!industries.length) return;
     e.preventDefault();
-    const visibleSectors = Array.from(industryListEl.querySelectorAll('.industry-row'))
-      .map(r => r.dataset.sector);
-    if (!visibleSectors.length) return;
-    const idx = visibleSectors.indexOf(selectedIndustry);
-    let next;
-    if (e.key === 'ArrowDown') next = idx < visibleSectors.length - 1 ? idx + 1 : idx;
-    else next = idx > 0 ? idx - 1 : 0;
-    selectedIndustry = visibleSectors[next];
-    renderIndustries();
-    // Scroll the selected row into view
-    const selectedRow = industryListEl.querySelector('.industry-row.selected');
-    if (selectedRow) selectedRow.scrollIntoView({ block: 'nearest' });
+
+    if (drawerOpen && currentStockRows.length) {
+      // Navigate stocks
+      const idx = currentStockRows.findIndex(s => s.symbol === selectedStock);
+      const next = e.key === 'ArrowDown'
+        ? Math.min(idx + 1, currentStockRows.length - 1)
+        : Math.max(idx - 1, 0);
+      if (next !== idx) selectStock(currentStockRows[next].symbol, false);
+    } else {
+      // Navigate industries
+      if (!industries.length) return;
+      const visibleSectors = Array.from(industryListEl.querySelectorAll('.industry-row'))
+        .map(r => r.dataset.sector);
+      if (!visibleSectors.length) return;
+      const idx = visibleSectors.indexOf(selectedIndustry);
+      const next = e.key === 'ArrowDown'
+        ? Math.min(idx + 1, visibleSectors.length - 1)
+        : Math.max(idx - 1, 0);
+      selectedIndustry = visibleSectors[next];
+      renderIndustries();
+      const selectedRow = industryListEl.querySelector('.industry-row.selected');
+      if (selectedRow) selectedRow.scrollIntoView({ block: 'nearest' });
+    }
   });
 
   function normalizeTradingViewSymbol(rawSymbol) {
-    // CSV symbols are usually plain NSE tickers, but accept qualified
-    // symbols too and avoid producing NSE:NSE:TICKER.
     const cleaned = String(rawSymbol || '').trim().toUpperCase();
     if (!cleaned) return 'NSE:NIFTY';
     return cleaned.includes(':') ? cleaned : 'NSE:' + cleaned;
   }
 
-  function loadChart(rawSymbol) {
-    const tvSymbol = normalizeTradingViewSymbol(rawSymbol);
-
-    // Use the TradingView Advanced Chart iframe embed.
-    // This is the free, officially supported method that works for NSE symbols
-    // without triggering the "only available on TradingView" popup that tv.js causes.
+  function loadChart(tvSymbol) {
     const params = new URLSearchParams({
-      symbol:             tvSymbol,
-      interval:           'D',
-      timezone:           'Asia/Kolkata',
-      theme:              'light',
-      style:              '1',
-      locale:             'en',
-      toolbar_bg:         '#f1f3f6',
-      enable_publishing:  '0',
-      allow_symbol_change:'1',
-      withdateranges:     '1',
-      hide_legend:        '0',
-      save_image:         '0',
+      symbol:              tvSymbol,
+      interval:            'D',
+      timezone:            'Asia/Kolkata',
+      theme:               'light',
+      style:               '1',
+      locale:              'en',
+      toolbar_bg:          '#f1f3f6',
+      enable_publishing:   '0',
+      allow_symbol_change: '1',
+      withdateranges:      '1',
+      hide_legend:         '0',
+      save_image:          '0',
     });
 
     chartWidgetAreaEl.innerHTML =
       '<iframe ' +
         'src="https://s.tradingview.com/widgetembed/?' + params.toString() + '" ' +
-        'style="width:100%;height:100%;min-height:320px;border:none;" ' +
+        'style="width:100%;height:100%;border:none;" ' +
         'allowtransparency="true" ' +
         'scrolling="no" ' +
         'allowfullscreen ' +
