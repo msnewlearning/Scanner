@@ -202,8 +202,69 @@ h1 {
 
 .controls-panel input[type="range"] { accent-color: var(--accent); width: 70px; }
 
-.filter-group { display: flex; align-items: center; gap: 8px; padding-right: 10px; border-right: 1px solid var(--border-soft); }
+.filter-group { display: flex; align-items: center; gap: 8px; padding-right: 10px; border-right: 1px solid var(--border-soft); flex-wrap: wrap; }
 .filter-group:last-child { border-right: none; }
+
+/* ---------- Filters Popup ---------- */
+
+.preset-group { display: flex; gap: 6px; }
+
+.preset-btn.active { background: var(--accent-dark); color: #FFFFFF; border-color: var(--accent-dark); }
+
+.filter-count-badge {
+  display: inline-block;
+  background: var(--accent-dark);
+  color: #FFFFFF;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 1px 6px;
+  margin-left: 6px;
+  min-width: 14px;
+  text-align: center;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px;
+  overflow-y: auto;
+}
+
+.modal-panel {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  width: 100%;
+  max-width: 760px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 80px);
+}
+
+.modal-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border-soft); flex: none; }
+
+.modal-head h3 { margin: 0; font-family: var(--font-display); font-size: 17px; color: var(--text); }
+
+.modal-close { background: none; border: none; font-size: 16px; line-height: 1; color: var(--text-faint); cursor: pointer; padding: 4px; }
+.modal-close:hover { color: var(--text); }
+
+.modal-body { padding: 16px 18px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+
+.modal-foot { display: flex; justify-content: space-between; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--border-soft); flex: none; }
+
+.filter-section-title { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+
+.filter-section .filter-group { border-right: none; padding-right: 0; }
+
+.filter-hint { font-size: 11px; color: var(--text-faint); margin-top: 4px; }
 
 /* ---------- Buttons ---------- */
 
@@ -621,89 +682,20 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
 
       <div class="stats-bar" id="stats-bar"></div>
 
-      <!-- FILTERS -->
+      <!-- FILTERS BAR -->
       <div class="controls-panel">
 
         <input type="text" id="search" placeholder="Search symbol, name or sector…">
 
-        <div class="filter-group">
-          <label>RS
-            <input type="range" id="min-rs" min="1" max="99" value="1">
-            <span id="min-rs-val">1</span>
-          </label>
-          <label>to
-            <input type="range" id="max-rs" min="1" max="99" value="99">
-            <span id="max-rs-val">99</span>
-          </label>
+        <div class="preset-group">
+          <button class="btn secondary preset-btn" id="preset-coiled" type="button"
+            title="RS ≥ 85 · Uptrend (10&gt;20&gt;50 EMA) · ADR% ≥ 3.5 · NR7 · Today's TR &lt; 0.7 × ATR(14)">🌀 Coiled Spring</button>
+          <button class="btn secondary preset-btn" id="preset-ignition" type="button"
+            title="RS ≥ 85 · Uptrend (10&gt;20&gt;50 EMA) · ADR% ≥ 3.5 · Today's TR &gt; 1.3 × ATR(14)">🚀 Ignition</button>
         </div>
 
-        <div class="filter-group">
-          <select id="sector-select" title="Sector"><option value="all">All Sectors</option></select>
-          <select id="marketcap-select" title="Market Cap"><option value="all">All Market Caps</option></select>
-        </div>
-
-        <div class="filter-group">
-          <select id="trend-select" title="EMA Trend Hierarchy">
-            <option value="all">All Trends</option>
-            <option value="up">Uptrend (Close &gt; 10 &gt; 20 &gt; 50)</option>
-            <option value="down">Downtrend (Close &lt; 10 &lt; 20 &lt; 50)</option>
-            <option value="mixed">Mixed Trend</option>
-            <option value="10gt20">EMA 10 &gt; EMA 20</option>
-            <option value="20gt50">EMA 20 &gt; EMA 50</option>
-            <option value="10gt50">EMA 10 &gt; EMA 50</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <select id="dist10-select" title="Distance from EMA 10">
-            <option value="all">Dist EMA 10 (Any)</option>
-            <option value="w02">Within 0% to 2%</option>
-            <option value="w05">Within 0% to 5%</option>
-            <option value="w10">Within 0% to 10%</option>
-            <option value="gt0">Above EMA 10 (&gt; 0%)</option>
-            <option value="gt5">Above 5%</option>
-            <option value="gt10">Above 10%</option>
-            <option value="lt0">Below EMA 10 (&lt; 0%)</option>
-            <option value="lt-5">Below -5%</option>
-          </select>
-
-          <select id="dist50-select" title="Distance from EMA 50">
-            <option value="all">Dist EMA 50 (Any)</option>
-            <option value="w02">Within 0% to 2%</option>
-            <option value="w05">Within 0% to 5%</option>
-            <option value="w10">Within 0% to 10%</option>
-            <option value="gt0">Above EMA 50 (&gt; 0%)</option>
-            <option value="gt5">Above 5%</option>
-            <option value="gt10">Above 10%</option>
-            <option value="lt0">Below EMA 50 (&lt; 0%)</option>
-            <option value="lt-5">Below -5%</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <select id="day-move-select">
-            <option value="all">Any Day Move</option>
-            <option value="up4">Up 4%+ Today</option>
-            <option value="down4">Down 4%+ Today</option>
-          </select>
-
-          <select id="bar-type-select">
-            <option value="all">Any Bar Type</option>
-            <option value="Inside">Inside Bar</option>
-            <option value="Outside">Outside Bar</option>
-          </select>
-
-          <select id="nr-select" title="Narrow Range">
-            <option value="all">Any NR</option>
-            <option value="NR7">NR7</option>
-            <option value="NR4">NR4</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label><input type="checkbox" id="liquid-only"> Turnover ≥ ₹7Cr</label>
-          <label><input type="checkbox" id="special-only"> Special Candle</label>
-        </div>
+        <button class="btn secondary" id="filters-toggle" type="button">Filters<span class="filter-count-badge" id="filter-count-badge" style="display:none;">0</span></button>
+        <button class="btn secondary" id="filters-clear-btn" type="button">Clear Filters</button>
 
         <!-- COLUMN PICKER -->
         <div class="col-picker" style="margin-left:auto;">
@@ -717,6 +709,142 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
           </div>
         </div>
 
+      </div>
+
+      <!-- FILTERS POPUP -->
+      <div class="modal-overlay" id="filters-modal" style="display:none;">
+        <div class="modal-panel">
+
+          <div class="modal-head">
+            <h3>Filters</h3>
+            <button class="modal-close" id="filters-modal-close" type="button" aria-label="Close">✕</button>
+          </div>
+
+          <div class="modal-body">
+
+            <div class="filter-section">
+              <div class="filter-section-title">RS Rating</div>
+              <div class="filter-group">
+                <label>RS
+                  <input type="range" id="min-rs" min="1" max="99" value="1">
+                  <span id="min-rs-val">1</span>
+                </label>
+                <label>to
+                  <input type="range" id="max-rs" min="1" max="99" value="99">
+                  <span id="max-rs-val">99</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="filter-section">
+              <div class="filter-section-title">Sector &amp; Market Cap</div>
+              <div class="filter-group">
+                <select id="sector-select" title="Sector"><option value="all">All Sectors</option></select>
+                <select id="marketcap-select" title="Market Cap"><option value="all">All Market Caps</option></select>
+              </div>
+            </div>
+
+            <div class="filter-section">
+              <div class="filter-section-title">EMA Trend / Position</div>
+              <div class="filter-group">
+                <select id="trend-select" title="EMA Trend Hierarchy">
+                  <option value="all">All Trends</option>
+                  <option value="up">Uptrend (Close &gt; 10 &gt; 20 &gt; 50)</option>
+                  <option value="down">Downtrend (Close &lt; 10 &lt; 20 &lt; 50)</option>
+                  <option value="mixed">Mixed Trend</option>
+                  <option value="10gt20">EMA 10 &gt; EMA 20</option>
+                  <option value="20gt50">EMA 20 &gt; EMA 50</option>
+                  <option value="10gt50">EMA 10 &gt; EMA 50</option>
+                  <option value="lt10gt20">Price &lt; EMA 10 but &gt; EMA 20</option>
+                  <option value="lt10gt50">Price &lt; EMA 10 but &gt; EMA 50</option>
+                </select>
+              </div>
+              <div class="filter-hint">The last two let you find pullback stocks that dipped below the 10-EMA while still holding above the 20- or 50-EMA — the strict "uptrend" option requires price above all three.</div>
+            </div>
+
+            <div class="filter-section">
+              <div class="filter-section-title">Distance From EMA</div>
+              <div class="filter-group">
+                <select id="dist10-select" title="Distance from EMA 10">
+                  <option value="all">Dist EMA 10 (Any)</option>
+                  <option value="w02">Within 0% to 2%</option>
+                  <option value="w05">Within 0% to 5%</option>
+                  <option value="w10">Within 0% to 10%</option>
+                  <option value="gt0">Above EMA 10 (&gt; 0%)</option>
+                  <option value="gt5">Above 5%</option>
+                  <option value="gt10">Above 10%</option>
+                  <option value="lt0">Below EMA 10 (&lt; 0%)</option>
+                  <option value="lt-5">Below -5%</option>
+                </select>
+
+                <select id="dist50-select" title="Distance from EMA 50">
+                  <option value="all">Dist EMA 50 (Any)</option>
+                  <option value="w02">Within 0% to 2%</option>
+                  <option value="w05">Within 0% to 5%</option>
+                  <option value="w10">Within 0% to 10%</option>
+                  <option value="gt0">Above EMA 50 (&gt; 0%)</option>
+                  <option value="gt5">Above 5%</option>
+                  <option value="gt10">Above 10%</option>
+                  <option value="lt0">Below EMA 50 (&lt; 0%)</option>
+                  <option value="lt-5">Below -5%</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="filter-section">
+              <div class="filter-section-title">Volatility — ATR / ADR / Today's Range</div>
+              <div class="filter-group">
+                <label title="Average Daily Range %, 20-session: mean of (High/Low - 1) × 100">Min ADR%
+                  <input type="text" id="adr-min" placeholder="e.g. 3.5" style="width:60px;">
+                </label>
+                <select id="tratr-select" title="Today's True Range vs. ATR(14)">
+                  <option value="all">Today's TR vs ATR (Any)</option>
+                  <option value="compress">Compressed — TR &lt; 0.7 × ATR(14)</option>
+                  <option value="expand">Expanded — TR &gt; 1.3 × ATR(14)</option>
+                </select>
+              </div>
+              <div class="filter-hint">ADR% and ATR(14)/TR come from fetch_nse_data.py. Compressed = a quiet day relative to the stock's own volatility (coiling); Expanded = today broke out of its normal range.</div>
+            </div>
+
+            <div class="filter-section">
+              <div class="filter-section-title">Day Move / Candle</div>
+              <div class="filter-group">
+                <select id="day-move-select">
+                  <option value="all">Any Day Move</option>
+                  <option value="up4">Up 4%+ Today</option>
+                  <option value="down4">Down 4%+ Today</option>
+                </select>
+
+                <select id="bar-type-select">
+                  <option value="all">Any Bar Type</option>
+                  <option value="Inside">Inside Bar</option>
+                  <option value="Outside">Outside Bar</option>
+                </select>
+
+                <select id="nr-select" title="Narrow Range">
+                  <option value="all">Any NR</option>
+                  <option value="NR7">NR7</option>
+                  <option value="NR4">NR4</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="filter-section">
+              <div class="filter-section-title">Other</div>
+              <div class="filter-group">
+                <label><input type="checkbox" id="liquid-only"> Turnover ≥ ₹7Cr</label>
+                <label><input type="checkbox" id="special-only"> Special Candle</label>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="modal-foot">
+            <button class="btn secondary" id="filters-reset-btn" type="button">Reset All</button>
+            <button class="btn" id="filters-done-btn" type="button">Done</button>
+          </div>
+
+        </div>
       </div>
 
       <!-- STOCK TABLE -->
@@ -739,6 +867,8 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
               <th rowspan="2" data-col="score" data-key="score" class="num">Weighted Score</th>
               <th rowspan="2" data-col="trend" data-key="trend">Trend</th>
               <th colspan="5" class="col-group">Group EMA</th>
+              <th rowspan="2" data-col="atr14" data-key="atr14" class="num" title="Average True Range, 14 sessions, Wilder-smoothed">ATR(14)</th>
+              <th rowspan="2" data-col="adr" data-key="adrPct" class="num" title="Average Daily Range %, 20 sessions: mean of (High/Low - 1) × 100">ADR%</th>
               <th rowspan="2" data-col="bartype" data-key="bartype">Bar Type</th>
               <th rowspan="2" data-col="nr" data-key="nr">NR</th>
               <th rowspan="2" data-col="special" data-key="special">Special</th>
@@ -939,6 +1069,12 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   const specialOnly = document.getElementById('special-only');
   const nrSelect = document.getElementById('nr-select');
   const exportBtn = document.getElementById('export-btn');
+  const adrMinInput = document.getElementById('adr-min');
+  const tratrSelect = document.getElementById('tratr-select');
+  const filtersModal = document.getElementById('filters-modal');
+  const filterCountBadge = document.getElementById('filter-count-badge');
+  const presetCoiledBtn = document.getElementById('preset-coiled');
+  const presetIgnitionBtn = document.getElementById('preset-ignition');
 
 
   /* ============================================================
@@ -1023,6 +1159,28 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       const dist10 = pctFrom(closeToday, ema10);
       const dist50 = pctFrom(closeToday, ema50);
 
+      // ATR(14, Wilder-smoothed), ADR% (20-session average daily range),
+      // and today's own True Range — used for the Coiled Spring / Ignition
+      // volatility-compression and -expansion filters below.
+      const atr14 = numOrNull(r.ATR_14);
+      const atrPct = numOrNull(r.ATR_Pct);
+      const adrPct = numOrNull(r.ADR_Pct);
+
+      const todayHigh = numOrNull(r.Today_High);
+      const todayLow = numOrNull(r.Today_Low);
+      const prevCloseForTR = numOrNull(r.Prev_Close);
+
+      const todayTR =
+        (todayHigh !== null && todayLow !== null && prevCloseForTR !== null)
+          ? Math.max(
+              todayHigh - todayLow,
+              Math.abs(todayHigh - prevCloseForTR),
+              Math.abs(todayLow - prevCloseForTR)
+            )
+          : null;
+
+      const trAtrRatio = (todayTR !== null && atr14) ? todayTR / atr14 : null;
+
       const avgVolume30D = numOrNull(r.Avg_Volume_30D);
       let turnover = numOrNull(r.Turnover_30D_INR);
 
@@ -1081,6 +1239,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
         ema10, ema20, ema50,
         trend,
         dist10, dist50,
+        atr14, atrPct, adrPct, todayTR, trAtrRatio,
         turnover, liquid,
         date: r.Date ? String(r.Date).trim() : '',
         barType, nrType, candleRange, specialCandle,
@@ -1216,6 +1375,8 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
 
   function renderTable() {
 
+    updateFilterBadge();
+
     const q = searchInput.value.trim().toLowerCase();
     const minRs = Number(minRsInput.value);
     const maxRs = Number(maxRsInput.value);
@@ -1223,6 +1384,8 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     const dist10Val = dist10Select.value;
     const dist50Val = dist50Select.value;
     const nrVal = nrSelect.value;
+    const adrMinVal = adrMinInput.value.trim();
+    const tratrVal = tratrSelect.value;
 
     let list = allStocks.filter(s => {
 
@@ -1237,6 +1400,8 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       if (trendVal === '10gt20' && !(s.ema10 > s.ema20)) return false;
       if (trendVal === '20gt50' && !(s.ema20 > s.ema50)) return false;
       if (trendVal === '10gt50' && !(s.ema10 > s.ema50)) return false;
+      if (trendVal === 'lt10gt20' && !(s.closeToday !== null && s.ema10 !== null && s.ema20 !== null && s.closeToday < s.ema10 && s.closeToday > s.ema20)) return false;
+      if (trendVal === 'lt10gt50' && !(s.closeToday !== null && s.ema10 !== null && s.ema50 !== null && s.closeToday < s.ema10 && s.closeToday > s.ema50)) return false;
 
       if (!matchDistanceFilter(s.dist10, dist10Val)) return false;
       if (!matchDistanceFilter(s.dist50, dist50Val)) return false;
@@ -1250,6 +1415,11 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       if (dayMoveSelect.value === 'down4' && !(s.dayChangePct <= -4)) return false;
 
       if (nrVal !== 'all' && s.nrType !== nrVal) return false;
+
+      if (adrMinVal !== '' && !(s.adrPct !== null && s.adrPct >= Number(adrMinVal))) return false;
+
+      if (tratrVal === 'compress' && !(s.trAtrRatio !== null && s.trAtrRatio < 0.7)) return false;
+      if (tratrVal === 'expand' && !(s.trAtrRatio !== null && s.trAtrRatio > 1.3)) return false;
 
       if (q && !(
         s.symbol.toLowerCase().includes(q) ||
@@ -1301,6 +1471,8 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
         <td class="num" data-col="ema50">${fmtEma(s.ema50)}</td>
         <td class="num ${cls(s.dist10)}" data-col="dist10">${fmtPct(s.dist10)}</td>
         <td class="num ${cls(s.dist50)}" data-col="dist50">${fmtPct(s.dist50)}</td>
+        <td class="num" data-col="atr14" title="${s.atrPct !== null ? s.atrPct.toFixed(2) + '% of price' : ''}">${fmtEma(s.atr14)}</td>
+        <td class="num" data-col="adr">${fmtAdr(s.adrPct)}</td>
         <td data-col="bartype">${barTypeBadge(s.barType)}</td>
         <td data-col="nr">${nrBadge(s.nrType, s.candleRange)}</td>
         <td data-col="special">${specialBadge(s.specialCandle)}</td>
@@ -1339,6 +1511,10 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
 
   function fmtEma(v) {
     return (v === null || isNaN(v)) ? 'n/a' : v.toFixed(1);
+  }
+
+  function fmtAdr(v) {
+    return (v === null || isNaN(v)) ? 'n/a' : v.toFixed(2) + '%';
   }
 
   function trendBadge(t) {
@@ -1420,8 +1596,111 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     renderTable();
   });
 
-  [trendSelect, dist10Select, dist50Select, dayMoveSelect, barTypeSelect, nrSelect, liquidOnly, specialOnly]
+  [trendSelect, dist10Select, dist50Select, dayMoveSelect, barTypeSelect, nrSelect, liquidOnly, specialOnly, tratrSelect]
     .forEach(el => el.addEventListener('change', renderTable));
+
+  adrMinInput.addEventListener('input', renderTable);
+
+
+  /* ============================================================
+     FILTERS POPUP + PRESET SCANNERS
+     ============================================================ */
+
+  function openFiltersModal() { filtersModal.style.display = 'flex'; }
+  function closeFiltersModal() { filtersModal.style.display = 'none'; }
+
+  document.getElementById('filters-toggle').addEventListener('click', openFiltersModal);
+  document.getElementById('filters-modal-close').addEventListener('click', closeFiltersModal);
+  document.getElementById('filters-done-btn').addEventListener('click', closeFiltersModal);
+  filtersModal.addEventListener('click', e => {
+    if (e.target === filtersModal) closeFiltersModal();
+  });
+
+  function resetAllFilters() {
+    searchInput.value = '';
+    minRsInput.value = 1; minRsVal.textContent = '1';
+    maxRsInput.value = 99; maxRsVal.textContent = '99';
+    sectorSelect.value = 'all';
+    marketcapSelect.value = 'all';
+    trendSelect.value = 'all';
+    dist10Select.value = 'all';
+    dist50Select.value = 'all';
+    dayMoveSelect.value = 'all';
+    barTypeSelect.value = 'all';
+    nrSelect.value = 'all';
+    liquidOnly.checked = false;
+    specialOnly.checked = false;
+    adrMinInput.value = '';
+    tratrSelect.value = 'all';
+    presetCoiledBtn.classList.remove('active');
+    presetIgnitionBtn.classList.remove('active');
+  }
+
+  function countActiveFilters() {
+    let n = 0;
+    if (searchInput.value.trim() !== '') n++;
+    if (minRsInput.value !== '1' || maxRsInput.value !== '99') n++;
+    if (sectorSelect.value !== 'all') n++;
+    if (marketcapSelect.value !== 'all') n++;
+    if (trendSelect.value !== 'all') n++;
+    if (dist10Select.value !== 'all') n++;
+    if (dist50Select.value !== 'all') n++;
+    if (dayMoveSelect.value !== 'all') n++;
+    if (barTypeSelect.value !== 'all') n++;
+    if (nrSelect.value !== 'all') n++;
+    if (liquidOnly.checked) n++;
+    if (specialOnly.checked) n++;
+    if (adrMinInput.value.trim() !== '') n++;
+    if (tratrSelect.value !== 'all') n++;
+    return n;
+  }
+
+  function updateFilterBadge() {
+    const n = countActiveFilters();
+    filterCountBadge.textContent = n;
+    filterCountBadge.style.display = n > 0 ? 'inline-block' : 'none';
+  }
+
+  document.getElementById('filters-reset-btn').addEventListener('click', () => {
+    resetAllFilters();
+    renderTable();
+  });
+
+  document.getElementById('filters-clear-btn').addEventListener('click', () => {
+    resetAllFilters();
+    renderTable();
+  });
+
+  // Two ready-made EOD scans, built from the same RS/EMA/ATR/ADR data
+  // already in the CSV:
+  //   Coiled Spring  — RS>=85, uptrend, ADR%>=3.5 (inherently volatile),
+  //                    but quiet TODAY: NR7 and today's TR < 0.7x ATR(14).
+  //                    Buy on a break of the tight day's high.
+  //   Ignition       — same RS/uptrend/ADR% base, but today's TR > 1.3x
+  //                    ATR(14): a stock that just woke up (breakout / gap).
+  // Note: our EMA data is 10/20/50 (no per-stock EMA200 in the CSV), so
+  // "uptrend" here means Close > EMA10 > EMA20 > EMA50.
+  function applyPreset(name) {
+    resetAllFilters();
+    minRsInput.value = 85; minRsVal.textContent = '85';
+    maxRsInput.value = 99; maxRsVal.textContent = '99';
+    trendSelect.value = 'up';
+    adrMinInput.value = '3.5';
+
+    if (name === 'coiled') {
+      nrSelect.value = 'NR7';
+      tratrSelect.value = 'compress';
+      presetCoiledBtn.classList.add('active');
+    } else if (name === 'ignition') {
+      tratrSelect.value = 'expand';
+      presetIgnitionBtn.classList.add('active');
+    }
+
+    renderTable();
+  }
+
+  presetCoiledBtn.addEventListener('click', () => applyPreset('coiled'));
+  presetIgnitionBtn.addEventListener('click', () => applyPreset('ignition'));
 
   document.querySelectorAll('#scanner-view thead th').forEach(th => {
     th.addEventListener('click', () => {
@@ -1467,6 +1746,8 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     ['ema50', 'EMA 50'],
     ['dist10', 'Dist EMA 10'],
     ['dist50', 'Dist EMA 50'],
+    ['atr14', 'ATR (14)'],
+    ['adr', 'ADR %'],
     ['bartype', 'Bar Type'],
     ['nr', 'NR'],
     ['special', 'Special']
@@ -2635,6 +2916,11 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       EMA_50: s.ema50,
       Dist_EMA_10: s.dist10,
       Dist_EMA_50: s.dist50,
+      ATR_14: s.atr14,
+      ATR_Pct: s.atrPct,
+      ADR_Pct: s.adrPct,
+      Today_TR: s.todayTR,
+      TR_vs_ATR: s.trAtrRatio,
       Day_Change: s.dayChangePct,
       Bar_Type: s.barType,
       Special: s.specialCandle
