@@ -800,6 +800,7 @@ footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-fain
               <th data-col="date" data-key="date">Date</th>
               <th data-col="rs" data-key="rs">RS Rating</th>
               <th data-col="rstrend" data-key="rsChange1w" class="num">RS Trend (3M→1M→1W→T0)</th>
+              <th data-col="p1" data-key="p1" class="num">1M %</th>
               <th data-col="p3" data-key="p3" class="num">3M %</th>
               <th data-col="p6" data-key="p6" class="num">6M %</th>
               <th data-col="p9" data-key="p9" class="num">9M %</th>
@@ -1075,6 +1076,7 @@ footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-fain
 
       if (!r.Symbol) continue;
 
+      const p1 = numOrNull(r.Pct_1M ?? r.Pct_1m);
       const p3 = numOrNull(r.Pct_3M);
       const p6 = numOrNull(r.Pct_6M);
       const p9 = numOrNull(r.Pct_9M);
@@ -1168,7 +1170,7 @@ footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-fain
         name: r.Name ? String(r.Name).trim() : '',
         sector: r.Sector ? String(r.Sector).trim() : '',
         marketcap: r.Market_Cap ? String(r.Market_Cap).trim() : '',
-        p3, p6, p9, p12,
+        p1, p3, p6, p9, p12,
         score, complete,
         closeToday,
         ema10, ema20, ema50,
@@ -1185,13 +1187,40 @@ footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-fain
       });
     }
 
-    if (!stocks.some(s => s.rsToday !== null)) {
-      const ranked = stocks.filter(s => s.complete).sort((a, b) => a.score - b.score);
-      const n = ranked.length;
-      ranked.forEach((s, i) => {
-        s.rs = Math.max(1, Math.min(99, Math.round(((i + 1) / n) * 99)));
+    // Helper to calculate percentile ranks (1-99) for a specific metric array
+    function computeRSRanks(itemList, scoreFn, targetKey) {
+      const valid = itemList.filter(s => scoreFn(s) !== null);
+      valid.sort((a, b) => scoreFn(a) - scoreFn(b));
+      const n = valid.length;
+      if (!n) return;
+      valid.forEach((s, i) => {
+        s[targetKey] = Math.max(1, Math.min(99, Math.round(((i + 1) / n) * 99)));
       });
     }
+
+    // Always ensure RS rating and RS trends are calculated if missing from CSV
+    if (!stocks.some(s => s.rsToday !== null)) {
+      computeRSRanks(stocks, s => s.score, 'rs');
+      stocks.forEach(s => s.rsToday = s.rs);
+    }
+
+    if (!stocks.some(s => s.rs3m !== null)) {
+      computeRSRanks(stocks, s => s.p12, 'rs3m');
+    }
+
+    if (!stocks.some(s => s.rs1m !== null)) {
+      computeRSRanks(stocks, s => s.p6, 'rs1m');
+    }
+
+    if (!stocks.some(s => s.rs1w !== null)) {
+      computeRSRanks(stocks, s => s.p3, 'rs1w');
+    }
+
+    stocks.forEach(s => {
+      if (s.rsChange1w === null && s.rsToday !== null && s.rs1w !== null) {
+        s.rsChange1w = s.rsToday - s.rs1w;
+      }
+    });
 
     allStocks = stocks;
 
@@ -1395,6 +1424,7 @@ footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-fain
           </div>
         </td>
         <td data-col="rstrend" class="num ${cls(s.rsChange1w)}">${formatRsTrend(s)}</td>
+        <td class="num ${cls(s.p1)}" data-col="p1">${fmtPct(s.p1)}</td>
         <td class="num ${cls(s.p3)}" data-col="p3">${fmtPct(s.p3)}</td>
         <td class="num ${cls(s.p6)}" data-col="p6">${fmtPct(s.p6)}</td>
         <td class="num ${cls(s.p9)}" data-col="p9">${fmtPct(s.p9)}</td>
@@ -1459,14 +1489,15 @@ footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-fain
   }
 
   function formatRsTrend(s) {
-    if (s.rsToday === null || s.rs1w === null || s.rs1m === null || s.rs3m === null) return 'n/a';
+    const rsToday = s.rsToday ?? s.rs;
+    if (rsToday === null || s.rs1w === null || s.rs1m === null || s.rs3m === null) return 'n/a';
 
-    const delta = s.rsToday - s.rs1w;
+    const delta = rsToday - s.rs1w;
     const clsName = delta > 0 ? 'pos' : (delta < 0 ? 'neg' : '');
 
     return `
-      <span class="${clsName}" title="RS ${s.rs3m} 3 months ago → ${s.rs1m} 1 month ago → ${s.rs1w} 1 week ago → ${s.rsToday} today">
-        (${s.rs3m}→${s.rs1m}→${s.rs1w}→${s.rsToday})
+      <span class="${clsName}" title="RS ${s.rs3m} (3M ago) → ${s.rs1m} (1M ago) → ${s.rs1w} (1W ago) → ${rsToday} (Today)">
+        (${s.rs3m}→${s.rs1m}→${s.rs1w}→${rsToday})
       </span>
     `;
   }
@@ -1664,6 +1695,7 @@ footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-fain
     ['date', 'Date'],
     ['rs', 'RS Rating'],
     ['rstrend', '3M→1M→1W→T0'],
+    ['p1', '1M %'],
     ['p3', '3M %'],
     ['p6', '6M %'],
     ['p9', '9M %'],
@@ -2786,6 +2818,7 @@ footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-fain
       RS_1W_Back: s.rs1w,
       RS_1M_Back: s.rs1m,
       RS_Change_1W: s.rsChange1w,
+      Pct_1M: s.p1,
       Pct_3M: s.p3,
       Pct_6M: s.p6,
       Pct_9M: s.p9,
