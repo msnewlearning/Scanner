@@ -812,7 +812,7 @@ footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-fain
               <th data-col="ema50" data-key="ema50" class="num">EMA 50</th>
               <th data-col="dist10" data-key="dist10" class="num">Dist EMA 10</th>
               <th data-col="dist50" data-key="dist50" class="num">Dist EMA 50</th>
-              <th data-col="atr14" data-key="atr14" class="num" title="Average True Range, 14 sessions, Wilder-smoothed">ATR(14)</th>
+              <th data-col="atr14" data-key="atrPct" class="num" title="Average True Range %, 14 sessions (Wilder-smoothed)">ATR%</th>
               <th data-col="adr" data-key="adrPct" class="num" title="Average Daily Range %, 20 sessions">ADR%</th>
               <th data-col="bartype" data-key="bartype">Bar Type</th>
               <th data-col="nr" data-key="nr">NR</th>
@@ -1436,7 +1436,7 @@ footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-fain
         <td class="num" data-col="ema50">${fmtEma(s.ema50)}</td>
         <td class="num ${cls(s.dist10)}" data-col="dist10">${fmtPct(s.dist10)}</td>
         <td class="num ${cls(s.dist50)}" data-col="dist50">${fmtPct(s.dist50)}</td>
-        <td class="num" data-col="atr14" title="${s.atrPct !== null ? s.atrPct.toFixed(2) + '% of price' : ''}">${fmtEma(s.atr14)}</td>
+        <td class="num" data-col="atr14" title="Raw ATR(14): ₹${s.atr14 !== null ? s.atr14.toFixed(2) : 'n/a'}">${fmtAtrPct(s.atrPct)}</td>
         <td class="num" data-col="adr">${fmtAdr(s.adrPct)}</td>
         <td data-col="bartype">${barTypeBadge(s.barType)}</td>
         <td data-col="nr">${nrBadge(s.nrType, s.candleRange)}</td>
@@ -1476,6 +1476,10 @@ footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-fain
 
   function fmtEma(v) {
     return (v === null || isNaN(v)) ? 'n/a' : v.toFixed(1);
+  }
+
+  function fmtAtrPct(v) {
+    return (v === null || isNaN(v)) ? 'n/a' : v.toFixed(2) + '%';
   }
 
   function fmtAdr(v) {
@@ -1707,7 +1711,7 @@ footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-fain
     ['ema50', 'EMA 50'],
     ['dist10', 'Dist EMA 10'],
     ['dist50', 'Dist EMA 50'],
-    ['atr14', 'ATR (14)'],
+    ['atr14', 'ATR %'],
     ['adr', 'ADR %'],
     ['bartype', 'Bar Type'],
     ['nr', 'NR'],
