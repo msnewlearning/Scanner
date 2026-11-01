@@ -149,8 +149,6 @@ h1 {
 
 #results, #breadth-results { flex-direction: column; flex: 1 1 auto; min-height: 0; }
 
-/* The Breadth tab holds more content than one viewport: the whole panel
-   scrolls as a unit and each block keeps its natural height. */
 #breadth-results { overflow-y: auto; padding-right: 2px; }
 #breadth-results > * { flex: none; }
 #breadth-results .table-wrap { flex: none; max-height: 430px; }
@@ -183,7 +181,7 @@ h1 {
   flex: none;
 }
 
-.controls-panel input[type="text"], .controls-panel select {
+.controls-panel input[type="text"], .controls-panel input[type="number"], .controls-panel select {
   background: var(--bg);
   border: 1px solid var(--border);
   color: var(--text);
@@ -196,7 +194,7 @@ h1 {
 
 .controls-panel input[type="text"] { min-width: 180px; flex: 1; }
 .controls-panel select { max-width: 180px; }
-.controls-panel input[type="text"]:focus, .controls-panel select:focus { border-color: var(--accent); }
+.controls-panel input[type="text"]:focus, .controls-panel input[type="number"]:focus, .controls-panel select:focus { border-color: var(--accent); }
 
 .controls-panel label { font-size: 12px; color: var(--text-dim); display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 
@@ -317,11 +315,6 @@ thead th {
 
 thead th:hover { color: var(--text-dim); }
 
-thead th.rs-group-header { text-align: center; cursor: default; color: var(--text-dim); font-weight: 700; letter-spacing: 0.04em; }
-thead th.rs-group-header:hover { color: var(--text-dim); }
-
-thead tr:nth-child(2) th { top: 33px; }
-
 thead th.active { color: var(--accent-dark); font-weight: 700; }
 
 tbody td {
@@ -399,8 +392,6 @@ tbody tr:hover td { background: var(--surface-raised); }
    MARKET BREADTH
    ============================================================ */
 
-/* ----- Verdict strip ----- */
-
 .verdict {
   display: flex;
   align-items: center;
@@ -435,53 +426,34 @@ tbody tr:hover td { background: var(--surface-raised); }
 .verdict.oversold .verdict-badge { background: rgba(124,58,237,0.12); color: #6D28D9; }
 
 .verdict-main { flex: 1; min-width: 0; }
-
 .verdict-line { font-size: 13px; font-weight: 600; color: var(--text); }
-
 .verdict-rule { margin-top: 3px; font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); }
-
 .verdict-meta { text-align: right; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); white-space: nowrap; }
 .verdict-meta b { display: block; font-size: 13px; color: var(--text); }
 
-/* ----- KPI cards ----- */
-
 .kpi-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-bottom: 8px; }
-
 .kpi { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 8px; padding: 9px 12px 6px; min-width: 0; }
-
 .kpi-label { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.03em; }
-
 .kpi-value { font-family: var(--font-display); font-size: 24px; font-weight: 600; line-height: 1.15; margin-top: 2px; color: var(--text); }
 .kpi-value.pos { color: var(--accent-dark); }
 .kpi-value.neg { color: var(--weak); }
-
 .kpi-delta { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-faint); min-height: 14px; }
 .kpi-delta .up { color: var(--accent-dark); font-weight: 600; }
 .kpi-delta .down { color: var(--weak); font-weight: 600; }
-
 .kpi-sub { font-size: 10.5px; color: var(--text-dim); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
 .kpi-spark { display: block; width: 100%; height: 26px; margin-top: 4px; }
 
-/* ----- History charts ----- */
-
 .panels-card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 12px 6px; margin-bottom: 8px; }
-
 .panels-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-
 .panels-title { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
-
 .range-tabs { display: flex; gap: 2px; background: var(--surface-raised); border: 1px solid var(--border-soft); border-radius: 6px; padding: 2px; }
-
 .range-btn { background: transparent; border: none; font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--text-dim); padding: 3px 9px; border-radius: 4px; cursor: pointer; }
 .range-btn:hover { color: var(--text); }
 .range-btn.active { background: var(--surface); color: var(--accent-dark); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 
 .panels-wrap { position: relative; }
-
 .bpanel { padding: 6px 0 2px; border-top: 1px solid var(--border-soft); }
 .bpanel:first-child { border-top: none; }
-
 .bpanel-title { font-size: 12px; font-weight: 600; color: var(--text); }
 .bpanel-sub { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-faint); margin: 1px 0 2px; }
 
@@ -508,36 +480,18 @@ tbody tr:hover td { background: var(--surface-raised); }
 .breadth-tooltip .tt-row { display: flex; justify-content: space-between; gap: 12px; }
 .breadth-tooltip .tt-row span:first-child { color: #94A3B8; }
 
-/* ----- Highlight cards ----- */
-
 .breadth-highlights { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 8px; }
-
 .breadth-highlight-card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 6px; padding: 8px 10px 6px; min-width: 0; }
-
 .breadth-highlight-title { font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; color: var(--text-dim); margin-bottom: 2px; }
-
 .breadth-highlight-subtitle { font-family: var(--font-mono); font-size: 9px; color: var(--text-faint); margin-bottom: 4px; }
-
 .breadth-highlight-list { max-height: 230px; overflow-y: auto; }
-
-.breadth-highlight-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 4px 2px;
-  border-bottom: 1px solid var(--border-soft);
-  font-size: 11.5px;
-}
+.breadth-highlight-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 2px; border-bottom: 1px solid var(--border-soft); font-size: 11.5px; }
 .breadth-highlight-row:last-child { border-bottom: none; }
-
 .breadth-highlight-row a { color: var(--blue); font-weight: 600; text-decoration: none; }
 .breadth-highlight-row a:hover { text-decoration: underline; }
-
 .breadth-highlight-meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-dim); white-space: nowrap; }
 .breadth-highlight-rs { color: var(--accent-dark); font-weight: 700; }
 
-/* Sector breadth rows */
 .sb-row { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) 62px; align-items: center; gap: 8px; padding: 4px 2px; border-bottom: 1px solid var(--border-soft); font-size: 11.5px; }
 .sb-row:last-child { border-bottom: none; }
 .sb-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
@@ -549,17 +503,13 @@ tbody tr:hover td { background: var(--surface-raised); }
 .sb-val { font-family: var(--font-mono); font-size: 10.5px; text-align: right; color: var(--text-dim); white-space: nowrap; }
 .sb-sep { font-family: var(--font-mono); font-size: 9px; color: var(--text-faint); text-transform: uppercase; padding: 6px 2px 2px; }
 
-/* ----- Breadth table ----- */
-
 #breadth-view thead th { cursor: default; }
 #breadth-view thead th.grp { text-align: center; border-left: 1px solid var(--border); color: var(--text-dim); }
 #breadth-view tbody td { padding: 6px 10px; }
-
 #breadth-view th.bd-date, #breadth-view td.bd-date { position: sticky; left: 0; z-index: 1; border-right: 1px solid var(--border-soft); }
 #breadth-view thead th.bd-date { z-index: 3; }
 
 .breadth-date { font-family: var(--font-mono); color: var(--text); font-weight: 500; }
-
 .breadth-up { color: var(--accent-dark) !important; font-weight: 600; }
 .breadth-down { color: var(--weak) !important; font-weight: 600; }
 .breadth-net-positive { color: var(--accent-dark) !important; font-weight: 700; }
@@ -585,13 +535,9 @@ tbody tr:hover td { background: var(--surface-raised); }
   line-height: 1.5;
 }
 
-/* ---------- Footer ---------- */
-
 footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-faint); font-size: 11px; font-family: var(--font-mono); }
 
 .empty-state { text-align: center; padding: 30px; color: var(--text-faint); font-size: 13px; }
-
-/* ---------- Mobile ---------- */
 
 @media (max-width: 1100px) {
   .kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -614,16 +560,6 @@ footer { flex: none; margin-top: 6px; text-align: center; color: var(--text-fain
   .verdict-meta { text-align: left; }
   .controls-panel { overflow-y: auto; max-height: 150px; }
 }
-
-/* Compact grouped table headers and vertical group separators */
-.group-header-row th { height: 22px; padding: 3px 6px; font-size: 10px; font-family: var(--font-mono); font-weight: 600; text-align: center; white-space: nowrap; background: var(--surface-raised); }
-.group-header-row .col-group { border-left: 2px solid var(--border); border-right: 2px solid var(--border); }
-.col-group-start { border-left: 2px solid var(--border) !important; }
-.col-group-end { border-right: 2px solid var(--border) !important; }
-th[data-col="rs"], td[data-col="rs"], th[data-col="rstrend"], td[data-col="rstrend"],
-th[data-col="ema10"], td[data-col="ema10"], th[data-col="dist50"], td[data-col="dist50"] { border-left: 0; }
-th[data-col="rstrend"], td[data-col="rstrend"], th[data-col="dist50"], td[data-col="dist50"] { border-right: 2px solid var(--border); }
-th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"] { border-left: 2px solid var(--border); }
 </style>
 </head>
 
@@ -792,10 +728,13 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
             </div>
 
             <div class="filter-section">
-              <div class="filter-section-title">Volatility — ATR / ADR / Today's Range</div>
+              <div class="filter-section-title">Volatility — ATR% / ADR% / Today's Range</div>
               <div class="filter-group">
                 <label title="Average Daily Range %, 20-session: mean of (High/Low - 1) × 100">Min ADR%
-                  <input type="text" id="adr-min" placeholder="e.g. 3.5" style="width:60px;">
+                  <input type="number" step="0.1" id="adr-min" placeholder="e.g. 3.5" style="width:70px;">
+                </label>
+                <label title="Average True Range %, 14-session Wilder: (ATR14 / Close) × 100">Min ATR%
+                  <input type="number" step="0.1" id="atr-min" placeholder="e.g. 2.5" style="width:70px;">
                 </label>
                 <select id="tratr-select" title="Today's True Range vs. ATR(14)">
                   <option value="all">Today's TR vs ATR (Any)</option>
@@ -803,7 +742,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
                   <option value="expand">Expanded — TR &gt; 1.3 × ATR(14)</option>
                 </select>
               </div>
-              <div class="filter-hint">ADR% and ATR(14)/TR come from fetch_nse_data.py. Compressed = a quiet day relative to the stock's own volatility (coiling); Expanded = today broke out of its normal range.</div>
+              <div class="filter-hint">Search stocks by Min ADR% or Min ATR%. Compressed = a quiet day relative to volatility; Expanded = today broke out of normal range.</div>
             </div>
 
             <div class="filter-section">
@@ -851,36 +790,32 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       <div class="table-wrap">
         <table>
           <thead>
-            <tr class="group-header-row">
-              <th rowspan="2" data-col="rank" data-key="rank">#</th>
-              <th rowspan="2" data-col="symbol" data-key="symbol">Symbol</th>
-              <th rowspan="2" data-col="sector" data-key="sector">Sector</th>
-              <th rowspan="2" data-col="marketcap" data-key="marketcap">Market Cap</th>
-              <th rowspan="2" data-col="price" data-key="price" class="num">Price</th>
-              <th rowspan="2" data-col="daychange" data-key="daychange" class="num">Day %</th>
-              <th rowspan="2" data-col="date" data-key="date">Date</th>
-              <th colspan="2" class="col-group">Group RS Ratings</th>
-              <th rowspan="2" data-col="p3" data-key="p3" class="num">3M %</th>
-              <th rowspan="2" data-col="p6" data-key="p6" class="num">6M %</th>
-              <th rowspan="2" data-col="p9" data-key="p9" class="num">9M %</th>
-              <th rowspan="2" data-col="p12" data-key="p12" class="num">12M %</th>
-              <th rowspan="2" data-col="score" data-key="score" class="num">Weighted Score</th>
-              <th rowspan="2" data-col="trend" data-key="trend">Trend</th>
-              <th colspan="5" class="col-group">Group EMA</th>
-              <th rowspan="2" data-col="atr14" data-key="atr14" class="num" title="Average True Range, 14 sessions, Wilder-smoothed">ATR(14)</th>
-              <th rowspan="2" data-col="adr" data-key="adrPct" class="num" title="Average Daily Range %, 20 sessions: mean of (High/Low - 1) × 100">ADR%</th>
-              <th rowspan="2" data-col="bartype" data-key="bartype">Bar Type</th>
-              <th rowspan="2" data-col="nr" data-key="nr">NR</th>
-              <th rowspan="2" data-col="special" data-key="special">Special</th>
-            </tr>
             <tr>
-              <th data-col="rs" data-key="rs" class="col-group-start">RS Rating</th>
-              <th data-col="rstrend" data-key="rsChange1w" class="col-group-end">3M→1M→1W→T0</th>
-              <th data-col="ema10" data-key="ema10" class="num col-group-start">EMA 10</th>
+              <th data-col="rank" data-key="rank">#</th>
+              <th data-col="symbol" data-key="symbol">Symbol</th>
+              <th data-col="sector" data-key="sector">Sector</th>
+              <th data-col="marketcap" data-key="marketcap">Market Cap</th>
+              <th data-col="price" data-key="price" class="num">Price</th>
+              <th data-col="daychange" data-key="daychange" class="num">Day %</th>
+              <th data-col="date" data-key="date">Date</th>
+              <th data-col="rs" data-key="rs">RS Rating</th>
+              <th data-col="rstrend" data-key="rsChange1w" class="num">RS Trend (3M→1M→1W→T0)</th>
+              <th data-col="p3" data-key="p3" class="num">3M %</th>
+              <th data-col="p6" data-key="p6" class="num">6M %</th>
+              <th data-col="p9" data-key="p9" class="num">9M %</th>
+              <th data-col="p12" data-key="p12" class="num">12M %</th>
+              <th data-col="score" data-key="score" class="num">Weighted Score</th>
+              <th data-col="trend" data-key="trend">Trend</th>
+              <th data-col="ema10" data-key="ema10" class="num">EMA 10</th>
               <th data-col="ema20" data-key="ema20" class="num">EMA 20</th>
               <th data-col="ema50" data-key="ema50" class="num">EMA 50</th>
               <th data-col="dist10" data-key="dist10" class="num">Dist EMA 10</th>
-              <th data-col="dist50" data-key="dist50" class="num col-group-end">Dist EMA 50</th>
+              <th data-col="dist50" data-key="dist50" class="num">Dist EMA 50</th>
+              <th data-col="atr14" data-key="atr14" class="num" title="Average True Range, 14 sessions, Wilder-smoothed">ATR(14)</th>
+              <th data-col="adr" data-key="adrPct" class="num" title="Average Daily Range %, 20 sessions">ADR%</th>
+              <th data-col="bartype" data-key="bartype">Bar Type</th>
+              <th data-col="nr" data-key="nr">NR</th>
+              <th data-col="special" data-key="special">Special</th>
             </tr>
           </thead>
           <tbody id="table-body"></tbody>
@@ -991,7 +926,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
             <tr>
               <th class="bd-date">Date</th>
               <th class="num grp" title="Stocks closing above their 50-day EMA">Above 50-EMA</th>
-              <th class="num" title="Scanned minus above (exact once the fetch script exports below50ema)">Below 50-EMA</th>
+              <th class="num" title="Scanned minus above">Below 50-EMA</th>
               <th class="num" title="Above ÷ scanned">% &gt; 50-EMA</th>
               <th class="num" title="Above ÷ scanned">% &gt; 200-EMA</th>
               <th class="num grp" title="Advancers ÷ decliners">A/D Ratio</th>
@@ -1070,6 +1005,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   const nrSelect = document.getElementById('nr-select');
   const exportBtn = document.getElementById('export-btn');
   const adrMinInput = document.getElementById('adr-min');
+  const atrMinInput = document.getElementById('atr-min');
   const tratrSelect = document.getElementById('tratr-select');
   const filtersModal = document.getElementById('filters-modal');
   const filterCountBadge = document.getElementById('filter-count-badge');
@@ -1159,11 +1095,11 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       const dist10 = pctFrom(closeToday, ema10);
       const dist50 = pctFrom(closeToday, ema50);
 
-      // ATR(14, Wilder-smoothed), ADR% (20-session average daily range),
-      // and today's own True Range — used for the Coiled Spring / Ignition
-      // volatility-compression and -expansion filters below.
       const atr14 = numOrNull(r.ATR_14);
-      const atrPct = numOrNull(r.ATR_Pct);
+      let atrPct = numOrNull(r.ATR_Pct);
+      if (atrPct === null && atr14 !== null && closeToday !== null && closeToday > 0) {
+        atrPct = (atr14 / closeToday) * 100;
+      }
       const adrPct = numOrNull(r.ADR_Pct);
 
       const todayHigh = numOrNull(r.Today_High);
@@ -1199,7 +1135,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
         numOrNull(r.Prev_Low)
       );
 
-      // NR4 / NR7 is calculated by the fetcher from the actual historical High-Low ranges.
       const nrType = r.NR_Type ? String(r.NR_Type).trim().toUpperCase() : '';
       const candleRange = numOrNull(r.Candle_Range);
 
@@ -1250,7 +1185,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       });
     }
 
-    // Fallback RS calculation if CSV doesn't contain RS_Today.
     if (!stocks.some(s => s.rsToday !== null)) {
       const ranked = stocks.filter(s => s.complete).sort((a, b) => a.score - b.score);
       const n = ranked.length;
@@ -1266,7 +1200,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     populateFilterOptions(sectorSelect, [...new Set(stocks.map(s => s.sector).filter(Boolean))], 'All Sectors');
     populateFilterOptions(marketcapSelect, [...new Set(stocks.map(s => s.marketcap).filter(Boolean))], 'All Market Caps');
 
-    // Show latest date next to RS Rating Scanner.
     const dates = stocks.map(s => s.date).filter(Boolean).sort();
     if (dates.length) {
       document.getElementById('header-data-date').textContent = ` (${dates[dates.length - 1]})`;
@@ -1385,6 +1318,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     const dist50Val = dist50Select.value;
     const nrVal = nrSelect.value;
     const adrMinVal = adrMinInput.value.trim();
+    const atrMinVal = atrMinInput.value.trim();
     const tratrVal = tratrSelect.value;
 
     let list = allStocks.filter(s => {
@@ -1417,6 +1351,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       if (nrVal !== 'all' && s.nrType !== nrVal) return false;
 
       if (adrMinVal !== '' && !(s.adrPct !== null && s.adrPct >= Number(adrMinVal))) return false;
+      if (atrMinVal !== '' && !(s.atrPct !== null && s.atrPct >= Number(atrMinVal))) return false;
 
       if (tratrVal === 'compress' && !(s.trAtrRatio !== null && s.trAtrRatio < 0.7)) return false;
       if (tratrVal === 'expand' && !(s.trAtrRatio !== null && s.trAtrRatio > 1.3)) return false;
@@ -1600,6 +1535,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     .forEach(el => el.addEventListener('change', renderTable));
 
   adrMinInput.addEventListener('input', renderTable);
+  atrMinInput.addEventListener('input', renderTable);
 
 
   /* ============================================================
@@ -1631,6 +1567,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     liquidOnly.checked = false;
     specialOnly.checked = false;
     adrMinInput.value = '';
+    atrMinInput.value = '';
     tratrSelect.value = 'all';
     presetCoiledBtn.classList.remove('active');
     presetIgnitionBtn.classList.remove('active');
@@ -1651,6 +1588,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     if (liquidOnly.checked) n++;
     if (specialOnly.checked) n++;
     if (adrMinInput.value.trim() !== '') n++;
+    if (atrMinInput.value.trim() !== '') n++;
     if (tratrSelect.value !== 'all') n++;
     return n;
   }
@@ -1671,15 +1609,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     renderTable();
   });
 
-  // Two ready-made EOD scans, built from the same RS/EMA/ATR/ADR data
-  // already in the CSV:
-  //   Coiled Spring  — RS>=85, uptrend, ADR%>=3.5 (inherently volatile),
-  //                    but quiet TODAY: NR7 and today's TR < 0.7x ATR(14).
-  //                    Buy on a break of the tight day's high.
-  //   Ignition       — same RS/uptrend/ADR% base, but today's TR > 1.3x
-  //                    ATR(14): a stock that just woke up (breakout / gap).
-  // Note: our EMA data is 10/20/50 (no per-stock EMA200 in the CSV), so
-  // "uptrend" here means Close > EMA10 > EMA20 > EMA50.
   function applyPreset(name) {
     resetAllFilters();
     minRsInput.value = 85; minRsVal.textContent = '85';
@@ -1833,11 +1762,9 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
 
       if (btn.dataset.tab === 'breadth-view') {
         if (breadthLoaded) {
-          // Canvases need real dimensions, so redraw once the panel is visible again.
           renderBreadthKpis();
           redrawBreadthCharts(null);
         } else {
-          // Load breadth data only when the user opens the tab.
           loadBreadthIfNeeded();
         }
       }
@@ -1858,11 +1785,11 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
      MARKET BREADTH — STATE
      ============================================================ */
 
-  let breadthRows = [];        // newest first (table)
-  let breadthAsc = [];         // oldest first (charts, rolling stats)
+  let breadthRows = [];
+  let breadthAsc = [];
   let breadthLoaded = false;
   let breadthLoading = false;
-  let breadthRange = 126;      // sessions shown in charts; 0 = all
+  let breadthRange = 126;
   let showAllBreadthRows = false;
   let lastHoverIdx = null;
 
@@ -1926,8 +1853,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     }
 
     renderSectorBreadth();
-
-    // The "RS 80+ above 50-EMA" KPI depends on scanner data.
     if (breadthLoaded) renderBreadthKpis();
   }
 
@@ -1999,7 +1924,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     if (e.target.files.length) handleBreadthFile(e.target.files[0]);
   });
 
-  // Find a column using several possible names.
   function findColumn(row, candidates) {
     const keys = Object.keys(row);
     for (const c of candidates) {
@@ -2014,38 +1938,26 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   }
 
   function normalizeDate(value) {
-
     if (value === null || value === undefined || value === '') return '';
-
     const text = String(value).trim();
-
     if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
-
     const first10 = text.slice(0, 10);
     if (/^\d{4}-\d{2}-\d{2}$/.test(first10)) return first10;
-
     let match = text.match(/^(\d{2})-(\d{2})-(\d{4})$/);
     if (match) return match[3] + '-' + match[2] + '-' + match[1];
-
     match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (match) return match[3] + '-' + match[2] + '-' + match[1];
-
     const d = new Date(text);
     if (!isNaN(d.getTime())) {
       return d.getFullYear() + '-' +
         String(d.getMonth() + 1).padStart(2, '0') + '-' +
         String(d.getDate()).padStart(2, '0');
     }
-
     return text;
   }
 
-  // Fallback: build breadth from a raw price-history CSV (Date, Symbol, Close).
-  // This path cannot compute EMA participation, so those fields stay null.
   function processBreadthData(rows) {
-
     if (!rows || !rows.length) throw new Error('History CSV appears empty.');
-
     const first = rows.find(r => r && Object.keys(r).length);
     if (!first) throw new Error('No valid rows found in history CSV.');
 
@@ -2058,14 +1970,11 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     }
 
     const bySymbol = {};
-
     rows.forEach(row => {
       const symbol = row[symbolCol] ? String(row[symbolCol]).trim() : '';
       const date = normalizeDate(row[dateCol]);
       const close = numOrNull(row[closeCol]);
-
       if (!symbol || !date || close === null || close <= 0) return;
-
       if (!bySymbol[symbol]) bySymbol[symbol] = [];
       bySymbol[symbol].push({ date, close });
     });
@@ -2101,7 +2010,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
         if (change >= 4) daily[date].up4++;
         if (change <= -4) daily[date].down4++;
 
-        // 52-week breadth needs a full rolling window. High includes stocks within 2% of the high.
         if (i >= rollingWindow - 1) {
           const closes = history
             .slice(i - rollingWindow + 1, i + 1)
@@ -2126,14 +2034,13 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     });
 
     if (!breadthRows.length) {
-      throw new Error('No daily breadth records could be calculated. Check the Date, Symbol and Close columns.');
+      throw new Error('No daily breadth records could be calculated.');
     }
 
     finalizeBreadth();
   }
 
   function processBreadthJson(payload) {
-
     if (!payload || !Array.isArray(payload.rows) || !payload.rows.length) {
       throw new Error('Market breadth JSON is empty or invalid.');
     }
@@ -2154,7 +2061,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
         low52w: Number(row.low52w ?? row.New_52W_Low ?? 0),
         above50ema: optNum(row.above50ema),
         above200ema: optNum(row.above200ema),
-        // Optional: export these from fetch_nse_data.py for exact below-EMA counts.
         below50ema: optNum(row.below50ema),
         below200ema: optNum(row.below200ema),
         scanned: Number(row.scanned ?? row.Stocks_Scanned ?? 0)
@@ -2166,9 +2072,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     finalizeBreadth();
   }
 
-  // Adds derived fields (percentages, rolling 10D stats, cumulative A/D) and renders.
   function finalizeBreadth() {
-
     const asc = breadthRows.slice().sort((a, b) => a.date.localeCompare(b.date));
     let cum = 0;
 
@@ -2212,9 +2116,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   }
 
   function handleBreadthFile(file) {
-
     breadthUploadError.style.display = 'none';
-
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -2236,7 +2138,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   }
 
   async function loadBreadthIfNeeded() {
-
     if (breadthLoaded || breadthLoading) return;
 
     breadthLoading = true;
@@ -2269,10 +2170,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     renderBreadthTable();
   }
 
-  /* ---------- Verdict strip ---------- */
-
   function renderBreadthVerdict() {
-
     const el = document.getElementById('breadth-verdict');
     const L = breadthAsc[breadthAsc.length - 1];
     if (!el || !L) return;
@@ -2289,7 +2187,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
         <div class="verdict-badge">n/a</div>
         <div class="verdict-main">
           <div class="verdict-line">Regime needs EMA participation data</div>
-          <div class="verdict-rule">This file has no above-50/200-EMA counts. Re-run fetch_nse_data.py to export above50ema / above200ema.</div>
+          <div class="verdict-rule">This file has no above-50/200-EMA counts.</div>
         </div>${metaHtml}`;
       return;
     }
@@ -2320,14 +2218,11 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       <div class="verdict-badge">${label}${stretched ? ' · Stretched' : ''}</div>
       <div class="verdict-main">
         <div class="verdict-line">${trendWord ? trendWord + ' · ' : ''}${parts.join(' · ')}</div>
-        <div class="verdict-rule">Rule: Strong = &gt;60% above 50-EMA &amp; &gt;50% above 200-EMA · Weak = &lt;40% above 50-EMA · Oversold = ≤20% (watch for a thrust day) · Stretched = ≥80%</div>
+        <div class="verdict-rule">Rule: Strong = &gt;60% above 50-EMA &amp; &gt;50% above 200-EMA · Weak = &lt;40% above 50-EMA · Oversold = ≤20% · Stretched = ≥80%</div>
       </div>${metaHtml}`;
   }
 
-  /* ---------- KPI cards ---------- */
-
   function renderBreadthKpis() {
-
     const box = document.getElementById('breadth-kpis');
     const L = breadthAsc[breadthAsc.length - 1];
     const P = breadthAsc[breadthAsc.length - 2];
@@ -2470,7 +2365,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
 
 
   /* ============================================================
-     MARKET BREADTH — STACKED CHARTS (shared crosshair)
+     MARKET BREADTH — STACKED CHARTS
      ============================================================ */
 
   const CH_LEFT = 50;
@@ -2483,7 +2378,7 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       ticks: [0, 20, 50, 80, 100],
       yfmt: v => v + '%',
       bands: [[0, 20, 'rgba(225,29,72,0.08)'], [80, 100, 'rgba(217,119,6,0.10)']],
-      empty: 'No EMA participation data in this file — re-run fetch_nse_data.py',
+      empty: 'No EMA participation data in this file',
       series: [
         { type: 'line', fn: r => r.pct50, color: 'accent', label: '% above 50-EMA' },
         { type: 'line', fn: r => r.pct200, color: 'blue', label: '% above 200-EMA' }
@@ -2526,7 +2421,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   }
 
   function drawBreadthPanel(canvas, rows, cfg, hoverIdx, isLast) {
-
     const C = breadthPalette();
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
@@ -2547,7 +2441,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     const ph = H - T - B;
     const n = rows.length;
 
-    // Gather values for scaling
     const vals = [];
     cfg.series.forEach(s => rows.forEach(r => { const v = s.fn(r); if (isNum(v)) vals.push(v); }));
 
@@ -2568,13 +2461,11 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     const X = i => L + (n === 1 ? pw / 2 : (i / (n - 1)) * pw);
     const Y = v => T + ((max - v) / (max - min)) * ph;
 
-    // Shaded bands
     (cfg.bands || []).forEach(([a, b, color]) => {
       ctx.fillStyle = color;
       ctx.fillRect(L, Y(b), pw, Y(a) - Y(b));
     });
 
-    // Grid + y labels
     const ticks = cfg.ticks || [0, 1, 2, 3].map(k => min + ((max - min) * k) / 3);
     ctx.font = '9px IBM Plex Mono, monospace';
     ctx.textAlign = 'right';
@@ -2592,7 +2483,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     });
     ctx.textBaseline = 'alphabetic';
 
-    // Zero line
     if (min < 0 && max > 0) {
       ctx.strokeStyle = C.axis;
       ctx.beginPath();
@@ -2601,7 +2491,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       ctx.stroke();
     }
 
-    // Bars first, lines on top
     const baseY = Y(Math.max(min, Math.min(0, max)));
     const bw = Math.max(1, Math.min(10, (pw / n) * 0.72));
 
@@ -2630,7 +2519,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       ctx.stroke();
     });
 
-    // Legend (top-left, inside plot)
     ctx.font = '10px IBM Plex Mono, monospace';
     ctx.textAlign = 'left';
     let lx = L + 8;
@@ -2646,7 +2534,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       lx += 13 + ctx.measureText(s.label).width + 14;
     });
 
-    // X axis labels (bottom panel only)
     if (isLast) {
       const count = Math.min(7, n);
       ctx.fillStyle = C.faint;
@@ -2659,7 +2546,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
       ctx.textAlign = 'left';
     }
 
-    // Crosshair + dots
     if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < n) {
       const x = X(hoverIdx);
       ctx.strokeStyle = C.dim;
@@ -2799,17 +2685,14 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   }
 
   function renderBreadthTable() {
-
     if (!breadthRows.length) {
       breadthTableBody.innerHTML = '<tr><td colspan="14" class="empty-state">No breadth data available.</td></tr>';
       return;
     }
 
     const visible = showAllBreadthRows ? breadthRows : breadthRows.slice(0, BREADTH_TABLE_DEFAULT_ROWS);
-
     const maxNet4 = Math.max(1, ...visible.map(r => Math.abs(r.net4)));
     const maxNetHL = Math.max(1, ...visible.map(r => Math.abs(r.netHL)));
-
     const netCls = v => v > 0 ? 'breadth-net-positive' : v < 0 ? 'breadth-net-negative' : 'breadth-net-flat';
     const dash = '<span style="color:var(--text-faint)">—</span>';
 
@@ -2866,7 +2749,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   }
 
   breadthExportBtn.addEventListener('click', () => {
-
     if (!breadthRows.length) return;
 
     downloadCsv(breadthRows.map(row => ({
@@ -2891,7 +2773,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
   });
 
   exportBtn.addEventListener('click', () => {
-
     if (!allStocks.length) return;
 
     downloadCsv(allStocks.map(s => ({
@@ -2933,7 +2814,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
      ============================================================ */
 
   (async () => {
-
     try {
       const res = await fetch(RS_DATA_URL, { cache: 'no-store' });
       if (!res.ok) throw new Error();
@@ -2948,7 +2828,6 @@ th[data-col="rs"], td[data-col="rs"], th[data-col="ema10"], td[data-col="ema10"]
     } finally {
       document.getElementById('checking-shared').style.display = 'none';
     }
-
   })();
 
 })();
